@@ -20,14 +20,14 @@
 
         .header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             border-bottom: 2px solid #000;
             padding-bottom: 8px;
             margin-bottom: 20px;
         }
 
         .header img {
-            height: 50px;
+            height: 40px;
             margin-right: 15px;
         }
 
@@ -36,13 +36,13 @@
         }
 
         .header .company-name {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 2px;
         }
 
         .header .company-subtitle {
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
         }
 
@@ -51,13 +51,13 @@
         }
 
         .header .report-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             margin-bottom: 2px;
         }
 
         .header .report-date {
-            font-size: 10px;
+            font-size: 9px;
             color: #666;
         }
 
@@ -176,7 +176,6 @@
             <div class="company-subtitle">@yield('company_subtitle', 'Gestión de Inventario y Ventas')</div>
         </div>
         <div class="report-info">
-            <div class="report-title">@yield('report_title', 'Reporte')</div>
             <div class="report-date">@yield('report_date', now()->format('d/m/Y H:i'))</div>
         </div>
     </div>

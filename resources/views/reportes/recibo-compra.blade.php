@@ -27,31 +27,39 @@
         }
 
         .header {
-            text-align: center;
+            display: flex;
+            align-items: flex-start;
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
 
         .logo {
-            height: 40px;
-            margin-bottom: 8px;
+            height: 35px;
+            margin-right: 10px;
+        }
+
+        .company-info {
+            flex: 1;
         }
 
         .company-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             margin-bottom: 2px;
         }
 
         .company-subtitle {
-            font-size: 10px;
+            font-size: 9px;
             color: #666;
-            margin-bottom: 8px;
+        }
+
+        .receipt-info {
+            text-align: right;
         }
 
         .receipt-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -140,9 +148,13 @@
         <!-- Header -->
         <div class="header">
             <img src="{{ public_path('images/logo.png') }}" alt="Logo" class="logo">
-            <div class="company-name">Tienda de Celulares</div>
-            <div class="company-subtitle">Sistema de Gestión de Compras</div>
-            <div class="receipt-title">Recibo de Compra</div>
+            <div class="company-info">
+                <div class="company-name">Tienda de Celulares</div>
+                <div class="company-subtitle">Sistema de Gestión de Compras</div>
+            </div>
+            <div class="receipt-info">
+                <div class="receipt-title">Recibo de Compra</div>
+            </div>
         </div>
 
         <!-- Información de la Compra -->
