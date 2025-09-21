@@ -9,18 +9,18 @@
     @if(!empty($filtros['fecha_desde']) || !empty($filtros['fecha_hasta']))
         @if($filtros['fecha_desde'] && $filtros['fecha_hasta'])
             <div class="filter-item">
-                <div class="filter-label">Período:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</div>
+                <span class="filter-label">Período:</span>
+                <span>{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</span>
             </div>
         @elseif($filtros['fecha_desde'])
             <div class="filter-item">
-                <div class="filter-label">Desde:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }}</div>
+                <span class="filter-label">Desde:</span>
+                <span>{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }}</span>
             </div>
         @elseif($filtros['fecha_hasta'])
             <div class="filter-item">
-                <div class="filter-label">Hasta:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</div>
+                <span class="filter-label">Hasta:</span>
+                <span>{{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</span>
             </div>
         @endif
     @endif
@@ -28,8 +28,7 @@
 
 @section('content')
     @if($proveedores->count() > 0)
-        <!-- Tabla de Proveedores -->
-        <table class="data-table">
+        <table>
             <thead>
                 <tr>
                     <th style="width: 8%;">ID</th>
@@ -43,17 +42,17 @@
             </thead>
             <tbody>
                 @foreach($proveedores as $proveedor)
-                    <tr class="detail-row">
+                    <tr>
                         <td class="text-center font-bold">#{{ $proveedor->id_proveedor }}</td>
                         <td>
-                            <div class="font-semibold">{{ $proveedor->nombre }}</div>
+                            {{ $proveedor->nombre }}
                             @if($proveedor->contacto)
-                                <div class="text-info" style="font-size: 9px;">Contacto: {{ $proveedor->contacto }}</div>
+                                <br><small style="color: #666;">Contacto: {{ $proveedor->contacto }}</small>
                             @endif
                         </td>
                         <td>{{ $proveedor->telefono ?? 'N/A' }}</td>
                         <td>{{ $proveedor->direccion ?? 'N/A' }}</td>
-                        <td class="currency">Bs {{ number_format($proveedor->total_compras ?? 0, 2, ',', '.') }}</td>
+                        <td class="text-right currency">Bs {{ number_format($proveedor->total_compras ?? 0, 2, ',', '.') }}</td>
                         <td class="text-center">
                             @if($proveedor->ultima_compra)
                                 {{ \Carbon\Carbon::parse($proveedor->ultima_compra)->format('d/m/Y') }}
@@ -63,9 +62,9 @@
                         </td>
                         <td class="text-center">
                             @if($proveedor->total_compras > 0)
-                                <span class="text-success font-semibold">Activo</span>
+                                <span style="color: #28a745; font-weight: bold;">Activo</span>
                             @else
-                                <span class="text-warning font-semibold">Nuevo</span>
+                                <span style="color: #ffc107; font-weight: bold;">Nuevo</span>
                             @endif
                         </td>
                     </tr>
@@ -73,8 +72,7 @@
             </tbody>
         </table>
 
-        <!-- Resumen de Proveedores -->
-        <div class="summary-section">
+        <div class="summary">
             <div class="summary-title">Resumen de Proveedores</div>
             <div class="summary-grid">
                 <div class="summary-item">

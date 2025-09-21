@@ -9,18 +9,18 @@
     @if(!empty($filtros['fecha_desde']) || !empty($filtros['fecha_hasta']))
         @if($filtros['fecha_desde'] && $filtros['fecha_hasta'])
             <div class="filter-item">
-                <div class="filter-label">Período:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</div>
+                <span class="filter-label">Período:</span>
+                <span>{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</span>
             </div>
         @elseif($filtros['fecha_desde'])
             <div class="filter-item">
-                <div class="filter-label">Desde:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }}</div>
+                <span class="filter-label">Desde:</span>
+                <span>{{ \Carbon\Carbon::parse($filtros['fecha_desde'])->format('d/m/Y') }}</span>
             </div>
         @elseif($filtros['fecha_hasta'])
             <div class="filter-item">
-                <div class="filter-label">Hasta:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</div>
+                <span class="filter-label">Hasta:</span>
+                <span>{{ \Carbon\Carbon::parse($filtros['fecha_hasta'])->format('d/m/Y') }}</span>
             </div>
         @endif
     @endif
@@ -28,8 +28,7 @@
 
 @section('content')
     @if($clientes->count() > 0)
-        <!-- Tabla de Clientes -->
-        <table class="data-table">
+        <table>
             <thead>
                 <tr>
                     <th style="width: 8%;">ID</th>
@@ -43,17 +42,17 @@
             </thead>
             <tbody>
                 @foreach($clientes as $cliente)
-                    <tr class="detail-row">
+                    <tr>
                         <td class="text-center font-bold">#{{ $cliente->id_cliente }}</td>
                         <td>
-                            <div class="font-semibold">{{ $cliente->nombre }}</div>
+                            {{ $cliente->nombre }}
                             @if($cliente->apellidos)
-                                <div class="text-info" style="font-size: 9px;">{{ $cliente->apellidos }}</div>
+                                <br><small style="color: #666;">{{ $cliente->apellidos }}</small>
                             @endif
                         </td>
                         <td>{{ $cliente->ci ?? 'N/A' }}</td>
                         <td>{{ $cliente->telefono ?? 'N/A' }}</td>
-                        <td class="currency">Bs {{ number_format($cliente->total_compras ?? 0, 2, ',', '.') }}</td>
+                        <td class="text-right currency">Bs {{ number_format($cliente->total_compras ?? 0, 2, ',', '.') }}</td>
                         <td class="text-center">
                             @if($cliente->ultima_compra)
                                 {{ \Carbon\Carbon::parse($cliente->ultima_compra)->format('d/m/Y') }}
@@ -63,9 +62,9 @@
                         </td>
                         <td class="text-center">
                             @if($cliente->total_compras > 0)
-                                <span class="text-success font-semibold">Activo</span>
+                                <span style="color: #28a745; font-weight: bold;">Activo</span>
                             @else
-                                <span class="text-warning font-semibold">Nuevo</span>
+                                <span style="color: #ffc107; font-weight: bold;">Nuevo</span>
                             @endif
                         </td>
                     </tr>
@@ -73,8 +72,7 @@
             </tbody>
         </table>
 
-        <!-- Resumen de Clientes -->
-        <div class="summary-section">
+        <div class="summary">
             <div class="summary-title">Resumen de Clientes</div>
             <div class="summary-grid">
                 <div class="summary-item">

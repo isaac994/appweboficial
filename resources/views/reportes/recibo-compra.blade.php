@@ -12,53 +12,41 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-            line-height: 1.4;
             color: #333;
-            background: #f5f5f5;
+            background: white;
             padding: 10px;
         }
 
         .receipt {
             max-width: 300px;
             margin: 0 auto;
-            background: white;
-            border: 2px solid #3498db;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 1px solid #000;
+            padding: 15px;
         }
 
         .header {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 15px;
             text-align: center;
-            position: relative;
+            border-bottom: 1px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .logo {
-            width: 40px;
             height: 40px;
-            object-fit: contain;
             margin-bottom: 8px;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 4px;
-            padding: 2px;
         }
 
         .company-name {
             font-size: 14px;
             font-weight: bold;
-            margin-bottom: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 2px;
         }
 
-        .company-address {
-            font-size: 9px;
-            opacity: 0.9;
+        .company-subtitle {
+            font-size: 10px;
+            color: #666;
             margin-bottom: 8px;
         }
 
@@ -66,116 +54,79 @@
             font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-top: 1px solid rgba(255,255,255,0.3);
-            padding-top: 8px;
         }
 
-        .receipt-info {
-            padding: 15px;
-            background: white;
+        .info-section {
+            margin-bottom: 15px;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 4px 0;
-            border-bottom: 1px dotted #ddd;
+            margin-bottom: 3px;
+            font-size: 11px;
         }
 
         .info-label {
             font-weight: bold;
-            color: #2c3e50;
-            font-size: 10px;
-        }
-
-        .info-value {
-            color: #34495e;
-            font-size: 10px;
         }
 
         .items {
-            margin-top: 15px;
+            margin-bottom: 15px;
         }
 
-        .items-header {
-            background: #f8f9fa;
-            padding: 8px;
+        .items-title {
             font-weight: bold;
-            font-size: 10px;
             text-align: center;
-            color: #2c3e50;
-            border: 1px solid #dee2e6;
+            margin-bottom: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
         .item {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
             font-size: 10px;
         }
 
         .item-name {
             font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 2px;
         }
 
         .item-details {
             display: flex;
             justify-content: space-between;
-            color: #7f8c8d;
-            font-size: 9px;
+            color: #666;
         }
 
         .totals {
-            background: #f8f9fa;
-            padding: 15px;
-            border-top: 2px solid #3498db;
+            border-top: 1px solid #000;
+            padding-top: 10px;
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             font-size: 11px;
         }
 
         .total-label {
             font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .total-value {
-            font-weight: bold;
-            color: #3498db;
         }
 
         .grand-total {
-            border-top: 2px solid #3498db;
-            padding-top: 8px;
-            margin-top: 8px;
-            font-size: 14px;
             font-weight: bold;
-            color: #3498db;
+            font-size: 13px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            margin-top: 5px;
         }
 
         .footer {
-            background: #2c3e50;
-            color: white;
-            padding: 10px;
             text-align: center;
+            margin-top: 15px;
             font-size: 9px;
-        }
-
-        .footer p {
-            margin-bottom: 3px;
-        }
-
-        .thank-you {
-            font-style: italic;
-            margin-top: 5px;
-            color: #ecf0f1;
+            color: #666;
         }
 
         .text-center { text-align: center; }
@@ -190,35 +141,35 @@
         <div class="header">
             <img src="{{ public_path('images/logo.png') }}" alt="Logo" class="logo">
             <div class="company-name">Tienda de Celulares</div>
-            <div class="company-address">Sistema de Gestión de Compras</div>
+            <div class="company-subtitle">Sistema de Gestión de Compras</div>
             <div class="receipt-title">Recibo de Compra</div>
         </div>
 
         <!-- Información de la Compra -->
-        <div class="receipt-info">
+        <div class="info-section">
             <div class="info-row">
                 <span class="info-label">N° Compra:</span>
-                <span class="info-value">#{{ $compra->id_compra }}</span>
+                <span>#{{ $compra->id_compra }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Fecha:</span>
-                <span class="info-value">{{ \Carbon\Carbon::parse($compra->fecha)->format('d/m/Y H:i') }}</span>
+                <span>{{ \Carbon\Carbon::parse($compra->fecha)->format('d/m/Y H:i') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Proveedor:</span>
-                <span class="info-value">{{ $compra->proveedor->nombre }}</span>
+                <span>{{ $compra->proveedor->nombre }}</span>
             </div>
             @if($compra->proveedor->telefono)
             <div class="info-row">
                 <span class="info-label">Teléfono:</span>
-                <span class="info-value">{{ $compra->proveedor->telefono }}</span>
+                <span>{{ $compra->proveedor->telefono }}</span>
             </div>
             @endif
         </div>
 
         <!-- Items -->
         <div class="items">
-            <div class="items-header">PRODUCTOS COMPRADOS</div>
+            <div class="items-title">Productos Comprados</div>
             @foreach($compra->detalles as $detalle)
                 <div class="item">
                     <div class="item-name">{{ $detalle->producto->nombre }}</div>
@@ -234,11 +185,11 @@
         <div class="totals">
             <div class="total-row">
                 <span class="total-label">Subtotal:</span>
-                <span class="total-value currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
+                <span class="currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
             </div>
             <div class="total-row grand-total">
                 <span class="total-label">TOTAL:</span>
-                <span class="total-value currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
+                <span class="currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
             </div>
         </div>
 
@@ -246,7 +197,6 @@
         <div class="footer">
             <p>¡Compra registrada exitosamente!</p>
             <p>Recibo generado el {{ now()->format('d/m/Y H:i:s') }}</p>
-            <div class="thank-you">Sistema de Gestión de Compras</div>
         </div>
     </div>
 </body>

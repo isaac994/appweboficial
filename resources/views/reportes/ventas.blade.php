@@ -2,25 +2,25 @@
 
 @section('title', 'Reporte de Ventas')
 @section('company_name', 'Tienda de Celulares')
-@section('company_subtitle', 'Sistema de Gestión de Ventas e Inventario')
+@section('company_subtitle', 'Sistema de Gestión de Ventas')
 @section('report_title', 'Reporte de Ventas')
 
 @section('filters')
     @if($fechaInicio || $fechaFin)
         @if($fechaInicio && $fechaFin)
             <div class="filter-item">
-                <div class="filter-label">Período:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($fechaInicio)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($fechaFin)->format('d/m/Y') }}</div>
+                <span class="filter-label">Período:</span>
+                <span>{{ \Carbon\Carbon::parse($fechaInicio)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($fechaFin)->format('d/m/Y') }}</span>
             </div>
         @elseif($fechaInicio)
             <div class="filter-item">
-                <div class="filter-label">Desde:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($fechaInicio)->format('d/m/Y') }}</div>
+                <span class="filter-label">Desde:</span>
+                <span>{{ \Carbon\Carbon::parse($fechaInicio)->format('d/m/Y') }}</span>
             </div>
         @elseif($fechaFin)
             <div class="filter-item">
-                <div class="filter-label">Hasta:</div>
-                <div class="filter-value">{{ \Carbon\Carbon::parse($fechaFin)->format('d/m/Y') }}</div>
+                <span class="filter-label">Hasta:</span>
+                <span>{{ \Carbon\Carbon::parse($fechaFin)->format('d/m/Y') }}</span>
             </div>
         @endif
     @endif
@@ -28,8 +28,7 @@
 
 @section('content')
     @if($ventas->count() > 0)
-        <!-- Tabla de Ventas -->
-        <table class="data-table">
+        <table>
             <thead>
                 <tr>
                     <th style="width: 8%;">ID Venta</th>
@@ -45,7 +44,7 @@
             <tbody>
                 @foreach($ventas as $venta)
                     @foreach($venta->detalles as $index => $detalle)
-                        <tr class="{{ $index === 0 ? 'header-row' : 'detail-row' }}">
+                        <tr>
                             @if($index === 0)
                                 <td class="text-center font-bold" rowspan="{{ $venta->detalles->count() }}">
                                     #{{ $venta->id_venta }}
@@ -61,38 +60,30 @@
                                 </td>
                             @endif
                             <td>
-                                <div class="font-semibold">{{ $detalle->producto->nombre ?? 'Producto eliminado' }}</div>
+                                {{ $detalle->producto->nombre ?? 'Producto eliminado' }}
                                 @if($detalle->producto && $detalle->producto->categoria)
-                                    <div class="text-info" style="font-size: 9px;">{{ $detalle->producto->categoria->nombre }}</div>
-                                @endif
-                                @if($detalle->producto && $detalle->producto->marca)
-                                    <div class="text-info" style="font-size: 9px;">{{ $detalle->producto->marca->nombre }}</div>
+                                    <br><small style="color: #666;">{{ $detalle->producto->categoria->nombre }}</small>
                                 @endif
                                 @if($detalle->descripcion)
-                                    <div class="text-warning" style="font-size: 9px; font-style: italic;">IMEI: {{ $detalle->descripcion }}</div>
+                                    <br><small style="color: #e67e22;">IMEI: {{ $detalle->descripcion }}</small>
                                 @endif
                             </td>
                             <td class="text-center">{{ $detalle->cantidad }}</td>
-                            <td class="currency">Bs {{ number_format($detalle->precio_unitario, 2, ',', '.') }}</td>
-                            <td class="currency font-bold">Bs {{ number_format($detalle->cantidad * $detalle->precio_unitario, 2, ',', '.') }}</td>
+                            <td class="text-right currency">Bs {{ number_format($detalle->precio_unitario, 2, ',', '.') }}</td>
+                            <td class="text-right font-bold currency">Bs {{ number_format($detalle->cantidad * $detalle->precio_unitario, 2, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="total-row">
-                    <td colspan="7" class="text-right font-bold">
-                        TOTAL GENERAL:
-                    </td>
-                    <td class="currency font-bold">
-                        Bs {{ number_format($totalVentas, 2, ',', '.') }}
-                    </td>
+                <tr style="background: #f2f2f2; font-weight: bold;">
+                    <td colspan="7" class="text-right">TOTAL GENERAL:</td>
+                    <td class="text-right currency">Bs {{ number_format($totalVentas, 2, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>
 
-        <!-- Resumen de Ventas -->
-        <div class="summary-section">
+        <div class="summary">
             <div class="summary-title">Resumen de Ventas</div>
             <div class="summary-grid">
                 <div class="summary-item">

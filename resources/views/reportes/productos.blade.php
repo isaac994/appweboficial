@@ -9,22 +9,22 @@
     @if(!empty($filtros['categoria']) || !empty($filtros['marca']) || !empty($filtros['stock_minimo']))
         @if(!empty($filtros['categoria']))
             <div class="filter-item">
-                <div class="filter-label">Categoría:</div>
-                <div class="filter-value">{{ $filtros['categoria'] }}</div>
+                <span class="filter-label">Categoría:</span>
+                <span>{{ $filtros['categoria'] }}</span>
             </div>
         @endif
 
         @if(!empty($filtros['marca']))
             <div class="filter-item">
-                <div class="filter-label">Marca:</div>
-                <div class="filter-value">{{ $filtros['marca'] }}</div>
+                <span class="filter-label">Marca:</span>
+                <span>{{ $filtros['marca'] }}</span>
             </div>
         @endif
 
         @if(!empty($filtros['stock_minimo']))
             <div class="filter-item">
-                <div class="filter-label">Stock Mínimo:</div>
-                <div class="filter-value">{{ $filtros['stock_minimo'] }}</div>
+                <span class="filter-label">Stock Mínimo:</span>
+                <span>{{ $filtros['stock_minimo'] }}</span>
             </div>
         @endif
     @endif
@@ -32,8 +32,7 @@
 
 @section('content')
     @if($productos->count() > 0)
-        <!-- Tabla de Productos -->
-        <table class="data-table">
+        <table>
             <thead>
                 <tr>
                     <th style="width: 8%;">ID</th>
@@ -47,29 +46,25 @@
             </thead>
             <tbody>
                 @foreach($productos as $producto)
-                    <tr class="detail-row">
+                    <tr>
                         <td class="text-center font-bold">#{{ $producto->id_producto }}</td>
                         <td>
-                            <div class="font-semibold">{{ $producto->nombre }}</div>
+                            {{ $producto->nombre }}
                             @if($producto->descripcion)
-                                <div class="text-info" style="font-size: 9px;">{{ Str::limit($producto->descripcion, 50) }}</div>
+                                <br><small style="color: #666;">{{ Str::limit($producto->descripcion, 50) }}</small>
                             @endif
                         </td>
                         <td>{{ $producto->categoria->nombre ?? 'Sin categoría' }}</td>
                         <td>{{ $producto->marca->nombre ?? 'Sin marca' }}</td>
-                        <td class="currency">Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</td>
-                        <td class="text-center">
-                            <span class="font-bold {{ $producto->stock_disponible > 10 ? 'text-success' : ($producto->stock_disponible > 0 ? 'text-warning' : 'text-danger') }}">
-                                {{ $producto->stock_disponible }}
-                            </span>
-                        </td>
+                        <td class="text-right currency">Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</td>
+                        <td class="text-center font-bold">{{ $producto->stock_disponible }}</td>
                         <td class="text-center">
                             @if($producto->stock_disponible > 10)
-                                <span class="text-success font-semibold">Disponible</span>
+                                <span style="color: #28a745; font-weight: bold;">Disponible</span>
                             @elseif($producto->stock_disponible > 0)
-                                <span class="text-warning font-semibold">Bajo Stock</span>
+                                <span style="color: #ffc107; font-weight: bold;">Bajo Stock</span>
                             @else
-                                <span class="text-danger font-semibold">Sin Stock</span>
+                                <span style="color: #dc3545; font-weight: bold;">Sin Stock</span>
                             @endif
                         </td>
                     </tr>
@@ -77,8 +72,7 @@
             </tbody>
         </table>
 
-        <!-- Resumen de Productos -->
-        <div class="summary-section">
+        <div class="summary">
             <div class="summary-title">Resumen de Inventario</div>
             <div class="summary-grid">
                 <div class="summary-item">
