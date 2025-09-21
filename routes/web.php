@@ -13,6 +13,7 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\UserController;
 
 // Rutas públicas
 Route::get('/test-csrf', function () {
@@ -97,7 +98,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // Rutas protegidas
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'user.status'])->group(function () {
     // Dashboard - Accesible para todos los usuarios autenticados
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')
         ->middleware('permission:dashboard.view');
@@ -112,7 +113,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Rutas solo para Administradores
-Route::middleware(['auth', 'role:Administrador'])->group(function () {
+Route::middleware(['auth', 'user.status', 'role:Administrador'])->group(function () {
     // Productos - Solo administradores
     Route::resource('productos', ProductoController::class);
     Route::post('/productos/{producto}', [ProductoController::class, 'updatePost'])->name('productos.update.post');
@@ -147,10 +148,14 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     Route::get('/reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas');
     Route::post('/reportes/ventas/generar', [ReporteController::class, 'generarReporteVentas'])->name('reportes.generar-ventas');
     Route::get('/reportes/test', [ReporteController::class, 'testPdf'])->name('reportes.test');
+
+    // Gestión de Usuarios - Solo administradores
+    Route::resource('users', UserController::class);
+    Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
 // Rutas para Operadores y Administradores (Gestión de Ventas y Clientes)
-Route::middleware(['auth', 'role:Operador|Administrador'])->group(function () {
+Route::middleware(['auth', 'user.status', 'role:Operador|Administrador'])->group(function () {
     // Clientes - Operadores y Administradores
     Route::resource('clientes', ClienteController::class);
     Route::get('/clientes-dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
@@ -161,7 +166,7 @@ Route::middleware(['auth', 'role:Operador|Administrador'])->group(function () {
 });
 
 // Rutas adicionales con permisos específicos
-Route::middleware(['auth', 'permission:productos.view'])->group(function () {
+Route::middleware(['auth', 'user.status', 'permission:productos.view'])->group(function () {
     // Solo para ver productos (Operadores pueden ver, pero no gestionar)
     Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
     Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');

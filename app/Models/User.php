@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'estado',
     ];
 
     /**
@@ -50,5 +51,45 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Scope para usuarios activos
+     */
+    public function scopeActivos($query)
+    {
+        return $query->where('estado', 'activo');
+    }
+
+    /**
+     * Scope para usuarios inactivos
+     */
+    public function scopeInactivos($query)
+    {
+        return $query->where('estado', 'inactivo');
+    }
+
+    /**
+     * Verificar si el usuario está activo
+     */
+    public function isActivo()
+    {
+        return $this->estado === 'activo';
+    }
+
+    /**
+     * Activar usuario
+     */
+    public function activar()
+    {
+        $this->update(['estado' => 'activo']);
+    }
+
+    /**
+     * Desactivar usuario
+     */
+    public function desactivar()
+    {
+        $this->update(['estado' => 'inactivo']);
     }
 }

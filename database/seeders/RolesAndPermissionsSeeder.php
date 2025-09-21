@@ -116,7 +116,11 @@ class RolesAndPermissionsSeeder extends Seeder
             $roleName = $roleMapping[$user->id_rol] ?? null;
             if ($roleName) {
                 $user->assignRole($roleName);
-                echo "Usuario {$user->name} asignado al rol: {$roleName}\n";
+                // Marcar usuario como activo si no tiene estado
+                if (!$user->estado) {
+                    $user->update(['estado' => 'activo']);
+                }
+                echo "Usuario {$user->name} asignado al rol: {$roleName} y marcado como activo\n";
             }
         }
 

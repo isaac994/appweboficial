@@ -120,6 +120,12 @@ const mainNavItems: NavItem[] = [
         ],
     },
     {
+        title: 'Usuarios',
+        href: '/users',
+        icon: Users,
+        role: 'Administrador',
+    },
+    {
         title: 'Configuración',
         href: '/settings',
         icon: Settings,
