@@ -223,12 +223,15 @@
                                                 :id="`cantidad-${index}`"
                                                 v-model.number="producto.cantidad"
                                                 type="number"
-                                                min="1"
+                                                :min="isSmartphone(selectedProductos[index]) ? 1 : 1"
+                                                :max="isSmartphone(selectedProductos[index]) ? 1 : undefined"
                                                 class="mt-1"
                                                 required
-                                                @input="updateTotal(index)"
+                                                @input="handleCantidadChange(index, $event.target.value)"
                                             />
-
+                                            <p v-if="isSmartphone(selectedProductos[index])" class="text-xs text-amber-600 mt-1">
+                                                ⚠️ Los celulares solo se venden de uno en uno
+                                            </p>
                                         </div>
 
                                         <div>
@@ -245,13 +248,13 @@
                                             />
                                         </div>
 
-                                        <div>
-                                            <Label :for="`descripcion-${index}`">Descripción</Label>
+                                        <div v-if="isSmartphone(selectedProductos[index])">
+                                            <Label :for="`descripcion-${index}`">Descripción/IMEI</Label>
                                             <Input
                                                 :id="`descripcion-${index}`"
                                                 v-model="producto.descripcion"
                                                 type="text"
-                                                placeholder="Descripción del producto..."
+                                                placeholder="Ingrese el IMEI del celular..."
                                                 class="mt-1"
                                             />
                                         </div>
@@ -464,6 +467,12 @@ const selectProducto = (index: number, producto: Producto) => {
     form.value.productos[index].precio_unitario = producto.precio_venta;
     productoSearch.value[index] = producto.nombre;
     showProductosDropdown.value[index] = false;
+
+    // Si es un smartphone, establecer cantidad en 1
+    if (isSmartphone(producto)) {
+        form.value.productos[index].cantidad = 1;
+    }
+
     updateTotal(index);
 };
 
@@ -652,6 +661,31 @@ const validateDate = () => {
             delete clientErrors.value.fecha;
         }
     }
+};
+
+// Función para verificar si un producto es un smartphone
+const isSmartphone = (producto: Producto | null) => {
+    return producto?.categoria?.nombre?.toLowerCase() === 'smartphones';
+};
+
+// Función para manejar el cambio de cantidad con validación para smartphones
+const handleCantidadChange = (index: number, cantidad: number) => {
+    const producto = selectedProductos.value[index];
+
+    // Si es un smartphone, limitar la cantidad a 1
+    if (isSmartphone(producto) && cantidad > 1) {
+        form.value.productos[index].cantidad = 1;
+        Swal.fire({
+            title: 'Cantidad limitada',
+            text: 'Los celulares solo pueden venderse de uno en uno debido al IMEI único.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido'
+        });
+    } else {
+        form.value.productos[index].cantidad = cantidad;
+    }
+
+    updateTotal(index);
 };
 
 onMounted(() => {
