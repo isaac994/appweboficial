@@ -113,9 +113,6 @@
                                                 required
                                                 @input="handleCantidadChange(index, $event.target.value)"
                                             />
-                                            <p v-if="isSmartphone(selectedProductos[index])" class="text-xs text-amber-600 mt-1">
-                                                ⚠️ Los celulares solo se venden de uno en uno
-                                            </p>
                                         </div>
 
                                         <div>
