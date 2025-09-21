@@ -68,13 +68,18 @@ class UserController extends Controller
             'roles.*' => 'exists:roles,name'
         ]);
 
+        // Obtener el primer rol seleccionado para asignar a id_rol
+        $firstRole = Role::where('name', $request->roles[0])->first();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'estado' => $request->estado,
+            'id_rol' => $firstRole->id,
         ]);
 
+        // Asignar todos los roles seleccionados usando Spatie
         $user->assignRole($request->roles);
 
         return redirect()->route('users.index')
@@ -121,10 +126,14 @@ class UserController extends Controller
             'roles.*' => 'exists:roles,name'
         ]);
 
+        // Obtener el primer rol seleccionado para asignar a id_rol
+        $firstRole = Role::where('name', $request->roles[0])->first();
+
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'estado' => $request->estado,
+            'id_rol' => $firstRole->id,
         ]);
 
         if ($request->filled('password')) {
