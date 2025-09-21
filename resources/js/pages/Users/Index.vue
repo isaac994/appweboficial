@@ -106,7 +106,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="user in users.data" :key="user.id" class="hover:bg-gray-50">
+                                <tr v-if="users.data && users.data.length > 0" v-for="user in users.data" :key="user.id" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
@@ -171,12 +171,29 @@
                                         </div>
                                     </td>
                                 </tr>
+                                <tr v-else>
+                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                            </svg>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay usuarios</h3>
+                                            <p class="text-gray-500 mb-4">No se encontraron usuarios con los filtros aplicados.</p>
+                                            <Link
+                                                :href="route('users.create')"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                                            >
+                                                Crear primer usuario
+                                            </Link>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Paginación -->
-                    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                    <div v-if="users.data && users.data.length > 0" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                         <div class="flex items-center justify-between">
                             <div class="flex-1 flex justify-between sm:hidden">
                                 <Link
@@ -208,14 +225,20 @@
                                 </div>
                                 <div>
                                     <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                        <Link
-                                            v-for="link in users.links"
-                                            :key="link.label"
-                                            :href="link.url"
-                                            v-html="link.label"
-                                            class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-                                            :class="link.active ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
-                                        />
+                                        <template v-for="link in users.links" :key="link.label">
+                                            <Link
+                                                v-if="link.url"
+                                                :href="link.url"
+                                                v-html="link.label"
+                                                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                                                :class="link.active ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
+                                            />
+                                            <span
+                                                v-else
+                                                v-html="link.label"
+                                                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+                                            />
+                                        </template>
                                     </nav>
                                 </div>
                             </div>
