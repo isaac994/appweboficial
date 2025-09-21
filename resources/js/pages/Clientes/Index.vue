@@ -21,123 +21,71 @@
         </div>
 
         <!-- Estadísticas Rápidas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6">
-            <div class="flex items-center">
-              <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-purple-300">Total Clientes</p>
-                <p class="text-2xl font-bold text-white">{{ stats.total_clientes }}</p>
-              </div>
-            </div>
-          </div>
 
-          <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6">
-            <div class="flex items-center">
-              <div class="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-purple-300">Total Ventas</p>
-                <p class="text-2xl font-bold text-white">{{ formatCurrency(stats.total_ventas) }}</p>
-                <p class="text-sm text-purple-300">{{ stats.total_transacciones || 0 }} transacciones</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6">
-            <div class="flex items-center">
-              <div class="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-purple-300">Promedio por Cliente</p>
-                <p class="text-2xl font-bold text-white">{{ formatCurrency(stats.promedio_ventas) }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6">
-            <div class="flex items-center">
-              <div class="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-purple-300">Clientes Premium</p>
-                <p class="text-2xl font-bold text-white">{{ stats.clientes_premium }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Filtros -->
         <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6 mb-8">
-          <h3 class="text-xl font-semibold text-white mb-4">Filtros y Búsqueda</h3>
+
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Búsqueda -->
-            <div>
+            <div class="md:col-span-2">
               <label for="search" class="block text-sm font-medium text-purple-300 mb-2">
-                Buscar Cliente
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Búsqueda Multicampo
               </label>
               <div class="relative">
                 <input
                   id="search"
                   v-model="filters.search"
+                  @input="debounceSearch"
                   type="text"
-                  placeholder="Nombre, email o teléfono..."
-                  class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Buscar........."
+                  class="w-full px-4 py-3 pl-12 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                 />
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center">
                   <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
                 </div>
+                <div v-if="filters.search" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    @click="clearSearch"
+                    class="text-purple-300 hover:text-white transition-colors duration-200"
+                    title="Limpiar búsqueda"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <!-- Estado de Fidelización -->
-            <div>
-              <label for="fidelizacion" class="block text-sm font-medium text-purple-300 mb-2">
-                Estado de Fidelización
-              </label>
-              <select
-                id="fidelizacion"
-                v-model="filters.fidelizacion"
-                class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="" class="bg-gray-800 text-white">Todos los niveles</option>
-                <option value="Bronce" class="bg-gray-800 text-white">Bronce</option>
-                <option value="Plata" class="bg-gray-800 text-white">Plata</option>
-                <option value="Oro" class="bg-gray-800 text-white">Oro</option>
-                <option value="Premium" class="bg-gray-800 text-white">Premium</option>
-              </select>
+              <p class="text-xs text-purple-400 mt-1">
+                Busca en: nombre, apellidos, CI/NIT y teléfono simultáneamente
+              </p>
             </div>
 
             <!-- Ordenar por -->
-            <div>
-              <label for="sort" class="block text-sm font-medium text-purple-300 mb-2">
-                Ordenar por
-              </label>
-              <select
-                id="sort"
-                v-model="filters.sort"
-                class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="nombre" class="bg-gray-800 text-white">Nombre</option>
-                <option value="created_at" class="bg-gray-800 text-white">Fecha de Registro</option>
-                <option value="ventas_count" class="bg-gray-800 text-white">Número de Ventas</option>
-                <option value="total_compras" class="bg-gray-800 text-white">Total de Compras</option>
-              </select>
+
+          </div>
+        </div>
+
+        <!-- Resultados de búsqueda -->
+        <div v-if="filters.search" class="mb-4">
+          <div class="bg-purple-500/20 border border-purple-500/30 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-purple-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <span class="text-purple-300">
+                  Resultados para: <span class="text-white font-medium">"{{ filters.search }}"</span>
+                </span>
+              </div>
+              <span class="text-purple-300">
+                {{ clientes.total }} cliente{{ clientes.total !== 1 ? 's' : '' }} encontrado{{ clientes.total !== 1 ? 's' : '' }}
+              </span>
             </div>
           </div>
         </div>
@@ -156,13 +104,13 @@
                     Cliente
                   </th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                    Contacto
+                    CI/NIT
+                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Teléfono
                   </th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                     Estadísticas
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                    Estado
                   </th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                     Acciones
@@ -180,34 +128,23 @@
                         </div>
                       </div>
                       <div class="ml-4">
-                        <div class="text-sm font-medium text-white">{{ cliente.nombre }}</div>
+                        <div class="text-sm font-medium text-white">{{ cliente.nombre }} {{ cliente.apellidos || '' }}</div>
                         <div class="text-sm text-purple-300">ID: #{{ cliente.id_cliente }}</div>
                       </div>
                     </div>
                   </td>
 
-                  <!-- Contacto -->
+                  <!-- CI/NIT -->
                   <td class="px-6 py-4">
-                    <div class="space-y-1">
-                      <div v-if="cliente.telefono" class="flex items-center text-sm text-purple-300">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                        </svg>
-                        {{ cliente.telefono }}
-                      </div>
-                      <div v-if="cliente.correo_electronico" class="flex items-center text-sm text-purple-300">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                        {{ cliente.correo_electronico }}
-                      </div>
-                      <div v-if="cliente.direccion" class="flex items-center text-sm text-purple-300">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        {{ cliente.direccion }}
-                      </div>
+                    <div class="text-sm text-purple-300">
+                      {{ cliente.ci || 'No especificado' }}
+                    </div>
+                  </td>
+
+                  <!-- Teléfono -->
+                  <td class="px-6 py-4">
+                    <div class="text-sm text-purple-300">
+                      {{ cliente.telefono || 'No especificado' }}
                     </div>
                   </td>
 
@@ -226,14 +163,7 @@
                     </div>
                   </td>
 
-                  <!-- Estado -->
-                  <td class="px-6 py-4">
-                    <div class="flex flex-col space-y-2">
-                      <span :class="getFidelizacionClass(cliente.estado_fidelizacion)" class="px-3 py-1 rounded-full text-xs font-medium text-center">
-                        {{ cliente.estado_fidelizacion || 'Nuevo' }}
-                      </span>
-                    </div>
-                  </td>
+
 
                   <!-- Acciones -->
                   <td class="px-6 py-4">
@@ -302,6 +232,8 @@ import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue'
 interface Cliente {
   id_cliente: number
   nombre: string
+  apellidos?: string
+  ci?: string
   telefono?: string
   direccion?: string
   correo_electronico?: string
@@ -365,7 +297,19 @@ const clienteToDelete = ref<Cliente | null>(null)
 // Usar stats con valores por defecto
 const stats = ref(props.stats || defaultStats)
 
+let debounceTimer: NodeJS.Timeout | null = null
+
 const debounceSearch = () => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+  debounceTimer = setTimeout(() => {
+    applyFilters()
+  }, 300) // Debounce de 300ms
+}
+
+const clearSearch = () => {
+  filters.value.search = ''
   applyFilters()
 }
 
@@ -406,10 +350,11 @@ const formatDate = (date: string) => {
 }
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-MX', {
+  return new Intl.NumberFormat('es-BO', {
     style: 'currency',
-    currency: 'MXN'
-  }).format(amount)
+    currency: 'BOB',
+    currencyDisplay: 'symbol'
+  }).format(amount).replace('BOB', 'Bs')
 }
 
 const getInitials = (name: string) => {

@@ -3,11 +3,31 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 
+import { ref } from 'vue';
+
 defineProps<{
     items: NavItem[];
 }>();
 
 const page = usePage();
+
+// Estado para controlar qué menús están expandidos
+const expandedMenus = ref<string[]>([]);
+
+// Función para alternar la expansión de un menú
+const toggleMenu = (title: string) => {
+    const index = expandedMenus.value.indexOf(title);
+    if (index > -1) {
+        expandedMenus.value.splice(index, 1);
+    } else {
+        expandedMenus.value.push(title);
+    }
+};
+
+// Función para verificar si un menú está expandido
+const isMenuExpanded = (title: string) => {
+    return expandedMenus.value.includes(title);
+};
 </script>
 
 <template>
@@ -17,28 +37,77 @@ const page = usePage();
         </SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
-                <SidebarMenuButton
-                    as-child
-                    :is-active="item.href === page.url"
-                    :tooltip="item.title"
-                    class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200"
-                    :class="{
-                        'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300 text-blue-900 shadow-sm': item.href === page.url,
-                        'text-slate-700 hover:text-blue-900': item.href !== page.url
-                    }"
-                >
-                    <Link :href="item.href" class="flex items-center space-x-3 w-full">
-                        <component
-                            :is="item.icon"
-                            class="w-5 h-5 transition-all duration-300 group-hover:scale-110"
-                            :class="{
-                                'text-slate-500 group-hover:text-blue-600': item.href !== page.url,
-                                'text-blue-600': item.href === page.url
-                            }"
-                        />
-                        <span class="font-semibold">{{ item.title }}</span>
-                    </Link>
-                </SidebarMenuButton>
+                <!-- Elemento con submenús -->
+                <template v-if="item.children && item.children.length > 0">
+                    <SidebarMenuButton
+                        @click="toggleMenu(item.title)"
+                        :tooltip="item.title"
+                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-900 cursor-pointer"
+                    >
+                        <div class="flex items-center space-x-3 w-full">
+                            <component
+                                :is="item.icon"
+                                class="w-5 h-5 transition-all duration-300 group-hover:scale-110 text-slate-500 group-hover:text-blue-600"
+                            />
+                            <span class="font-semibold">{{ item.title }}</span>
+                            <svg
+                                class="w-4 h-4 ml-auto transition-transform duration-200"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                :class="{ 'rotate-180': isMenuExpanded(item.title) }"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </SidebarMenuButton>
+
+                    <!-- Submenús (solo visibles cuando está expandido) -->
+                    <div v-if="isMenuExpanded(item.title)" class="ml-6 mt-2 space-y-1">
+                        <SidebarMenuItem v-for="child in item.children" :key="child.title">
+                            <SidebarMenuButton
+                                as-child
+                                :is-active="child.href === page.url"
+                                :tooltip="child.title"
+                                class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200"
+                                :class="{
+                                    'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300 text-blue-900 shadow-sm': child.href === page.url,
+                                    'text-slate-700 hover:text-blue-900': child.href !== page.url
+                                }"
+                            >
+                                <Link :href="child.href" class="flex items-center space-x-3 w-full">
+                                    <span class="font-medium text-sm">{{ child.title }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </div>
+                </template>
+
+                <!-- Elemento sin submenús -->
+                <template v-else>
+                    <SidebarMenuButton
+                        as-child
+                        :is-active="item.href === page.url"
+                        :tooltip="item.title"
+                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200"
+                        :class="{
+                            'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300 text-blue-900 shadow-sm': item.href === page.url,
+                            'text-slate-700 hover:text-blue-900': item.href !== page.url
+                        }"
+                    >
+                        <Link :href="item.href" class="flex items-center space-x-3 w-full">
+                            <component
+                                :is="item.icon"
+                                class="w-5 h-5 transition-all duration-300 group-hover:scale-110"
+                                :class="{
+                                    'text-slate-500 group-hover:text-blue-600': item.href !== page.url,
+                                    'text-blue-600': item.href === page.url
+                                }"
+                            />
+                            <span class="font-semibold">{{ item.title }}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </template>
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>

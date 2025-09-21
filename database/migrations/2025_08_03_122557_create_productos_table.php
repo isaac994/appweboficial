@@ -15,23 +15,20 @@ return new class extends Migration
             $table->bigIncrements('id_producto');
             $table->string('nombre', 150);
             $table->text('descripcion')->nullable();
-            $table->decimal('precio_compra', 10, 2);
             $table->decimal('precio_venta', 10, 2);
             $table->unsignedSmallInteger('id_categoria');
             $table->unsignedSmallInteger('id_marca')->nullable();
-            $table->unsignedBigInteger('id_proveedor')->nullable();
             $table->string('img_url')->nullable();
+            $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
 
             // Claves foráneas
             $table->foreign('id_categoria')->references('id_categoria')->on('categorias')->onDelete('cascade');
             $table->foreign('id_marca')->references('id_marca')->on('marcas')->onDelete('cascade');
-            $table->foreign('id_proveedor')->references('id_proveedor')->on('proveedores')->onDelete('cascade');
 
             // Índices para mejorar el rendimiento
             $table->index('id_categoria');
             $table->index('id_marca');
-            $table->index('id_proveedor');
         });
     }
 

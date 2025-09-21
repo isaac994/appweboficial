@@ -25,7 +25,11 @@ class DashboardController extends Controller
         $productos_recientes = Producto::with(['categoria', 'marca'])
             ->orderBy('created_at', 'desc')
             ->limit(8)
-            ->get();
+            ->get()
+            ->map(function ($producto) {
+                $producto->estado_disponible = $producto->estado_disponible;
+                return $producto;
+            });
 
         $clientes_recientes = Cliente::orderBy('created_at', 'desc')
             ->limit(6)

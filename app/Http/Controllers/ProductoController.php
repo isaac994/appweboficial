@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Categoria;
 use App\Models\Marca;
-use App\Models\Proveedor;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -18,11 +18,22 @@ class ProductoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Producto::with(['categoria', 'marca', 'proveedor']);
+        $query = Producto::with(['categoria', 'marca']);
 
-        // Filtros
+        // Filtro multicampo de búsqueda
         if ($request->filled('search')) {
-            $query->where('nombre', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nombre', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('precio_venta', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('categoria', function ($subQ) use ($searchTerm) {
+                      $subQ->where('nombre', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('marca', function ($subQ) use ($searchTerm) {
+                      $subQ->where('nombre', 'like', '%' . $searchTerm . '%');
+                  });
+            });
         }
 
         if ($request->filled('categoria')) {
@@ -33,7 +44,26 @@ class ProductoController extends Controller
             $query->where('id_marca', $request->marca);
         }
 
+        if ($request->filled('estado')) {
+            if ($request->estado === 'disponible') {
+                $query->whereHas('detallesCompra', function ($q) {
+                    $q->havingRaw('SUM(cantidad) > (SELECT COALESCE(SUM(cantidad), 0) FROM detalle_ventas WHERE detalle_ventas.id_producto = productos.id_producto)');
+                });
+            } elseif ($request->estado === 'agotado') {
+                $query->whereDoesntHave('detallesCompra')
+                    ->orWhereHas('detallesCompra', function ($q) {
+                        $q->havingRaw('SUM(cantidad) <= (SELECT COALESCE(SUM(cantidad), 0) FROM detalle_ventas WHERE detalle_ventas.id_producto = productos.id_producto)');
+                    });
+            }
+        }
+
         $productos = $query->orderBy('nombre')->paginate(6);
+
+        // Calcular estado dinámico para cada producto
+        $productos->getCollection()->transform(function ($producto) {
+            $producto->estado_disponible = $producto->estado_disponible;
+            return $producto;
+        });
 
         // Obtener datos para filtros
         $categorias = Categoria::orderBy('nombre')->get();
@@ -43,7 +73,7 @@ class ProductoController extends Controller
             'productos' => $productos,
             'categorias' => $categorias,
             'marcas' => $marcas,
-            'filters' => $request->only(['search', 'categoria', 'marca'])
+            'filters' => $request->only(['search', 'categoria', 'marca', 'estado'])
         ]);
     }
 
@@ -54,12 +84,10 @@ class ProductoController extends Controller
     {
         $categorias = Categoria::orderBy('nombre')->get();
         $marcas = Marca::orderBy('nombre')->get();
-        $proveedores = Proveedor::orderBy('nombre')->get();
 
         return Inertia::render('Productos/Create', [
             'categorias' => $categorias,
-            'marcas' => $marcas,
-            'proveedores' => $proveedores
+            'marcas' => $marcas
         ]);
     }
 
@@ -68,28 +96,49 @@ class ProductoController extends Controller
      */
     public function store(Request $request)
     {
+        // Validar duplicidad PRIMERO: mismo nombre + marca + categoría
+        if ($request->filled('nombre') && $request->filled('id_categoria')) {
+            $existingProduct = Producto::where('nombre', $request->nombre)
+                ->where('id_categoria', $request->id_categoria)
+                ->where(function($query) use ($request) {
+                    if ($request->filled('id_marca')) {
+                        $query->where('id_marca', $request->id_marca);
+                    } else {
+                        $query->whereNull('id_marca');
+                    }
+                })
+                ->first();
+
+            if ($existingProduct) {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => '⚠️ Ya existe un producto con el mismo nombre, marca y categoría. No se permiten productos duplicados.',
+                        'type' => 'duplicidad'
+                    ], 422);
+                }
+                return back()->withErrors(['duplicidad' => '⚠️ Ya existe un producto con el mismo nombre, marca y categoría. No se permiten productos duplicados.'])->withInput();
+            }
+        }
+
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:150',
+            'nombre' => 'required|string|max:50',
             'descripcion' => 'nullable|string',
-            'precio_compra' => 'required|numeric|min:0',
             'precio_venta' => 'required|numeric|min:0',
             'id_categoria' => 'required|exists:categorias,id_categoria',
             'id_marca' => 'nullable|exists:marcas,id_marca',
-            'id_proveedor' => 'nullable|exists:proveedores,id_proveedor',
+            'estado' => 'nullable|in:activo,inactivo',
             'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120' // 5MB máximo
         ], [
             'nombre.required' => 'El nombre del producto es obligatorio',
-            'nombre.max' => 'El nombre no puede tener más de 150 caracteres',
-            'precio_compra.required' => 'El precio de compra es obligatorio',
-            'precio_compra.numeric' => 'El precio de compra debe ser un número',
-            'precio_compra.min' => 'El precio de compra debe ser mayor a 0',
+            'nombre.max' => 'El nombre no puede tener más de 50 caracteres',
             'precio_venta.required' => 'El precio de venta es obligatorio',
             'precio_venta.numeric' => 'El precio de venta debe ser un número',
             'precio_venta.min' => 'El precio de venta debe ser mayor a 0',
             'id_categoria.required' => 'La categoría es obligatoria',
             'id_categoria.exists' => 'La categoría seleccionada no existe',
             'id_marca.exists' => 'La marca seleccionada no existe',
-            'id_proveedor.exists' => 'El proveedor seleccionado no existe',
+            'estado.in' => 'El estado debe ser activo o inactivo',
             'imagen.image' => 'El archivo debe ser una imagen',
             'imagen.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif',
             'imagen.max' => 'La imagen no debe superar los 5MB'
@@ -124,7 +173,10 @@ class ProductoController extends Controller
      */
     public function show(string $id)
     {
-        $producto = Producto::with(['categoria', 'marca', 'proveedor'])->findOrFail($id);
+        $producto = Producto::with(['categoria', 'marca'])->findOrFail($id);
+
+        // Agregar estado dinámico
+        $producto->estado_disponible = $producto->estado_disponible;
 
         return Inertia::render('Productos/Show', [
             'producto' => $producto
@@ -137,15 +189,17 @@ class ProductoController extends Controller
     public function edit(string $id)
     {
         $producto = Producto::findOrFail($id);
+
+        // Agregar estado dinámico
+        $producto->estado_disponible = $producto->estado_disponible;
+
         $categorias = Categoria::orderBy('nombre')->get();
         $marcas = Marca::orderBy('nombre')->get();
-        $proveedores = Proveedor::orderBy('nombre')->get();
 
         return Inertia::render('Productos/Edit', [
             'producto' => $producto,
             'categorias' => $categorias,
-            'marcas' => $marcas,
-            'proveedores' => $proveedores
+            'marcas' => $marcas
         ]);
     }
 
@@ -156,25 +210,50 @@ class ProductoController extends Controller
     {
         $producto = Producto::findOrFail($id);
 
+        // Validar duplicidad PRIMERO: mismo nombre + marca + categoría (excluyendo el producto actual)
+        if ($request->has('nombre') && $request->has('id_categoria')) {
+            $existingProduct = Producto::where('nombre', $request->nombre)
+                ->where('id_categoria', $request->id_categoria)
+                ->where(function($query) use ($request) {
+                    if ($request->filled('id_marca')) {
+                        $query->where('id_marca', $request->id_marca);
+                    } else {
+                        $query->whereNull('id_marca');
+                    }
+                })
+                ->where('id_producto', '!=', $id) // Excluir el producto actual
+                ->first();
+
+            if ($existingProduct) {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => '⚠️ Ya existe un producto con el mismo nombre, marca y categoría. No se permiten productos duplicados.',
+                        'type' => 'duplicidad'
+                    ], 422);
+                }
+                return back()->withErrors(['duplicidad' => '⚠️ Ya existe un producto con el mismo nombre, marca y categoría. No se permiten productos duplicados.'])->withInput();
+            }
+        }
+
         // Solo validar campos que se envían
         $rules = [];
         $messages = [];
 
         if ($request->has('nombre')) {
-            $rules['nombre'] = 'required|string|max:150';
+            $rules['nombre'] = 'required|string|max:50';
             $messages['nombre.required'] = 'El nombre del producto es obligatorio';
-            $messages['nombre.max'] = 'El nombre no puede tener más de 150 caracteres';
+            $messages['nombre.max'] = 'El nombre no puede tener más de 50 caracteres';
         }
 
         if ($request->has('descripcion')) {
             $rules['descripcion'] = 'nullable|string';
         }
 
-        if ($request->has('precio_compra')) {
-            $rules['precio_compra'] = 'required|numeric|min:0';
-            $messages['precio_compra.required'] = 'El precio de compra es obligatorio';
-            $messages['precio_compra.numeric'] = 'El precio de compra debe ser un número';
-            $messages['precio_compra.min'] = 'El precio de compra debe ser mayor a 0';
+        if ($request->has('estado')) {
+            $rules['estado'] = 'required|in:activo,inactivo';
+            $messages['estado.required'] = 'El estado es obligatorio';
+            $messages['estado.in'] = 'El estado debe ser activo o inactivo';
         }
 
         if ($request->has('precio_venta')) {
@@ -195,11 +274,6 @@ class ProductoController extends Controller
             $messages['id_marca.exists'] = 'La marca seleccionada no existe';
         }
 
-        if ($request->has('id_proveedor')) {
-            $rules['id_proveedor'] = 'nullable|exists:proveedores,id_proveedor';
-            $messages['id_proveedor.exists'] = 'El proveedor seleccionado no existe';
-        }
-
         if ($request->hasFile('imagen')) {
             $rules['imagen'] = 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'; // 5MB máximo
             $messages['imagen.image'] = 'El archivo debe ser una imagen';
@@ -214,7 +288,7 @@ class ProductoController extends Controller
         }
 
         try {
-            $data = $request->only(['nombre', 'descripcion', 'precio_compra', 'precio_venta', 'id_categoria', 'id_marca', 'id_proveedor']);
+            $data = $request->only(['nombre', 'descripcion', 'precio_venta', 'id_categoria', 'id_marca', 'estado']);
 
             // Manejar la subida de imagen
             if ($request->hasFile('imagen')) {
@@ -256,6 +330,13 @@ class ProductoController extends Controller
     {
         try {
             $producto = Producto::findOrFail($id);
+
+            // Verificar si el producto está disponible (tiene stock)
+            if ($producto->estado_disponible === 'disponible') {
+                return back()->withErrors([
+                    'error' => "No se puede eliminar el producto '{$producto->nombre}' porque está disponible (tiene stock). Primero debe vender todo el stock o ajustar las cantidades."
+                ]);
+            }
 
             // Eliminar imagen si existe
             if ($producto->img_url) {

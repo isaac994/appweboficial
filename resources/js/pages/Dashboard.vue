@@ -15,6 +15,7 @@ interface Producto {
   nombre: string
   descripcion?: string
   precio_venta: number
+  estado_disponible: string
   img_url?: string
   categoria?: {
     nombre: string
@@ -187,6 +188,13 @@ const handleImageError = (event: Event) => {
                     <span class="text-gray-400 text-sm">Precio:</span>
                     <span class="text-purple-400 font-semibold">Bs {{ producto.precio_venta }}</span>
                   </div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-gray-400 text-sm">Estado:</span>
+                    <span class="font-semibold" :class="producto.estado_disponible === 'disponible' ? 'text-green-400' : 'text-red-400'">
+                      {{ producto.estado_disponible === 'disponible' ? 'Disponible' : 'Agotado' }}
+                    </span>
+                  </div>
+
                   <Link
                     :href="route('productos.show', producto.id_producto)"
                     class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"

@@ -16,12 +16,16 @@ class CategoriaController extends Controller
     {
         $query = Categoria::withCount('productos');
 
-        // Filtros
+        // Filtro multicampo de búsqueda
         if ($request->filled('search')) {
-            $query->where('nombre', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nombre', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion', 'like', '%' . $searchTerm . '%');
+            });
         }
 
-        $categorias = $query->orderBy('nombre')->paginate(5);
+        $categorias = $query->orderBy('nombre')->get();
 
         return Inertia::render('Categorias/Index', [
             'categorias' => $categorias,
@@ -43,11 +47,12 @@ class CategoriaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:60',
+            'nombre' => 'required|string|max:50|unique:categorias,nombre',
             'descripcion' => 'nullable|string|max:255'
         ], [
             'nombre.required' => 'El nombre de la categoría es obligatorio',
-            'nombre.max' => 'El nombre no puede tener más de 60 caracteres',
+            'nombre.max' => 'El nombre no puede tener más de 50 caracteres',
+            'nombre.unique' => 'Ya existe una categoría con este nombre',
             'descripcion.max' => 'La descripción no puede tener más de 255 caracteres'
         ]);
 
@@ -99,11 +104,12 @@ class CategoriaController extends Controller
         $categoria = Categoria::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:60',
+            'nombre' => 'required|string|max:50|unique:categorias,nombre,' . $id . ',id_categoria',
             'descripcion' => 'nullable|string|max:255'
         ], [
             'nombre.required' => 'El nombre de la categoría es obligatorio',
-            'nombre.max' => 'El nombre no puede tener más de 60 caracteres',
+            'nombre.max' => 'El nombre no puede tener más de 50 caracteres',
+            'nombre.unique' => 'Ya existe una categoría con este nombre',
             'descripcion.max' => 'La descripción no puede tener más de 255 caracteres'
         ]);
 
@@ -122,6 +128,28 @@ class CategoriaController extends Controller
     }
 
     /**
+     * Check if a categoria can be deleted
+     */
+    public function canDelete(string $id)
+    {
+        try {
+            $categoria = Categoria::findOrFail($id);
+            $productosCount = $categoria->productos()->count();
+
+            return response()->json([
+                'can_delete' => $productosCount === 0,
+                'productos_count' => $productosCount,
+                'categoria_nombre' => $categoria->nombre
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'can_delete' => false,
+                'error' => 'Categoría no encontrada'
+            ], 404);
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
@@ -130,14 +158,19 @@ class CategoriaController extends Controller
             $categoria = Categoria::findOrFail($id);
 
             // Verificar si tiene productos asociados
-            if ($categoria->productos()->count() > 0) {
-                return back()->withErrors(['error' => 'No se puede eliminar la categoría porque tiene productos asociados']);
+            $productosCount = $categoria->productos()->count();
+            if ($productosCount > 0) {
+                return back()->withErrors([
+                    'error' => "No se puede eliminar la categoría '{$categoria->nombre}' porque tiene {$productosCount} producto(s) asociado(s). Primero debe eliminar o cambiar la categoría de estos productos."
+                ]);
             }
 
             $categoria->delete();
 
             return redirect()->route('categorias.index')
-                ->with('success', 'Categoría eliminada exitosamente');
+                ->with('success', "Categoría '{$categoria->nombre}' eliminada exitosamente");
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->withErrors(['error' => 'La categoría no existe o ya fue eliminada']);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al eliminar la categoría: ' . $e->getMessage()]);
         }

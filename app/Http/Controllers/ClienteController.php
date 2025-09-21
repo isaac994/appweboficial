@@ -15,7 +15,6 @@ class ClienteController extends Controller
     public function index(Request $request)
     {
         $query = Cliente::withCount('ventas')
-                        ->withSum('ventas', 'total')
                         ->with(['ventas' => function($query) {
                             $query->latest()->limit(1);
                         }]);
@@ -24,19 +23,10 @@ class ClienteController extends Controller
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('nombre', 'like', '%' . $request->search . '%')
-                  ->orWhere('correo_electronico', 'like', '%' . $request->search . '%')
+                  ->orWhere('apellidos', 'like', '%' . $request->search . '%')
+                  ->orWhere('ci', 'like', '%' . $request->search . '%')
                   ->orWhere('telefono', 'like', '%' . $request->search . '%');
             });
-        }
-
-        // Filtro por estado de fidelización
-        if ($request->filled('fidelizacion')) {
-            $query->whereRaw('CASE
-                WHEN (SELECT COALESCE(SUM(total), 0) FROM ventas WHERE id_cliente = clientes.id_cliente) >= 1000 THEN "Premium"
-                WHEN (SELECT COALESCE(SUM(total), 0) FROM ventas WHERE id_cliente = clientes.id_cliente) >= 500 THEN "Oro"
-                WHEN (SELECT COALESCE(SUM(total), 0) FROM ventas WHERE id_cliente = clientes.id_cliente) >= 100 THEN "Plata"
-                ELSE "Bronce"
-            END = ?', [$request->fidelizacion]);
         }
 
         // Ordenamiento
@@ -46,7 +36,7 @@ class ClienteController extends Controller
         if ($sortField === 'ventas_count') {
             $query->orderBy('ventas_count', 'desc');
         } elseif ($sortField === 'total_compras') {
-            $query->orderByRaw('(SELECT COALESCE(SUM(total), 0) FROM ventas WHERE id_cliente = clientes.id_cliente) DESC');
+            $query->orderByRaw('(SELECT COALESCE(SUM(dv.cantidad * dv.precio_unitario), 0) FROM ventas v JOIN detalle_ventas dv ON v.id_venta = dv.id_venta WHERE v.id_cliente = clientes.id_cliente) DESC');
         } elseif ($sortField === 'created_at') {
             $query->orderBy('created_at', 'desc');
         } else {
@@ -57,8 +47,11 @@ class ClienteController extends Controller
 
         // Agregar atributos calculados a cada cliente
         $clientes->getCollection()->transform(function ($cliente) {
-            $cliente->total_compras = $cliente->ventas_sum_total ?? 0;
-            $cliente->estado_fidelizacion = $this->getEstadoFidelizacion($cliente->total_compras);
+            $cliente->total_compras = $cliente->ventas()->with('detalles')->get()->sum(function($venta) {
+                return $venta->detalles->sum(function($detalle) {
+                    return $detalle->cantidad * $detalle->precio_unitario;
+                });
+            });
             return $cliente;
         });
 
@@ -67,7 +60,7 @@ class ClienteController extends Controller
 
         return Inertia::render('Clientes/Index', [
             'clientes' => $clientes,
-            'filters' => $request->only(['search', 'genero', 'fidelizacion', 'sort']),
+            'filters' => $request->only(['search', 'sort']),
             'stats' => $stats
         ]);
     }
@@ -85,26 +78,40 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
+        // Validación de duplicidad personalizada (CI y teléfono únicos)
+        $existingCliente = Cliente::where('ci', $request->ci)
+            ->orWhere('telefono', $request->telefono)
+            ->first();
+
+        if ($existingCliente) {
+            if ($existingCliente->ci === $request->ci) {
+                return back()->withErrors(['ci' => 'Ya existe un cliente con este CI'])
+                    ->withInput();
+            }
+            if ($existingCliente->telefono === $request->telefono) {
+                return back()->withErrors(['telefono' => 'Ya existe un cliente con este teléfono'])
+                    ->withInput();
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:100',
-            'telefono' => 'nullable|string|max:25',
-            'direccion' => 'nullable|string|max:255',
-            'correo_electronico' => 'nullable|email|max:150|unique:clientes,correo_electronico'
+            'apellidos' => 'nullable|string|max:100',
+            'ci' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:25'
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.max' => 'El nombre no puede tener más de 100 caracteres.',
-            'telefono.max' => 'El teléfono no puede tener más de 25 caracteres.',
-            'direccion.max' => 'La dirección no puede tener más de 255 caracteres.',
-            'correo_electronico.email' => 'El correo electrónico debe tener un formato válido.',
-            'correo_electronico.max' => 'El correo electrónico no puede tener más de 150 caracteres.',
-            'correo_electronico.unique' => 'Este correo electrónico ya está registrado.'
+            'apellidos.max' => 'Los apellidos no pueden tener más de 100 caracteres.',
+            'ci.max' => 'El CI no puede tener más de 20 caracteres.',
+            'telefono.max' => 'El teléfono no puede tener más de 25 caracteres.'
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        $cliente = Cliente::create($request->only(['nombre', 'telefono', 'direccion', 'correo_electronico']));
+        $cliente = Cliente::create($request->only(['nombre', 'apellidos', 'ci', 'telefono']));
 
         return redirect()->route('clientes.index')
             ->with('success', 'Cliente creado correctamente.');
@@ -121,16 +128,22 @@ class ClienteController extends Controller
                   ->limit(10);
         }])
         ->withCount('ventas')
-        ->withSum('ventas', 'total')
         ->findOrFail($id);
 
+        // Asegurar que las ventas tengan sus detalles cargados con productos
+        $cliente->ventas->load('detalles.producto');
+
+
         // Agregar atributos calculados
-        $cliente->total_compras = $cliente->ventas_sum_total ?? 0;
-        $cliente->estado_fidelizacion = $this->getEstadoFidelizacion($cliente->total_compras);
+        $total_compras = 0;
+        foreach ($cliente->ventas as $venta) {
+            $total_compras += floatval($venta->total ?? 0);
+        }
+        $cliente->total_compras = round($total_compras, 2);
         $cliente->ultima_venta = $cliente->ventas->first();
 
         return Inertia::render('Clientes/Show', [
-            'cliente' => $cliente
+            'cliente' => $cliente->toArray()
         ]);
     }
 
@@ -153,34 +166,36 @@ class ClienteController extends Controller
     {
         $cliente = Cliente::findOrFail($id);
 
+        // Validación de duplicidad personalizada (CI y teléfono únicos, excluyendo el cliente actual)
+        $existingCliente = Cliente::where('id_cliente', '!=', $cliente->id_cliente)
+            ->where(function($query) use ($request) {
+                $query->where('ci', $request->ci)
+                      ->orWhere('telefono', $request->telefono);
+            })
+            ->first();
+
+        if ($existingCliente) {
+            if ($existingCliente->ci === $request->ci) {
+                return back()->withErrors(['ci' => 'Ya existe un cliente con este CI'])
+                    ->withInput();
+            }
+            if ($existingCliente->telefono === $request->telefono) {
+                return back()->withErrors(['telefono' => 'Ya existe un cliente con este teléfono'])
+                    ->withInput();
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:100',
-            'telefono' => 'nullable|string|max:25',
-            'direccion' => 'nullable|string|max:255',
-            'correo_electronico' => [
-                'nullable',
-                'email',
-                'max:150',
-                function ($attribute, $value, $fail) use ($id) {
-                    // Solo validar unique si el correo no está vacío
-                    if (!empty($value)) {
-                        $exists = \App\Models\Cliente::where('correo_electronico', $value)
-                            ->where('id_cliente', '!=', $id)
-                            ->exists();
-
-                        if ($exists) {
-                            $fail('Este correo electrónico ya está registrado.');
-                        }
-                    }
-                }
-            ]
+            'apellidos' => 'nullable|string|max:100',
+            'ci' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:25'
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.max' => 'El nombre no puede tener más de 100 caracteres.',
-            'telefono.max' => 'El teléfono no puede tener más de 25 caracteres.',
-            'direccion.max' => 'La dirección no puede tener más de 255 caracteres.',
-            'correo_electronico.email' => 'El correo electrónico debe tener un formato válido.',
-            'correo_electronico.max' => 'El correo electrónico no puede tener más de 150 caracteres.'
+            'apellidos.max' => 'Los apellidos no pueden tener más de 100 caracteres.',
+            'ci.max' => 'El CI no puede tener más de 20 caracteres.',
+            'telefono.max' => 'El teléfono no puede tener más de 25 caracteres.'
         ]);
 
         if ($validator->fails()) {
@@ -188,7 +203,7 @@ class ClienteController extends Controller
         }
 
         // Filtrar campos vacíos para no sobrescribir con strings vacíos
-        $data = array_filter($request->only(['nombre', 'telefono', 'direccion', 'correo_electronico']), function($value) {
+        $data = array_filter($request->only(['nombre', 'apellidos', 'ci', 'telefono']), function($value) {
             return $value !== null && $value !== '';
         });
 
@@ -226,41 +241,23 @@ class ClienteController extends Controller
     private function getStats()
     {
         $totalClientes = Cliente::count();
-        $totalVentas = \App\Models\Venta::sum('total');
+        $totalVentas = \App\Models\Venta::with('detalles')->get()->sum(function($venta) {
+            return $venta->detalles->sum(function($detalle) {
+                return $detalle->cantidad * $detalle->precio_unitario;
+            });
+        });
         $totalTransacciones = \App\Models\Venta::count();
         $promedioVentas = $totalClientes > 0 ? $totalVentas / $totalClientes : 0;
-
-        // Contar clientes premium (con más de $1000 en compras)
-        $clientesPremium = Cliente::select('clientes.id_cliente')
-            ->join('ventas', 'clientes.id_cliente', '=', 'ventas.id_cliente')
-            ->groupBy('clientes.id_cliente')
-            ->havingRaw('SUM(ventas.total) >= ?', [1000])
-            ->count();
 
         return [
             'total_clientes' => $totalClientes,
             'total_ventas' => $totalVentas,
             'total_transacciones' => $totalTransacciones,
-            'promedio_ventas' => round($promedioVentas, 2),
-            'clientes_premium' => $clientesPremium
+            'promedio_ventas' => round($promedioVentas, 2)
         ];
     }
 
-    /**
-     * Determina el estado de fidelización basado en el total de compras
-     */
-    private function getEstadoFidelizacion($totalCompras)
-    {
-        if ($totalCompras >= 1000) {
-            return 'Premium';
-        } elseif ($totalCompras >= 500) {
-            return 'Oro';
-        } elseif ($totalCompras >= 100) {
-            return 'Plata';
-        } else {
-            return 'Bronce';
-        }
-    }
+
 
     /**
      * Muestra el dashboard de clientes
@@ -270,62 +267,32 @@ class ClienteController extends Controller
         // Estadísticas generales
         $stats = [
             'total_clientes' => Cliente::count(),
-            'total_ventas' => \App\Models\Venta::sum('total'),
+            'total_ventas' => \App\Models\Venta::with('detalles')->get()->sum(function($venta) {
+                return $venta->detalles->sum(function($detalle) {
+                    return $detalle->cantidad * $detalle->precio_unitario;
+                });
+            }),
             'total_transacciones' => \App\Models\Venta::count(),
-            'promedio_ventas' => \App\Models\Venta::avg('total') ?? 0,
-            'clientes_premium' => Cliente::select('clientes.id_cliente')
-                ->join('ventas', 'clientes.id_cliente', '=', 'ventas.id_cliente')
-                ->groupBy('clientes.id_cliente')
-                ->havingRaw('SUM(ventas.total) >= ?', [1000])
-                ->count(),
+            'promedio_ventas' => \App\Models\Venta::with('detalles')->get()->avg(function($venta) {
+                return $venta->detalles->sum(function($detalle) {
+                    return $detalle->cantidad * $detalle->precio_unitario;
+                });
+            }) ?? 0,
             'nuevos_este_mes' => Cliente::whereMonth('created_at', now()->month)->count()
         ];
 
-        // Datos de fidelización
-        $fidelizacionData = [
-            ['nombre' => 'Bronce', 'cantidad' => Cliente::whereDoesntHave('ventas')->count(), 'porcentaje' => 0],
-            ['nombre' => 'Plata', 'cantidad' => 0, 'porcentaje' => 0],
-            ['nombre' => 'Oro', 'cantidad' => 0, 'porcentaje' => 0],
-            ['nombre' => 'Premium', 'cantidad' => 0, 'porcentaje' => 0]
-        ];
-
-        // Calcular porcentajes reales
-        $totalConVentas = Cliente::whereHas('ventas')->count();
-        if ($totalConVentas > 0) {
-            $fidelizacionData[1]['cantidad'] = Cliente::select('clientes.id_cliente')
-                ->join('ventas', 'clientes.id_cliente', '=', 'ventas.id_cliente')
-                ->groupBy('clientes.id_cliente')
-                ->havingRaw('SUM(ventas.total) >= ? AND SUM(ventas.total) < ?', [100, 500])
-                ->count();
-
-            $fidelizacionData[2]['cantidad'] = Cliente::select('clientes.id_cliente')
-                ->join('ventas', 'clientes.id_cliente', '=', 'ventas.id_cliente')
-                ->groupBy('clientes.id_cliente')
-                ->havingRaw('SUM(ventas.total) >= ? AND SUM(ventas.total) < ?', [500, 1000])
-                ->count();
-
-            $fidelizacionData[3]['cantidad'] = Cliente::select('clientes.id_cliente')
-                ->join('ventas', 'clientes.id_cliente', '=', 'ventas.id_cliente')
-                ->groupBy('clientes.id_cliente')
-                ->havingRaw('SUM(ventas.total) >= ?', [1000])
-                ->count();
-
-            // Calcular porcentajes
-            foreach ($fidelizacionData as &$nivel) {
-                $nivel['porcentaje'] = round(($nivel['cantidad'] / $totalConVentas) * 100, 1);
-            }
-        }
-
         // Top 5 clientes por ventas
         $topClientes = Cliente::withCount('ventas')
-            ->withSum('ventas', 'total')
             ->whereHas('ventas')
-            ->orderByRaw('(SELECT COALESCE(SUM(total), 0) FROM ventas WHERE id_cliente = clientes.id_cliente) DESC')
+            ->orderByRaw('(SELECT COALESCE(SUM(dv.cantidad * dv.precio_unitario), 0) FROM ventas v JOIN detalle_ventas dv ON v.id_venta = dv.id_venta WHERE v.id_cliente = clientes.id_cliente) DESC')
             ->limit(5)
             ->get()
             ->map(function ($cliente) {
-                $cliente->total_compras = $cliente->ventas_sum_total ?? 0;
-                $cliente->estado_fidelizacion = $this->getEstadoFidelizacion($cliente->total_compras);
+                $cliente->total_compras = $cliente->ventas()->with('detalles')->get()->sum(function($venta) {
+                    return $venta->detalles->sum(function($detalle) {
+                        return $detalle->cantidad * $detalle->precio_unitario;
+                    });
+                });
                 return $cliente;
             });
 
@@ -336,7 +303,6 @@ class ClienteController extends Controller
 
         return Inertia::render('Clientes/Dashboard', [
             'stats' => $stats,
-            'fidelizacionData' => $fidelizacionData,
             'topClientes' => $topClientes,
             'clientesRecientes' => $clientesRecientes
         ]);

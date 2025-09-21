@@ -142,7 +142,7 @@ appweb_oficial/
 - `id_producto` (bigserial, PK)
 - `nombre` (varchar(150), NOT NULL)
 - `descripcion` (text, nullable)
-- `precio_compra` (decimal(10,2), NOT NULL)
+- `estado` (enum('activo','inactivo'), DEFAULT 'activo')
 - `precio_venta` (decimal(10,2), NOT NULL)
 - `id_categoria` (smallint, FK → categorias)
 - `id_marca` (smallint, FK → marcas, nullable)

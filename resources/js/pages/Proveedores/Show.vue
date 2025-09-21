@@ -31,7 +31,7 @@
             <div class="space-y-6">
               <div>
                 <h2 class="text-2xl font-bold text-white mb-2">{{ proveedor.nombre }}</h2>
-                <p v-if="proveedor.correo_electronico" class="text-purple-300 text-lg">{{ proveedor.correo_electronico }}</p>
+                <p class="text-purple-300 text-lg">{{ proveedor.ci_nit }}</p>
               </div>
 
               <!-- Provider Details -->
@@ -48,57 +48,32 @@
                   </div>
 
                   <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
+                    <h4 class="text-sm font-medium text-gray-400 mb-1">CI/NIT</h4>
+                    <p class="text-white font-semibold font-mono">{{ proveedor.ci_nit }}</p>
+                  </div>
+
+                  <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
                     <h4 class="text-sm font-medium text-gray-400 mb-1">Teléfono</h4>
-                    <p class="text-white font-semibold">{{ proveedor.telefono || 'No especificado' }}</p>
-                  </div>
-
-                  <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
-                    <h4 class="text-sm font-medium text-gray-400 mb-1">Dirección</h4>
-                    <p class="text-white font-semibold">{{ proveedor.direccion || 'No especificada' }}</p>
-                  </div>
-
-                  <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
-                    <h4 class="text-sm font-medium text-gray-400 mb-1">Correo Electrónico</h4>
-                    <p class="text-white font-semibold">{{ proveedor.correo_electronico || 'No especificado' }}</p>
+                    <p class="text-white font-semibold">{{ proveedor.telefono }}</p>
                   </div>
                 </div>
               </div>
 
-              <!-- Actions -->
-              <div class="flex space-x-4 pt-6">
-                <Link
-                  :href="route('proveedores.edit', proveedor.id_proveedor)"
-                  class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-300 text-center"
-                >
-                  <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                  Editar Proveedor
-                </Link>
-                <button
-                  @click="deleteProveedor"
-                  class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-lg transition-all duration-300"
-                >
-                  <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                  Eliminar Proveedor
-                </button>
-              </div>
             </div>
 
-            <!-- Products from this provider -->
+            <!-- Recent Purchases -->
             <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-white mb-4">Productos de este Proveedor</h3>
-              <div v-if="productos.length > 0" class="space-y-3">
-                <div v-for="producto in productos" :key="producto.id_producto" class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
+              <h3 class="text-lg font-semibold text-white mb-4">Compras Recientes</h3>
+              <div v-if="compras.length > 0" class="space-y-3">
+                <div v-for="compra in compras" :key="compra.id_compra" class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
                   <div class="flex justify-between items-center">
                     <div>
-                      <h4 class="text-white font-medium">{{ producto.nombre }}</h4>
-                      <p class="text-purple-300 text-sm">Bs {{ producto.precio_venta }}</p>
+                      <h4 class="text-white font-medium">Compra #{{ compra.id_compra }}</h4>
+                      <p class="text-purple-300 text-sm">{{ formatDate(compra.fecha) }}</p>
+                      <p class="text-green-400 text-sm font-semibold">{{ formatCurrency(compra.total) }}</p>
                     </div>
                     <Link
-                      :href="route('productos.show', producto.id_producto)"
+                      :href="route('compras.show', compra.id_compra)"
                       class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
                     >
                       Ver
@@ -107,7 +82,7 @@
                 </div>
               </div>
               <div v-else class="bg-black/20 rounded-lg p-6 border border-purple-500/30 text-center">
-                <p class="text-gray-400">No hay productos de este proveedor</p>
+                <p class="text-gray-400">No hay compras registradas para este proveedor</p>
               </div>
             </div>
           </div>
@@ -142,41 +117,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
 interface Proveedor {
   id_proveedor: number
   nombre: string
-  telefono?: string
-  direccion?: string
-  correo_electronico?: string
+  ci_nit: string
+  telefono: string
 }
 
-interface Producto {
-  id_producto: number
-  nombre: string
-  precio_venta: number
+interface Compra {
+  id_compra: number
+  fecha: string
+  total: number
 }
 
 const props = defineProps<{
   proveedor: Proveedor
-  productos: Producto[]
+  compras: Compra[]
 }>()
 
-const showDeleteModal = ref(false)
 
-const deleteProveedor = () => {
-  showDeleteModal.value = true
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('es-BO', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 
-const confirmDelete = () => {
-  router.delete(route('proveedores.destroy', props.proveedor.id_proveedor), {
-    onSuccess: () => {
-      showDeleteModal.value = false
-    }
-  })
+const formatCurrency = (amount: number) => {
+  return 'Bs ' + new Intl.NumberFormat('es-BO', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount)
 }
 </script>
 

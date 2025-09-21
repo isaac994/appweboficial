@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CompraController extends Controller
 {
@@ -19,36 +20,40 @@ class CompraController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Compra::with(['proveedor', 'usuario']);
+        $query = Compra::with(['proveedor', 'usuario', 'detalles']);
 
-        // Filtros
+        // Filtro multicampo de búsqueda
         if ($request->filled('search')) {
-            $query->whereHas('proveedor', function ($q) use ($request) {
-                $q->where('nombre', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            \Log::info('Búsqueda en compras:', ['term' => $searchTerm]);
+
+            $query->where(function ($q) use ($searchTerm) {
+                // Buscar por nombre del proveedor
+                $q->whereHas('proveedor', function ($subQ) use ($searchTerm) {
+                    $subQ->where('nombre', 'like', '%' . $searchTerm . '%');
+                });
+
+                // Si el término de búsqueda es numérico, también buscar por ID de compra
+                if (is_numeric($searchTerm)) {
+                    $q->orWhere('id_compra', 'like', '%' . $searchTerm . '%');
+                }
             });
         }
 
-        if ($request->filled('proveedor')) {
-            $query->where('id_proveedor', $request->proveedor);
-        }
 
-        if ($request->filled('fecha_desde')) {
-            $query->whereDate('fecha', '>=', $request->fecha_desde);
-        }
+        $compras = $query->orderBy('id_compra', 'desc')->paginate(10);
 
-        if ($request->filled('fecha_hasta')) {
-            $query->whereDate('fecha', '<=', $request->fecha_hasta);
-        }
-
-        $compras = $query->orderBy('fecha', 'desc')->paginate(10);
-
-        // Obtener datos para filtros
-        $proveedores = Proveedor::orderBy('nombre')->get();
+        // Calcular el total de cada compra manualmente
+        $compras->getCollection()->transform(function ($compra) {
+            $compra->total = $compra->detalles->sum(function ($detalle) {
+                return $detalle->cantidad * $detalle->precio_unitario;
+            });
+            return $compra;
+        });
 
         return Inertia::render('compras/index', [
             'compras' => $compras,
-            'proveedores' => $proveedores,
-            'filters' => $request->only(['search', 'proveedor', 'fecha_desde', 'fecha_hasta']) ?: []
+            'filters' => $request->only(['search']) ?: []
         ]);
     }
 
@@ -58,7 +63,7 @@ class CompraController extends Controller
     public function create()
     {
         $proveedores = Proveedor::orderBy('nombre')->get();
-        $productos = Producto::orderBy('nombre')->get();
+        $productos = Producto::with(['categoria', 'marca'])->orderBy('nombre')->get();
 
         return Inertia::render('compras/create', [
             'proveedores' => $proveedores,
@@ -71,29 +76,71 @@ class CompraController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id_proveedor' => 'required|exists:proveedores,id_proveedor',
-            'fecha' => 'required|date',
-            'productos' => 'required|array|min:1',
-            'productos.*.id_producto' => 'required|exists:productos,id_producto',
-            'productos.*.cantidad' => 'required|integer|min:1',
-            'productos.*.precio_unitario' => 'required|numeric|min:0',
-        ], [
-            'id_proveedor.required' => 'El proveedor es obligatorio',
-            'id_proveedor.exists' => 'El proveedor seleccionado no existe',
-            'fecha.required' => 'La fecha es obligatoria',
-            'fecha.date' => 'La fecha debe tener un formato válido',
-            'productos.required' => 'Debe agregar al menos un producto',
-            'productos.min' => 'Debe agregar al menos un producto',
-            'productos.*.id_producto.required' => 'El producto es obligatorio',
-            'productos.*.id_producto.exists' => 'El producto seleccionado no existe',
-            'productos.*.cantidad.required' => 'La cantidad es obligatoria',
-            'productos.*.cantidad.integer' => 'La cantidad debe ser un número entero',
-            'productos.*.cantidad.min' => 'La cantidad debe ser mayor a 0',
-            'productos.*.precio_unitario.required' => 'El precio unitario es obligatorio',
-            'productos.*.precio_unitario.numeric' => 'El precio unitario debe ser un número',
-            'productos.*.precio_unitario.min' => 'El precio unitario debe ser mayor a 0',
-        ]);
+        // Determinar si es un proveedor nuevo o existente
+        $esProveedorNuevo = $request->has('nuevo_proveedor') &&
+                           $request->nuevo_proveedor &&
+                           isset($request->nuevo_proveedor['nombre']) &&
+                           isset($request->nuevo_proveedor['ci_nit']) &&
+                           isset($request->nuevo_proveedor['telefono']) &&
+                           !empty($request->nuevo_proveedor['nombre']) &&
+                           !empty($request->nuevo_proveedor['ci_nit']) &&
+                           !empty($request->nuevo_proveedor['telefono']);
+
+        if ($esProveedorNuevo) {
+            // Validar datos del nuevo proveedor
+            $validator = Validator::make($request->all(), [
+                'nuevo_proveedor.nombre' => 'required|string|max:100',
+                'nuevo_proveedor.ci_nit' => 'required|string|max:20|unique:proveedores,ci_nit',
+                'nuevo_proveedor.telefono' => 'required|string|max:25',
+                'fecha' => 'required|date',
+                'productos' => 'required|array|min:1',
+                'productos.*.id_producto' => 'required|exists:productos,id_producto',
+                'productos.*.cantidad' => 'required|integer|min:1',
+                'productos.*.precio_unitario' => 'required|numeric|min:0'
+            ], [
+                'nuevo_proveedor.nombre.required' => 'El nombre del proveedor es obligatorio',
+                'nuevo_proveedor.ci_nit.required' => 'El CI/NIT del proveedor es obligatorio',
+                'nuevo_proveedor.ci_nit.unique' => 'Ya existe un proveedor con este CI/NIT',
+                'nuevo_proveedor.telefono.required' => 'El teléfono del proveedor es obligatorio',
+                'fecha.required' => 'La fecha es obligatoria',
+                'fecha.date' => 'La fecha debe tener un formato válido',
+                'productos.required' => 'Debe agregar al menos un producto',
+                'productos.min' => 'Debe agregar al menos un producto',
+                'productos.*.id_producto.required' => 'Debe seleccionar un producto',
+                'productos.*.id_producto.exists' => 'El producto seleccionado no existe',
+                'productos.*.cantidad.required' => 'Debe especificar la cantidad',
+                'productos.*.cantidad.integer' => 'La cantidad debe ser un número entero',
+                'productos.*.cantidad.min' => 'La cantidad debe ser mayor a 0',
+                'productos.*.precio_unitario.required' => 'Debe especificar el precio unitario',
+                'productos.*.precio_unitario.numeric' => 'El precio unitario debe ser un número',
+                'productos.*.precio_unitario.min' => 'El precio unitario debe ser mayor a 0'
+            ]);
+        } else {
+            // Validar solo los campos básicos cuando no hay nuevo proveedor
+            $validator = Validator::make($request->all(), [
+                'id_proveedor' => 'required|exists:proveedores,id_proveedor',
+                'fecha' => 'required|date',
+                'productos' => 'required|array|min:1',
+                'productos.*.id_producto' => 'required|exists:productos,id_producto',
+                'productos.*.cantidad' => 'required|integer|min:1',
+                'productos.*.precio_unitario' => 'required|numeric|min:0'
+            ], [
+                'id_proveedor.required' => 'Debe seleccionar un proveedor',
+                'id_proveedor.exists' => 'El proveedor seleccionado no existe',
+                'fecha.required' => 'La fecha es obligatoria',
+                'fecha.date' => 'La fecha debe tener un formato válido',
+                'productos.required' => 'Debe agregar al menos un producto',
+                'productos.min' => 'Debe agregar al menos un producto',
+                'productos.*.id_producto.required' => 'Debe seleccionar un producto',
+                'productos.*.id_producto.exists' => 'El producto seleccionado no existe',
+                'productos.*.cantidad.required' => 'Debe especificar la cantidad',
+                'productos.*.cantidad.integer' => 'La cantidad debe ser un número entero',
+                'productos.*.cantidad.min' => 'La cantidad debe ser mayor a 0',
+                'productos.*.precio_unitario.required' => 'Debe especificar el precio unitario',
+                'productos.*.precio_unitario.numeric' => 'El precio unitario debe ser un número',
+                'productos.*.precio_unitario.min' => 'El precio unitario debe ser mayor a 0'
+            ]);
+        }
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
@@ -102,17 +149,22 @@ class CompraController extends Controller
         try {
             DB::beginTransaction();
 
-            // Calcular total
-            $total = collect($request->productos)->sum(function ($producto) {
-                return $producto['cantidad'] * $producto['precio_unitario'];
-            });
+            // Crear proveedor si es nuevo
+            $idProveedor = $request->id_proveedor;
+            if ($esProveedorNuevo) {
+                $proveedor = Proveedor::create([
+                    'nombre' => $request->nuevo_proveedor['nombre'],
+                    'ci_nit' => $request->nuevo_proveedor['ci_nit'],
+                    'telefono' => $request->nuevo_proveedor['telefono']
+                ]);
+                $idProveedor = $proveedor->id_proveedor;
+            }
 
             // Crear la compra
             $compra = Compra::create([
-                'id_proveedor' => $request->id_proveedor,
+                'id_proveedor' => $idProveedor,
                 'id_usuario' => Auth::id(),
-                'fecha' => $request->fecha,
-                'total' => $total
+                'fecha' => $request->fecha
             ]);
 
             // Crear los detalles
@@ -142,7 +194,7 @@ class CompraController extends Controller
      */
     public function show(Compra $compra)
     {
-        $compra->load(['proveedor', 'usuario', 'detalles.producto']);
+                $compra->load(['proveedor', 'usuario', 'detalles.producto']);
 
         return Inertia::render('compras/show', [
             'compra' => $compra
@@ -155,6 +207,7 @@ class CompraController extends Controller
     public function edit(Compra $compra)
     {
         $compra->load(['proveedor', 'detalles.producto']);
+
         $proveedores = Proveedor::orderBy('nombre')->get();
         $productos = Producto::orderBy('nombre')->get();
 
@@ -201,16 +254,12 @@ class CompraController extends Controller
         try {
             DB::beginTransaction();
 
-            // Calcular total
-            $total = collect($request->productos)->sum(function ($producto) {
-                return $producto['cantidad'] * $producto['precio_unitario'];
-            });
+
 
             // Actualizar la compra
             $compra->update([
                 'id_proveedor' => $request->id_proveedor,
-                'fecha' => $request->fecha,
-                'total' => $total
+                'fecha' => $request->fecha
             ]);
 
             // Eliminar detalles existentes
@@ -222,8 +271,7 @@ class CompraController extends Controller
                     'id_compra' => $compra->id_compra,
                     'id_producto' => $producto['id_producto'],
                     'cantidad' => $producto['cantidad'],
-                    'precio_unitario' => $producto['precio_unitario'],
-                    'total_parcial' => $producto['cantidad'] * $producto['precio_unitario']
+                    'precio_unitario' => $producto['precio_unitario']
                 ]);
             }
 
@@ -258,5 +306,49 @@ class CompraController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al eliminar la compra: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Generate PDF receipt for the specified purchase.
+     */
+    public function recibo(Compra $compra)
+    {
+        $compra->load(['proveedor', 'usuario', 'detalles.producto.categoria']);
+
+        // Generar descripción dinámica para todos los productos
+        foreach ($compra->detalles as $detalle) {
+            if ($detalle->descripcion) {
+                $detalle->descripcion_dinamica = 'Desc: ' . $detalle->descripcion;
+            } else {
+                $detalle->descripcion_dinamica = null; // No mostrar nada si no hay descripción
+            }
+        }
+
+        // Calcular el total de la compra
+        $totalCompra = $compra->detalles->sum(function ($detalle) {
+            return $detalle->cantidad * $detalle->precio_unitario;
+        });
+
+        // Obtener información del usuario
+        $usuario = auth()->user();
+
+        $data = [
+            'compra' => $compra,
+            'totalCompra' => $totalCompra,
+            'usuario' => $usuario,
+            'fecha' => now()->format('d/m/Y H:i:s')
+        ];
+
+        $pdf = Pdf::loadView('reportes.recibo-compra', $data);
+
+        // Convertir a base64 para enviar como JSON
+        $pdfContent = $pdf->output();
+        $pdfBase64 = base64_encode($pdfContent);
+
+        return response()->json([
+            'success' => true,
+            'pdf' => $pdfBase64,
+            'filename' => "recibo-compra-{$compra->id_compra}.pdf"
+        ]);
     }
 }

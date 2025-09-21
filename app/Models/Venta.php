@@ -13,17 +13,20 @@ class Venta extends Model
 
     protected $fillable = [
         'fecha',
-        'total',
         'id_cliente',
         'id_usuario'
     ];
 
     protected $casts = [
         'fecha' => 'datetime',
-        'total' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
+
+    /**
+     * Los accessors que se incluyen en la serialización JSON
+     */
+    protected $appends = ['total'];
 
     /**
      * Obtiene el cliente de la venta
@@ -55,5 +58,22 @@ class Venta extends Model
     public function getTotalProductosAttribute()
     {
         return $this->detalles()->sum('cantidad');
+    }
+
+    /**
+     * Obtiene el total de la venta calculado dinámicamente
+     */
+    public function getTotalAttribute()
+    {
+        // Asegurar que los detalles estén cargados
+        if (!$this->relationLoaded('detalles')) {
+            $this->load('detalles');
+        }
+
+        $total = $this->detalles->sum(function ($detalle) {
+            return floatval($detalle->cantidad) * floatval($detalle->precio_unitario);
+        });
+
+        return round($total, 2);
     }
 }

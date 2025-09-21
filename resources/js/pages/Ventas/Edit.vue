@@ -80,7 +80,7 @@
                                     :key="index"
                                     class="border border-gray-200 rounded-lg p-4"
                                 >
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                                         <div>
                                             <Label :for="`producto-${index}`">Producto *</Label>
                                             <select
@@ -96,7 +96,7 @@
                                                     :key="prod.id_producto"
                                                     :value="prod.id_producto"
                                                 >
-                                                    {{ prod.nombre }} - Stock: {{ prod.stock }}
+                                                    {{ prod.nombre }}
                                                 </option>
                                             </select>
                                         </div>
@@ -112,9 +112,6 @@
                                                 required
                                                 @input="updateTotal(index)"
                                             />
-                                            <div class="text-xs text-gray-500 mt-1">
-                                                Stock disponible: {{ getStockDisponible(producto.id_producto) }}
-                                            </div>
                                         </div>
 
                                         <div>
@@ -131,11 +128,22 @@
                                             />
                                         </div>
 
+                                        <div>
+                                            <Label :for="`descripcion-${index}`">Descripción</Label>
+                                            <Input
+                                                :id="`descripcion-${index}`"
+                                                v-model="producto.descripcion"
+                                                type="text"
+                                                placeholder="Descripción del producto..."
+                                                class="mt-1"
+                                            />
+                                        </div>
+
                                         <div class="flex items-end">
                                             <div class="flex-1">
                                                 <Label>Total Parcial</Label>
                                                 <div class="mt-1 text-lg font-semibold text-green-600">
-                                                    ${{ formatCurrency(producto.total_parcial || 0) }}
+                                                    {{ formatCurrency(producto.total_parcial || 0) }}
                                                 </div>
                                             </div>
                                             <Button
@@ -159,7 +167,7 @@
                         <div class="border-t pt-6">
                             <div class="flex justify-between items-center text-xl font-bold">
                                 <span>Total de la Venta:</span>
-                                <span class="text-green-600">${{ formatCurrency(totalVenta) }}</span>
+                                <span class="text-green-600">{{ formatCurrency(totalVenta) }}</span>
                             </div>
                         </div>
 
@@ -167,7 +175,7 @@
                         <div class="flex justify-end space-x-3">
                             <Button
                                 type="button"
-                                @click="router.visit(route('ventas.show', venta.id_venta))"
+                                @click="cancelar"
                                 variant="outline"
                             >
                                 Cancelar
@@ -203,7 +211,8 @@ interface Producto {
     id_producto: number;
     nombre: string;
     precio_venta: number;
-    stock: number;
+    stock_disponible: number;
+    estado_disponible: string;
     categoria?: { nombre: string };
     marca?: { nombre: string };
 }
@@ -213,6 +222,7 @@ interface ProductoVenta {
     cantidad: number;
     precio_unitario: number;
     total_parcial: number;
+    descripcion: string;
 }
 
 interface DetalleVenta {
@@ -252,8 +262,16 @@ const form = ref<FormData>({
         id_producto: detalle.id_producto,
         cantidad: detalle.cantidad,
         precio_unitario: detalle.precio_unitario,
-        total_parcial: detalle.total_parcial
+        total_parcial: detalle.total_parcial,
+        descripcion: detalle.descripcion || ''
     }))
+});
+
+onMounted(() => {
+    // Recalcular totales para todos los productos al cargar
+    form.value.productos.forEach((producto, index) => {
+        updateTotal(index);
+    });
 });
 
 const addProducto = () => {
@@ -261,7 +279,8 @@ const addProducto = () => {
         id_producto: 0,
         cantidad: 1,
         precio_unitario: 0,
-        total_parcial: 0
+        total_parcial: 0,
+        descripcion: ''
     });
 };
 
@@ -284,13 +303,9 @@ const updateTotal = (index: number) => {
     producto.total_parcial = producto.cantidad * producto.precio_unitario;
 };
 
-const getStockDisponible = (idProducto: number): number => {
-    const producto = props.productos.find(p => p.id_producto === idProducto);
-    return producto ? producto.stock : 0;
-};
 
 const productosDisponibles = computed(() => {
-    return props.productos.filter(p => p.stock > 0);
+    return props.productos.filter(p => p.stock_disponible > 0);
 });
 
 const totalVenta = computed(() => {
@@ -298,6 +313,10 @@ const totalVenta = computed(() => {
         return total + (producto.total_parcial || 0);
     }, 0);
 });
+
+const cancelar = () => {
+    router.visit(route('ventas.index'));
+};
 
 const updateVenta = () => {
     if (form.value.productos.length === 0) {
@@ -309,7 +328,7 @@ const updateVenta = () => {
 };
 
 const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
+    return 'Bs ' + new Intl.NumberFormat('es-BO', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(amount);

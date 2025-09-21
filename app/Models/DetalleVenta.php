@@ -14,14 +14,15 @@ class DetalleVenta extends Model
         'id_venta',
         'id_producto',
         'cantidad',
+
+
         'precio_unitario',
-        'total_parcial'
+        'descripcion'
     ];
 
     protected $casts = [
         'cantidad' => 'integer',
-        'precio_unitario' => 'decimal:2',
-        'total_parcial' => 'decimal:2'
+        'precio_unitario' => 'decimal:2'
     ];
 
     /**
@@ -41,14 +42,10 @@ class DetalleVenta extends Model
     }
 
     /**
-     * Calcula el total parcial automáticamente
+     * Obtiene el total parcial calculado dinámicamente
      */
-    protected static function boot()
+    public function getTotalParcialAttribute()
     {
-        parent::boot();
-
-        static::saving(function ($detalle) {
-            $detalle->total_parcial = $detalle->cantidad * $detalle->precio_unitario;
-        });
+        return $this->cantidad * $this->precio_unitario;
     }
 }

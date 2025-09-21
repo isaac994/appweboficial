@@ -4,7 +4,34 @@
             <Heading>Nueva Compra</Heading>
         </template>
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Error Messages -->
+        <div v-if="$page.props.errors && Object.keys($page.props.errors).length > 0" class="mb-6">
+          <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <h3 class="text-red-400 font-semibold">Error</h3>
+            </div>
+            <ul class="mt-2 text-red-300 text-sm">
+              <li v-for="(error, key) in $page.props.errors" :key="key">{{ error }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Success Messages -->
+        <div v-if="$page.props.flash && $page.props.flash.success" class="mb-6">
+          <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-green-400 font-semibold">{{ $page.props.flash.success }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Información de la Compra</CardTitle>
@@ -13,32 +40,68 @@
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form @submit.prevent="submitForm" class="space-y-6">
+                    <form @submit.prevent class="space-y-6">
+
                         <!-- Información básica -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <Label for="id_proveedor">Proveedor *</Label>
-                                <select
-                                    id="id_proveedor"
-                                    v-model="form.id_proveedor"
-                                    required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    :class="{ 'border-red-500': errors.id_proveedor }"
-                                >
-                                    <option value="">Seleccione un proveedor</option>
-                                    <option
-                                        v-for="proveedor in proveedores"
-                                        :key="proveedor.id_proveedor"
-                                        :value="proveedor.id_proveedor"
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Proveedor -->
+                            <div class="relative">
+                                <Label for="proveedor">Proveedor *</Label>
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <Input
+                                            id="proveedor"
+                                            v-model="proveedorSearch"
+                                            type="text"
+                                            placeholder="Buscar proveedor..."
+                                            class="mt-1 pr-10"
+                                            :class="{
+                                                'border-red-500': errors.id_proveedor && !showNuevoProveedor,
+                                                'border-green-500 bg-green-50': selectedProveedor
+                                            }"
+                                            @input="filterProveedores"
+                                            @focus="handleProveedorFocus"
+                                            @blur="handleProveedorBlur"
+                                        />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
+                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        @click="showNuevoProveedor = true"
+                                        variant="outline"
+                                        size="sm"
+                                        class="mt-1 px-3"
                                     >
-                                        {{ proveedor.nombre }}
-                                    </option>
-                                </select>
-                                <p v-if="errors.id_proveedor" class="mt-1 text-sm text-red-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                    </Button>
+                                </div>
+
+                                <!-- Dropdown de proveedores -->
+                                <div v-if="showProveedoresDropdown && filteredProveedores.length > 0"
+                                     class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    <div
+                                        v-for="proveedor in filteredProveedores"
+                                        :key="proveedor.id_proveedor"
+                                        @mousedown="selectProveedor(proveedor)"
+                                        class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                    >
+                                        <div class="font-medium">{{ proveedor.nombre }}</div>
+                                        <div class="text-sm text-gray-500">{{ proveedor.ci_nit }}</div>
+                                    </div>
+                                </div>
+
+                                <div v-if="errors.id_proveedor && !showNuevoProveedor" class="mt-1 text-sm text-red-600">
                                     {{ errors.id_proveedor }}
-                                </p>
+                                </div>
                             </div>
 
+                            <!-- Fecha -->
                             <div>
                                 <Label for="fecha">Fecha *</Label>
                                 <Input
@@ -48,6 +111,7 @@
                                     required
                                     class="mt-1"
                                     :class="{ 'border-red-500': errors.fecha }"
+                                    @keyup.enter.prevent="focusPrimerProducto"
                                 />
                                 <p v-if="errors.fecha" class="mt-1 text-sm text-red-600">
                                     {{ errors.fecha }}
@@ -55,11 +119,50 @@
                             </div>
                         </div>
 
+                        <!-- Formulario para nuevo proveedor -->
+                        <div v-if="showNuevoProveedor" class="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg w-fit">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Nuevo Proveedor</span>
+                                <Button
+                                    type="button"
+                                    @click="closeNuevoProveedor"
+                                    variant="ghost"
+                                    size="sm"
+                                    class="text-gray-500 hover:text-gray-700 h-6 w-6 p-0"
+                                >
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </Button>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <Input
+                                    v-model="nuevoProveedor.ci_nit"
+                                    placeholder="CI/NIT"
+                                    class="w-32"
+                                />
+                                <Input
+                                    v-model="nuevoProveedor.telefono"
+                                    placeholder="Teléfono"
+                                    class="w-32"
+                                />
+                            </div>
+                        </div>
+
                         <!-- Productos -->
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <Label class="text-lg font-semibold">Productos</Label>
-                                <Button type="button" @click="addProduct" variant="outline" size="sm">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-medium">Productos</h3>
+                                <Button
+                                    type="button"
+                                    @click="addProduct"
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
                                     Agregar Producto
                                 </Button>
                             </div>
@@ -73,7 +176,7 @@
                                 <div
                                     v-for="(producto, index) in form.productos"
                                     :key="index"
-                                    class="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                                    class="border border-gray-200 rounded-lg p-4"
                                 >
                                     <div class="flex items-center justify-between mb-3">
                                         <h4 class="font-medium text-gray-900">Producto {{ index + 1 }}</h4>
@@ -89,25 +192,46 @@
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div>
+                                        <!-- Producto -->
+                                        <div class="relative">
                                             <Label :for="`producto_${index}`">Producto *</Label>
-                                            <select
-                                                :id="`producto_${index}`"
-                                                v-model="producto.id_producto"
-                                                required
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            >
-                                                <option value="">Seleccione un producto</option>
-                                                <option
-                                                    v-for="prod in productos"
+                                            <div class="relative">
+                                                <Input
+                                                    :id="`producto_${index}`"
+                                                    v-model="productoSearch[index]"
+                                                    type="text"
+                                                    placeholder="Buscar producto..."
+                                                    class="mt-1 pr-10"
+                                                    :class="{
+                                                        'border-blue-500 bg-blue-50': selectedProductos[index]
+                                                    }"
+                                                    @input="filterProductos(index)"
+                                                    @focus="handleProductoFocus(index)"
+                                                    @blur="handleProductoBlur(index)"
+                                                />
+                                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
+                                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+
+                                            <!-- Dropdown de productos -->
+                                            <div v-if="showProductosDropdown[index] && filteredProductos[index] && filteredProductos[index].length > 0"
+                                                 class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                                                <div
+                                                    v-for="prod in filteredProductos[index]"
                                                     :key="prod.id_producto"
-                                                    :value="prod.id_producto"
+                                                    @mousedown="selectProducto(index, prod)"
+                                                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                                                 >
-                                                    {{ prod.nombre }}
-                                                </option>
-                                            </select>
+                                                    <div class="font-medium">{{ prod.nombre }}</div>
+                                                    <div class="text-sm text-gray-500">{{ prod.categoria?.nombre }} - {{ prod.marca?.nombre }}</div>
+                                                </div>
+                                            </div>
                                         </div>
 
+                                        <!-- Cantidad -->
                                         <div>
                                             <Label :for="`cantidad_${index}`">Cantidad *</Label>
                                             <Input
@@ -117,29 +241,34 @@
                                                 min="1"
                                                 required
                                                 class="mt-1"
-                                                @input="calculateTotal"
+                                                @keyup.enter.prevent="focusPrecio(index)"
                                             />
                                         </div>
 
+                                        <!-- Precio Unitario -->
                                         <div>
                                             <Label :for="`precio_${index}`">Precio Unitario *</Label>
                                             <Input
                                                 :id="`precio_${index}`"
                                                 v-model.number="producto.precio_unitario"
                                                 type="number"
-                                                min="0"
                                                 step="0.01"
+                                                min="0"
                                                 required
                                                 class="mt-1"
-                                                @input="calculateTotal"
+                                                @keyup.enter.prevent="focusSiguienteProducto(index)"
                                             />
                                         </div>
 
+                                        <!-- Total Parcial -->
                                         <div>
-                                            <Label>Total Parcial</Label>
-                                            <div class="mt-1 p-2 bg-gray-100 rounded-md text-gray-700 font-mono">
-                                                ${{ formatCurrency(producto.cantidad * producto.precio_unitario) }}
-                                            </div>
+                                            <Label :for="`total_${index}`">Total Parcial</Label>
+                                            <Input
+                                                :id="`total_${index}`"
+                                                :value="formatCurrency(producto.cantidad * producto.precio_unitario)"
+                                                readonly
+                                                class="mt-1 bg-gray-50"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -147,22 +276,34 @@
                         </div>
 
                         <!-- Total -->
-                        <div class="border-t pt-6">
-                            <div class="flex justify-between items-center">
-                                <span class="text-lg font-semibold">Total de la Compra:</span>
-                                <span class="text-2xl font-bold text-green-600">
-                                    ${{ formatCurrency(totalCompra) }}
-                                </span>
+                        <div class="border-t pt-4">
+                            <div class="flex justify-end">
+                                <div class="text-right">
+                                    <div class="text-lg font-semibold" :class="{ 'text-red-500': totalCompra <= 0 }">
+                                        Total: {{ formatCurrency(totalCompra) }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Botones -->
-                        <div class="flex justify-end space-x-3">
-                            <Button type="button" variant="outline" @click="$inertia.visit(route('compras.index'))">
+                        <div class="flex justify-end gap-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                @click="$inertia.visit('/compras')"
+                                class="focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-0"
+                            >
                                 Cancelar
                             </Button>
-                            <Button type="submit" :disabled="form.productos.length === 0">
-                                Crear Compra
+                            <Button
+                                id="btn-crear-compra"
+                                type="button"
+                                :disabled="isSubmitting || totalCompra <= 0 || form.productos.length === 0"
+                                @click="submitForm"
+                                class="focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-0"
+                            >
+                                {{ isSubmitting ? 'Creando...' : 'Crear Compra' }}
                             </Button>
                         </div>
                     </form>
@@ -174,83 +315,429 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Swal from 'sweetalert2';
 
 interface Producto {
     id_producto: number;
     nombre: string;
+    descripcion: string;
+    precio_venta: string;
+    id_categoria: number;
+    id_marca: number;
+    categoria?: {
+        nombre: string;
+    };
+    marca?: {
+        nombre: string;
+    };
 }
 
 interface Proveedor {
     id_proveedor: number;
     nombre: string;
+    ci_nit: string;
+    telefono: string;
 }
 
-interface ProductoCompra {
-    id_producto: number;
-    cantidad: number;
-    precio_unitario: number;
-}
-
-const props = defineProps<{
+interface Props {
     proveedores: Proveedor[];
     productos: Producto[];
-    errors?: Record<string, string>;
-}>();
+    errors: Record<string, string>;
+}
 
+const props = defineProps<Props>();
+
+// Formulario principal
 const form = useForm({
+    fecha: '',
     id_proveedor: '',
-    fecha: new Date().toISOString().split('T')[0],
-    productos: [] as ProductoCompra[]
+    productos: [] as Array<{
+        id_producto: number;
+        cantidad: number;
+        precio_unitario: number;
+    }>,
+    nuevo_proveedor: null as {
+        ci_nit: string;
+        telefono: string;
+    } | null
 });
 
-const addProduct = () => {
-    form.productos.push({
-        id_producto: 0,
-        cantidad: 1,
-        precio_unitario: 0
-    });
-};
+// Estados para proveedores
+const proveedorSearch = ref('');
+const selectedProveedor = ref<Proveedor | null>(null);
+const showProveedoresDropdown = ref(false);
+const filteredProveedores = ref<Proveedor[]>([]);
 
-const removeProduct = (index: number) => {
-    form.productos.splice(index, 1);
-    calculateTotal();
-};
+// Estados para nuevo proveedor
+const showNuevoProveedor = ref(false);
+const nuevoProveedor = ref({
+    ci_nit: '',
+    telefono: ''
+});
 
-const calculateTotal = () => {
-    // El total se calcula automáticamente en el computed
-};
+// Estados para productos
+const productoSearch = ref<string[]>([]);
+const selectedProductos = ref<(Producto | null)[]>([]);
+const showProductosDropdown = ref<boolean[]>([]);
+const filteredProductos = ref<Producto[][]>([]);
 
+// Estados del formulario
+const isSubmitting = ref(false);
+
+// Computed
 const totalCompra = computed(() => {
     return form.productos.reduce((total, producto) => {
         return total + (producto.cantidad * producto.precio_unitario);
     }, 0);
 });
 
+// Funciones de utilidad
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-BO', {
+        style: 'currency',
+        currency: 'BOB'
+    }).format(amount).replace('BOB', 'Bs');
+};
+
+const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+// Funciones para proveedores
+const filterProveedores = () => {
+    if (!proveedorSearch.value.trim()) {
+        filteredProveedores.value = props.proveedores;
+    } else {
+        const search = proveedorSearch.value.toLowerCase();
+        filteredProveedores.value = props.proveedores.filter(proveedor =>
+            proveedor.nombre.toLowerCase().includes(search) ||
+            proveedor.ci_nit.toLowerCase().includes(search)
+        );
+    }
+};
+
+const selectProveedor = (proveedor: Proveedor) => {
+    selectedProveedor.value = proveedor;
+    form.id_proveedor = proveedor.id_proveedor.toString();
+    proveedorSearch.value = proveedor.nombre;
+    showProveedoresDropdown.value = false;
+
+    // Después de seleccionar, ir al campo fecha
+    setTimeout(() => {
+        focusFecha();
+    }, 100);
+};
+
+const handleProveedorFocus = () => {
+    showProveedoresDropdown.value = true;
+    if (selectedProveedor.value) {
+        // Si ya hay un proveedor seleccionado, limpiar la búsqueda para permitir nueva búsqueda
+        proveedorSearch.value = '';
+        selectedProveedor.value = null;
+        form.id_proveedor = '';
+    }
+};
+
+const handleProveedorBlur = () => {
+    setTimeout(() => {
+        showProveedoresDropdown.value = false;
+    }, 300);
+};
+
+// Funciones para nuevo proveedor
+const closeNuevoProveedor = () => {
+    showNuevoProveedor.value = false;
+    nuevoProveedor.value = {
+        ci_nit: '',
+        telefono: ''
+    };
+    form.nuevo_proveedor = null;
+};
+
+// Funciones para productos
+const addProduct = () => {
+    form.productos.push({
+        id_producto: 0,
+        cantidad: 1,
+        precio_unitario: 0
+    });
+
+    const index = form.productos.length - 1;
+    productoSearch.value[index] = '';
+    showProductosDropdown.value[index] = false;
+    selectedProductos.value[index] = null;
+    filteredProductos.value[index] = props.productos;
+};
+
+const removeProduct = (index: number) => {
+    form.productos.splice(index, 1);
+    productoSearch.value.splice(index, 1);
+    showProductosDropdown.value.splice(index, 1);
+    selectedProductos.value.splice(index, 1);
+    filteredProductos.value.splice(index, 1);
+};
+
+const filterProductos = (index: number) => {
+    if (!productoSearch.value[index]?.trim()) {
+        filteredProductos.value[index] = props.productos;
+    } else {
+        const search = productoSearch.value[index].toLowerCase();
+        filteredProductos.value[index] = props.productos.filter(producto =>
+            producto.nombre.toLowerCase().includes(search) ||
+            producto.categoria?.nombre.toLowerCase().includes(search) ||
+            producto.marca?.nombre.toLowerCase().includes(search)
+        );
+    }
+};
+
+const selectProducto = (index: number, producto: Producto) => {
+    selectedProductos.value[index] = producto;
+    form.productos[index].id_producto = producto.id_producto;
+    // No llenar automáticamente el precio unitario
+    productoSearch.value[index] = producto.nombre;
+    showProductosDropdown.value[index] = false;
+
+    // Después de seleccionar, ir al campo cantidad
+    setTimeout(() => {
+        focusCantidad(index);
+    }, 100);
+};
+
+const handleProductoFocus = (index: number) => {
+    showProductosDropdown.value[index] = true;
+    if (selectedProductos.value[index]) {
+        // Si ya hay un producto seleccionado, limpiar la búsqueda para permitir nueva búsqueda
+        productoSearch.value[index] = '';
+        selectedProductos.value[index] = null;
+        form.productos[index].id_producto = 0;
+        form.productos[index].precio_unitario = 0;
+    }
+};
+
+const handleProductoBlur = (index: number) => {
+    setTimeout(() => {
+        showProductosDropdown.value[index] = false;
+    }, 300);
+};
+
+// Funciones de navegación con Enter
+const focusFecha = () => {
+    console.log('🎯 focusFecha ejecutado');
+    const fechaInput = document.getElementById('fecha');
+    if (fechaInput) {
+        fechaInput.focus();
+        console.log('✅ Focus en fecha aplicado');
+    } else {
+        console.log('❌ No se encontró el campo fecha');
+    }
+};
+
+const focusPrimerProducto = () => {
+    console.log('🎯 focusPrimerProducto ejecutado');
+    const primerProducto = document.getElementById('producto_0');
+    if (primerProducto) {
+        primerProducto.focus();
+        console.log('✅ Focus en primer producto aplicado');
+    } else {
+        console.log('⚠️ No hay productos, agregando uno...');
+        // Si no hay productos, agregar uno
+        addProduct();
+        setTimeout(() => {
+            const productoInput = document.getElementById('producto_0');
+            if (productoInput) {
+                productoInput.focus();
+                console.log('✅ Focus en nuevo producto aplicado');
+            }
+        }, 100);
+    }
+};
+
+const focusCantidad = (index: number) => {
+    console.log('🎯 focusCantidad ejecutado para index:', index);
+    const cantidadInput = document.getElementById(`cantidad_${index}`);
+    if (cantidadInput) {
+        cantidadInput.focus();
+        console.log('✅ Focus en cantidad aplicado');
+    } else {
+        console.log('❌ No se encontró el campo cantidad');
+    }
+};
+
+const focusPrecio = (index: number) => {
+    console.log('🎯 focusPrecio ejecutado para index:', index);
+    const precioInput = document.getElementById(`precio_${index}`);
+    if (precioInput) {
+        precioInput.focus();
+        console.log('✅ Focus en precio aplicado');
+    } else {
+        console.log('❌ No se encontró el campo precio');
+    }
+};
+
+const focusSiguienteProducto = (index: number) => {
+    console.log('🎯 focusSiguienteProducto ejecutado para index:', index);
+    const siguienteIndex = index + 1;
+    const siguienteProducto = document.getElementById(`producto_${siguienteIndex}`);
+
+    if (siguienteProducto) {
+        console.log('✅ Hay siguiente producto, yendo a él...');
+        siguienteProducto.focus();
+        console.log('✅ Focus en siguiente producto aplicado');
+    } else {
+        console.log('⚠️ Es el último producto, yendo al botón crear...');
+        // Si es el último producto, ir al botón crear
+        focusBotonCrear();
+    }
+};
+
+const focusBotonCrear = () => {
+    console.log('🎯 focusBotonCrear ejecutado');
+    const botonCrear = document.getElementById('btn-crear-compra') as HTMLButtonElement;
+    if (botonCrear) {
+        botonCrear.focus();
+        console.log('✅ Focus en botón crear aplicado');
+    } else {
+        console.log('❌ No se encontró el botón crear');
+    }
+};
+
+
+// Función de envío
 const submitForm = () => {
-    if (form.productos.length === 0) {
-        alert('Debe agregar al menos un producto');
+    console.log('🚀 SUBMIT FORM INICIADO - ESTO NO DEBE PASAR AUTOMÁTICAMENTE');
+    console.log('Form data:', {
+        fecha: form.fecha,
+        id_proveedor: form.id_proveedor,
+        productos: form.productos,
+        showNuevoProveedor: showNuevoProveedor.value,
+        nuevoProveedor: nuevoProveedor.value
+    });
+
+    // Validar que el total sea mayor a 0
+    if (totalCompra.value <= 0) {
+        Swal.fire({
+            title: 'Error de Validación',
+            text: 'El total de la compra debe ser mayor a Bs 0.00',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+        });
         return;
     }
 
-    form.post(route('compras.store'));
+    // Validar que haya al menos un producto
+    if (form.productos.length === 0) {
+        Swal.fire({
+            title: 'Error de Validación',
+            text: 'Debe agregar al menos un producto',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+        });
+        return;
+    }
+
+    isSubmitting.value = true;
+
+    const formData = {
+        fecha: form.fecha,
+        id_proveedor: form.id_proveedor,
+        productos: form.productos
+    };
+
+    // Si se está creando un nuevo proveedor
+    if (showNuevoProveedor.value && proveedorSearch.value && nuevoProveedor.value.ci_nit && nuevoProveedor.value.telefono) {
+        formData.nuevo_proveedor = {
+            nombre: proveedorSearch.value, // Tomar el nombre del campo de búsqueda
+            ci_nit: nuevoProveedor.value.ci_nit,
+            telefono: nuevoProveedor.value.telefono
+        };
+        formData.id_proveedor = '';
+    }
+
+    console.log('📤 Enviando datos:', formData);
+
+    router.post('/compras', formData, {
+        onStart: () => {
+            console.log('📡 Petición iniciada');
+        },
+        onSuccess: (page) => {
+            console.log('✅ Éxito:', page);
+            isSubmitting.value = false;
+
+            // Mostrar mensaje flotante de éxito
+            Swal.fire({
+                title: '¡Compra Registrada!',
+                text: 'La compra se ha registrado exitosamente',
+                icon: 'success',
+                confirmButtonText: 'Continuar',
+                confirmButtonColor: '#10b981',
+                toast: true,
+                position: 'top',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'swal-popup-success',
+                    title: 'swal-title-success',
+                    content: 'swal-content-success'
+                }
+            });
+        },
+        onError: (errors) => {
+            console.log('❌ Errores:', errors);
+            isSubmitting.value = false;
+        },
+        onFinish: () => {
+            console.log('🏁 Petición finalizada');
+            isSubmitting.value = false;
+        }
+    });
 };
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(amount);
-};
-
+// Inicialización
 onMounted(() => {
-    // Agregar un producto por defecto
-    addProduct();
+    form.fecha = getTodayDate();
+    filteredProveedores.value = props.proveedores;
+    addProduct(); // Agregar un producto por defecto
+
+    // Auto-focus en el campo proveedor al cargar la página
+    setTimeout(() => {
+        const proveedorInput = document.getElementById('proveedor');
+        if (proveedorInput) {
+            proveedorInput.focus();
+        }
+    }, 100);
 });
 </script>
+
+<style scoped>
+:deep(.swal-popup-success) {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border: 2px solid #10b981;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+:deep(.swal-title-success) {
+    color: #059669;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+:deep(.swal-content-success) {
+    color: #374151;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+</style>

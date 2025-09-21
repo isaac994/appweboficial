@@ -30,7 +30,6 @@ class VentaSeeder extends Seeder
 
             $venta = Venta::create([
                 'id_cliente' => $cliente->id_cliente,
-                'total' => 0, // Se calculará después
                 'estado' => $estado,
                 'notas' => 'Venta de ejemplo generada por el seeder',
                 'created_at' => now()->subDays(rand(1, 30))
@@ -38,27 +37,23 @@ class VentaSeeder extends Seeder
 
             // Agregar productos a la venta
             $numProductos = rand(1, 3);
-            $totalVenta = 0;
 
             for ($j = 0; $j < $numProductos; $j++) {
                 $producto = $productos->random();
                 $cantidad = rand(1, 2);
                 $precioUnitario = $producto->precio_venta;
-                $subtotal = $cantidad * $precioUnitario;
 
                 DetalleVenta::create([
                     'id_venta' => $venta->id_venta,
                     'id_producto' => $producto->id_producto,
                     'cantidad' => $cantidad,
-                    'precio_unitario' => $precioUnitario,
-                    'subtotal' => $subtotal
+                    'precio_unitario' => $precioUnitario
                 ]);
 
                 $totalVenta += $subtotal;
             }
 
-            // Actualizar el total de la venta
-            $venta->update(['total' => $totalVenta]);
+
         }
     }
 }

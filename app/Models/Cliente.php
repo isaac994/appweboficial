@@ -12,9 +12,9 @@ class Cliente extends Model
 
     protected $fillable = [
         'nombre',
-        'telefono',
-        'direccion',
-        'correo_electronico'
+        'apellidos',
+        'ci',
+        'telefono'
     ];
 
     /**
@@ -30,7 +30,9 @@ class Cliente extends Model
      */
     public function getTotalComprasAttribute()
     {
-        return $this->ventas()->sum('total');
+        return $this->ventas()->with('detalles')->get()->sum(function($venta) {
+            return $venta->detalles->sum('total_parcial');
+        });
     }
 
     /**
@@ -55,23 +57,5 @@ class Cliente extends Model
     public function getVentasRecientesAttribute()
     {
         return $this->ventas()->with(['detalles.producto'])->latest()->limit(5)->get();
-    }
-
-    /**
-     * Obtiene el estado de fidelización del cliente
-     */
-    public function getEstadoFidelizacionAttribute()
-    {
-        $totalCompras = $this->getTotalComprasAttribute();
-
-        if ($totalCompras >= 1000) {
-            return 'Premium';
-        } elseif ($totalCompras >= 500) {
-            return 'Oro';
-        } elseif ($totalCompras >= 100) {
-            return 'Plata';
-        } else {
-            return 'Bronce';
-        }
     }
 }

@@ -37,11 +37,15 @@
                   v-model="form.nombre"
                   type="text"
                   required
+                  maxlength="50"
                   class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   :class="{ 'border-red-500': form.errors.nombre }"
-                  placeholder="Nombre del producto"
+                  placeholder="Nombre del producto (máximo 50 caracteres)"
                 />
-                <p v-if="form.errors.nombre" class="mt-1 text-sm text-red-400">{{ form.errors.nombre }}</p>
+                <div class="flex justify-between items-center mt-1">
+                  <p v-if="form.errors.nombre" class="text-sm text-red-400">{{ form.errors.nombre }}</p>
+                  <p class="text-sm text-gray-400">{{ form.nombre.length }}/50 caracteres</p>
+                </div>
               </div>
 
               <!-- Descripción -->
@@ -57,26 +61,6 @@
                 ></textarea>
               </div>
 
-              <!-- Precio de Compra -->
-              <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">
-                  Precio de Compra (Bs) *
-                </label>
-                <div class="relative">
-                  <span class="absolute left-3 top-3 text-gray-400">$</span>
-                  <input
-                    v-model="form.precio_compra"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                    class="w-full pl-8 pr-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    :class="{ 'border-red-500': form.errors.precio_compra }"
-                    placeholder="0.00"
-                  />
-                </div>
-                <p v-if="form.errors.precio_compra" class="mt-1 text-sm text-red-400">{{ form.errors.precio_compra }}</p>
-              </div>
 
               <!-- Precio de Venta -->
               <div>
@@ -84,7 +68,7 @@
                   Precio de Venta (Bs) *
                 </label>
                 <div class="relative">
-                  <span class="absolute left-3 top-3 text-gray-400">$</span>
+                  <span class="absolute left-3 top-3 text-gray-400">Bs</span>
                   <input
                     v-model="form.precio_venta"
                     type="number"
@@ -136,23 +120,7 @@
                 <p v-if="form.errors.id_marca" class="mt-1 text-sm text-red-400">{{ form.errors.id_marca }}</p>
               </div>
 
-              <!-- Proveedor -->
-              <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">
-                  Proveedor
-                </label>
-                <select
-                  v-model="form.id_proveedor"
-                  class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  :class="{ 'border-red-500': form.errors.id_proveedor }"
-                >
-                  <option value="">Selecciona un proveedor</option>
-                  <option v-for="proveedor in proveedores" :key="proveedor.id_proveedor" :value="proveedor.id_proveedor">
-                    {{ proveedor.nombre }}
-                  </option>
-                </select>
-                <p v-if="form.errors.id_proveedor" class="mt-1 text-sm text-red-400">{{ form.errors.id_proveedor }}</p>
-              </div>
+
 
               <!-- Imagen del Producto -->
               <div class="md:col-span-2">
@@ -211,6 +179,7 @@
               </div>
             </div>
 
+
             <!-- Botones -->
             <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-purple-500/30">
               <Link
@@ -243,18 +212,17 @@
 
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
-import { Link, useForm } from '@inertiajs/vue3'
+import { Link, useForm, router } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import Swal from 'sweetalert2'
 
 interface Producto {
   id_producto: number
   nombre: string
   descripcion: string | null
-  precio_compra: number
   precio_venta: number
   id_categoria: number
   id_marca: number | null
-  id_proveedor: number | null
   img_url: string | null
 }
 
@@ -270,19 +238,10 @@ interface Marca {
   pais_origen: string | null
 }
 
-interface Proveedor {
-  id_proveedor: number
-  nombre: string
-  telefono: string | null
-  direccion: string | null
-  correo: string | null
-}
-
 interface Props {
   producto: Producto
   categorias: Categoria[]
   marcas: Marca[]
-  proveedores: Proveedor[]
   errors: Record<string, string>
 }
 
@@ -291,11 +250,9 @@ const props = defineProps<Props>()
 const form = useForm({
   nombre: props.producto.nombre,
   descripcion: props.producto.descripcion || '',
-  precio_compra: props.producto.precio_compra.toString(),
   precio_venta: props.producto.precio_venta.toString(),
   id_categoria: props.producto.id_categoria.toString(),
   id_marca: props.producto.id_marca?.toString() || '',
-  id_proveedor: props.producto.id_proveedor?.toString() || '',
   img_url: props.producto.img_url || '',
   imagen: null as File | null
 })
@@ -350,10 +307,48 @@ const submitForm = () => {
   form.post(route('productos.update.post', props.producto.id_producto), {
     onSuccess: () => {
       isSubmitting.value = false
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'Producto actualizado exitosamente',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false
+      }).then(() => {
+        router.visit(route('productos.index'))
+      })
     },
     onError: (errors) => {
       isSubmitting.value = false
       console.log('Errores:', errors)
+
+      // Mostrar mensaje flotante para duplicidad
+      if (errors.duplicidad) {
+        Swal.fire({
+          title: '⚠️ Producto Duplicado',
+          html: `
+            <div style="text-align: left;">
+              <p style="margin-bottom: 10px;"><strong>${errors.duplicidad}</strong></p>
+              <p style="color: #666; font-size: 14px;">Por favor, cambia el nombre, marca o categoría para crear un producto único.</p>
+            </div>
+          `,
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#ef4444',
+          toast: true,
+          position: 'top',
+          showConfirmButton: true,
+          timer: 6000,
+          timerProgressBar: true,
+          allowOutsideClick: false,
+          customClass: {
+            popup: 'swal-popup-duplicate',
+            title: 'swal-title-duplicate',
+            content: 'swal-content-duplicate'
+          }
+        })
+      }
     },
     preserveScroll: true,
     preserveState: true
@@ -365,3 +360,25 @@ const handleImageError = (event: Event) => {
   img.style.display = 'none'
 }
 </script>
+
+<style scoped>
+/* Estilos personalizados para SweetAlert2 */
+:deep(.swal-popup-duplicate) {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid #ef4444;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+:deep(.swal-title-duplicate) {
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+:deep(.swal-content-duplicate) {
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+</style>

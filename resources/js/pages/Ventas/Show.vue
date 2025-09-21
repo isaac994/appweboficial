@@ -40,7 +40,11 @@
                             <div class="mt-1 text-lg font-semibold">{{ formatDate(venta.fecha) }}</div>
                         </div>
 
-
+                        <div>
+                            <Label class="text-sm font-medium text-gray-500">Total de Productos</Label>
+                            <div class="mt-1 text-lg font-semibold">{{ totalProductos }} productos</div>
+                            <div class="text-sm text-gray-600">{{ venta.detalles?.length || 0 }} tipos diferentes</div>
+                        </div>
                     </div>
 
 
@@ -85,11 +89,11 @@
                                         {{ detalle.cantidad }}
                                     </td>
                                     <td class="py-3 px-4 text-gray-900">
-                                        ${{ formatCurrency(detalle.precio_unitario) }}
+                                        {{ formatCurrency(detalle.precio_unitario) }}
                                     </td>
                                     <td class="py-3 px-4">
                                         <span class="font-semibold text-green-600">
-                                            ${{ formatCurrency(detalle.total_parcial) }}
+                                            {{ formatCurrency(detalle.total_parcial || 0) }}
                                         </span>
                                     </td>
                                 </tr>
@@ -101,7 +105,7 @@
                     <div class="border-t pt-6 mt-6">
                         <div class="flex justify-between items-center text-xl font-bold">
                             <span>Total de la Venta:</span>
-                            <span class="text-green-600">${{ formatCurrency(venta.total) }}</span>
+                            <span class="text-green-600">{{ formatCurrency(venta.total || 0) }}</span>
                         </div>
                     </div>
                 </CardContent>
@@ -131,6 +135,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import Heading from '@/components/Heading.vue';
@@ -177,20 +182,36 @@ const props = defineProps<{
     venta: Venta;
 }>();
 
-
+// Computed property para calcular el total de productos vendidos
+const totalProductos = computed(() => {
+    if (!props.venta.detalles) return 0;
+    return props.venta.detalles.reduce((total, detalle) => total + (detalle.cantidad || 0), 0);
+});
 
 const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('es-ES', {
+    if (!date) return '';
+
+    // Siempre extraer solo la parte de la fecha (YYYY-MM-DD) para evitar problemas de zona horaria
+    const dateOnly = date.split('T')[0]; // Quitar la parte de tiempo si existe
+    const [year, month, day] = dateOnly.split('-');
+
+    // Crear fecha en zona horaria local
+    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+
+    return localDate.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: 'numeric'
     });
 };
 
 const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
+    // Manejar valores NaN, null, undefined o no numéricos
+    if (!amount || isNaN(amount) || amount === null || amount === undefined) {
+        return 'Bs 0.00';
+    }
+
+    return 'Bs ' + new Intl.NumberFormat('es-BO', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(amount);

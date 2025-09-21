@@ -8,19 +8,83 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MarcaController;
-use App\Http\Controllers\ProveedorController;
+
 use App\Http\Controllers\VentaController;
+use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\ReporteController;
 
 // Rutas públicas
+Route::get('/test-csrf', function () {
+    return response()->json(['message' => 'CSRF funcionando', 'token' => csrf_token()]);
+});
+
+
+
 Route::get('/', function () {
-    $productosRecientes = \App\Models\Producto::with(['categoria', 'marca'])
-        ->orderBy('created_at', 'desc')
-        ->limit(8)
-        ->get();
+    $query = \App\Models\Producto::with(['categoria', 'marca']);
+
+    // Filtros de búsqueda
+    if (request('search')) {
+        $search = request('search');
+        $query->where(function($q) use ($search) {
+            $q->where('nombre', 'like', "%{$search}%")
+              ->orWhere('descripcion', 'like', "%{$search}%")
+              ->orWhereHas('categoria', function($q) use ($search) {
+                  $q->where('nombre', 'like', "%{$search}%");
+              })
+              ->orWhereHas('marca', function($q) use ($search) {
+                  $q->where('nombre', 'like', "%{$search}%");
+              });
+        });
+    }
+
+    // Filtro por categoría
+    if (request('categoria')) {
+        $query->where('id_categoria', request('categoria'));
+    }
+
+    // Filtro por marca
+    if (request('marca')) {
+        $query->where('id_marca', request('marca'));
+    }
+
+    // Filtro por estado dinámico
+    if (request('estado')) {
+        if (request('estado') === 'disponible') {
+            $query->whereHas('detallesCompra', function ($q) {
+                $q->havingRaw('SUM(cantidad) > (SELECT COALESCE(SUM(cantidad), 0) FROM detalle_ventas WHERE detalle_ventas.id_producto = productos.id_producto)');
+            });
+        } elseif (request('estado') === 'agotado') {
+            $query->whereDoesntHave('detallesCompra')
+                ->orWhereHas('detallesCompra', function ($q) {
+                    $q->havingRaw('SUM(cantidad) <= (SELECT COALESCE(SUM(cantidad), 0) FROM detalle_ventas WHERE detalle_ventas.id_producto = productos.id_producto)');
+                });
+        }
+    }
+
+    // Ordenamiento
+    $sortBy = request('sort', 'nombre');
+    $sortOrder = request('order', 'asc');
+    $query->orderBy($sortBy, $sortOrder);
+
+    $productos = $query->paginate(12);
+
+    // Calcular estado dinámico para cada producto
+    $productos->getCollection()->transform(function ($producto) {
+        $producto->estado_disponible = $producto->estado_disponible;
+        return $producto;
+    });
+
+    // Obtener categorías y marcas para los filtros
+    $categorias = \App\Models\Categoria::orderBy('nombre')->get();
+    $marcas = \App\Models\Marca::orderBy('nombre')->get();
 
     return Inertia::render('Welcome', [
-        'productosRecientes' => $productosRecientes
+        'productos' => $productos,
+        'categorias' => $categorias,
+        'marcas' => $marcas,
+        'filters' => request()->only(['search', 'categoria', 'marca', 'estado', 'sort', 'order'])
     ]);
 })->name('home');
 
@@ -43,12 +107,16 @@ Route::middleware('auth')->group(function () {
 
     // Categorías
     Route::resource('categorias', CategoriaController::class);
+    Route::get('/categorias/{id}/can-delete', [CategoriaController::class, 'canDelete'])->name('categorias.can-delete');
 
     // Marcas
     Route::resource('marcas', MarcaController::class);
+    Route::get('/marcas/{id}/can-delete', [MarcaController::class, 'canDelete'])->name('marcas.can-delete');
 
     // Proveedores
-    Route::resource('proveedores', ProveedorController::class);
+    Route::resource('proveedores', ProveedorController::class)->parameters([
+        'proveedores' => 'proveedor'
+    ]);
 
     // Clientes
     Route::resource('clientes', ClienteController::class);
@@ -56,9 +124,25 @@ Route::middleware('auth')->group(function () {
 
     // Ventas
     Route::resource('ventas', VentaController::class);
+    Route::get('/ventas/{id}/recibo', [VentaController::class, 'recibo'])->name('ventas.recibo');
 
     // Compras
     Route::resource('compras', CompraController::class);
+    Route::get('/compras/{compra}/recibo', [CompraController::class, 'recibo'])->name('compras.recibo');
+
+    // Reportes
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/productos', [ReporteController::class, 'productos'])->name('reportes.productos');
+    Route::post('/reportes/productos/generar', [ReporteController::class, 'generarReporteProductos'])->name('reportes.productos.generar');
+    Route::get('/reportes/compras', [ReporteController::class, 'compras'])->name('reportes.compras');
+    Route::post('/reportes/compras/generar', [ReporteController::class, 'generarReporteCompras'])->name('reportes.compras.generar');
+    Route::get('/reportes/proveedores', [ReporteController::class, 'proveedores'])->name('reportes.proveedores');
+    Route::post('/reportes/proveedores/generar', [ReporteController::class, 'generarReporteProveedores'])->name('reportes.generar-proveedores');
+    Route::get('/reportes/clientes', [ReporteController::class, 'clientes'])->name('reportes.clientes');
+    Route::post('/reportes/clientes/generar', [ReporteController::class, 'generarReporteClientes'])->name('reportes.generar-clientes');
+    Route::get('/reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas');
+    Route::post('/reportes/ventas/generar', [ReporteController::class, 'generarReporteVentas'])->name('reportes.generar-ventas');
+    Route::get('/reportes/test', [ReporteController::class, 'testPdf'])->name('reportes.test');
 
     // Perfil de usuario
     Route::get('/profile', [AuthController::class, 'profile'])->name('profile');

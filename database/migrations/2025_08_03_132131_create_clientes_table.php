@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('clientes', function (Blueprint $table) {
             $table->bigIncrements('id_cliente');
             $table->string('nombre', 100);
+            $table->string('ci_nit', 20)->unique();
             $table->string('telefono', 25)->nullable();
-            $table->string('direccion', 255)->nullable();
-            $table->string('correo_electronico', 150)->nullable();
             $table->timestamps();
         });
     }

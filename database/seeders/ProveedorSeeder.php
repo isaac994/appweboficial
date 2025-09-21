@@ -15,52 +15,29 @@ class ProveedorSeeder extends Seeder
     {
         $proveedores = [
             [
-                'nombre' => 'TechSupply Pro',
-                'telefono' => '+1 (555) 123-4567',
-                'direccion' => '123 Tech Street, Silicon Valley, CA 94025',
-                'correo' => 'contact@techsupplypro.com'
+                'nombre' => 'Distribuidora Central S.A.',
+                'ci_nit' => '123456789',
+                'telefono' => '+591 2 123456'
             ],
             [
-                'nombre' => 'Mobile World Distributors',
-                'telefono' => '+1 (555) 987-6543',
-                'direccion' => '456 Mobile Ave, Los Angeles, CA 90210',
-                'correo' => 'sales@mobileworld.com'
+                'nombre' => 'Importadora del Norte Ltda.',
+                'ci_nit' => '987654321',
+                'telefono' => '+591 3 654321'
             ],
             [
-                'nombre' => 'Digital Devices Inc',
-                'telefono' => '+1 (555) 456-7890',
-                'direccion' => '789 Digital Blvd, San Francisco, CA 94102',
-                'correo' => 'info@digitaldevices.com'
+                'nombre' => 'Comercial Sur EIRL',
+                'ci_nit' => '456789123',
+                'telefono' => '+591 4 789123'
             ],
             [
-                'nombre' => 'Smart Gadgets Co',
-                'telefono' => '+1 (555) 321-0987',
-                'direccion' => '321 Smart Way, San Diego, CA 92101',
-                'correo' => 'hello@smartgadgets.com'
+                'nombre' => 'Mayorista Express',
+                'ci_nit' => '789123456',
+                'telefono' => '+591 7 123789'
             ],
             [
-                'nombre' => 'Electronics Plus',
-                'telefono' => '+1 (555) 654-3210',
-                'direccion' => '654 Electronics Rd, Oakland, CA 94601',
-                'correo' => 'sales@electronicsplus.com'
-            ],
-            [
-                'nombre' => 'Phone Accessories Ltd',
-                'telefono' => '+1 (555) 789-0123',
-                'direccion' => '789 Accessories St, San Jose, CA 95112',
-                'correo' => 'contact@phoneaccessories.com'
-            ],
-            [
-                'nombre' => 'Mobile Solutions',
-                'telefono' => '+1 (555) 012-3456',
-                'direccion' => '012 Solutions Ave, Fresno, CA 93721',
-                'correo' => 'info@mobilesolutions.com'
-            ],
-            [
-                'nombre' => 'Tech Importers',
-                'telefono' => '+1 (555) 345-6789',
-                'direccion' => '345 Import St, Sacramento, CA 95814',
-                'correo' => 'sales@techimporters.com'
+                'nombre' => 'Proveedora Nacional',
+                'ci_nit' => '321654987',
+                'telefono' => '+591 6 456987'
             ]
         ];
 

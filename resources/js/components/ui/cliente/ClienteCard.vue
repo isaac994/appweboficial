@@ -62,7 +62,7 @@
             <p class="text-xs text-gray-500">Ventas</p>
           </div>
           <div>
-            <p class="text-2xl font-bold text-green-600">${{ formatCurrency(cliente.total_compras || 0) }}</p>
+            <p class="text-2xl font-bold text-green-600">{{ formatCurrency(cliente.total_compras || 0) }}</p>
             <p class="text-sm text-gray-500">Total</p>
           </div>
           <div>
@@ -132,9 +132,9 @@ const formatDate = (dateString: string) => {
 }
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-MX', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+  return 'Bs ' + new Intl.NumberFormat('es-BO', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(amount)
 }
 

@@ -81,8 +81,29 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Reportes',
-        href: '/reportes',
         icon: BarChart3,
+        children: [
+            {
+                title: 'Productos',
+                href: '/reportes/productos',
+            },
+            {
+                title: 'Compras',
+                href: '/reportes/compras',
+            },
+            {
+                title: 'Proveedores',
+                href: '/reportes/proveedores',
+            },
+            {
+                title: 'Clientes',
+                href: '/reportes/clientes',
+            },
+            {
+                title: 'Ventas',
+                href: '/reportes/ventas',
+            },
+        ],
     },
     {
         title: 'Configuración',

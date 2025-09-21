@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Producto;
 
@@ -15,154 +14,148 @@ class ProductoSeeder extends Seeder
     {
         $productos = [
             [
-                'nombre' => 'iPhone 15 Pro Max',
-                'descripcion' => 'El iPhone más avanzado con chip A17 Pro, cámara de 48MP y pantalla de 6.7"',
-                'precio_compra' => 899.99,
+                'nombre' => 'iPhone 15 Pro',
+                'descripcion' => 'El último iPhone con características avanzadas',
+                'precio_venta' => 1299.99,
+                'id_categoria' => 1,
+                'id_marca' => 1,
+                'img_url' => null,
+                'estado' => 'activo'
+            ],
+            [
+                'nombre' => 'Samsung Galaxy S24',
+                'descripcion' => 'Smartphone Android de alta gama',
                 'precio_venta' => 1199.99,
-                'id_categoria' => 1, // Smartphones
-                'id_marca' => 1, // Apple
-                'id_proveedor' => 1, // TechSupply Pro
-                'img_url' => 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400'
+                'id_categoria' => 1,
+                'id_marca' => 2,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'Samsung Galaxy S24 Ultra',
-                'descripcion' => 'Flagship de Samsung con S Pen integrado y cámara de 200MP',
-                'precio_compra' => 799.99,
-                'precio_venta' => 1099.99,
-                'id_categoria' => 1, // Smartphones
-                'id_marca' => 2, // Samsung
-                'id_proveedor' => 2, // Mobile World Distributors
-                'img_url' => 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400'
+                'nombre' => 'MacBook Air M2',
+                'descripcion' => 'Laptop ultraportátil con chip M2',
+                'precio_venta' => 999.99,
+                'id_categoria' => 2,
+                'id_marca' => 1,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'Xiaomi 14 Pro',
-                'descripcion' => 'Potente smartphone con Leica Optics y Snapdragon 8 Gen 3',
-                'precio_compra' => 599.99,
-                'precio_venta' => 799.99,
-                'id_categoria' => 1, // Smartphones
-                'id_marca' => 3, // Xiaomi
-                'id_proveedor' => 3, // Digital Devices Inc
-                'img_url' => 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400'
+                'nombre' => 'Dell XPS 13',
+                'descripcion' => 'Laptop premium con pantalla InfinityEdge',
+                'precio_venta' => 1299.99,
+                'id_categoria' => 2,
+                'id_marca' => 3,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'iPad Pro 12.9"',
-                'descripcion' => 'Tablet profesional con chip M2 y pantalla Liquid Retina XDR',
-                'precio_compra' => 899.99,
-                'precio_venta' => 1199.99,
-                'id_categoria' => 2, // Tablets
-                'id_marca' => 1, // Apple
-                'id_proveedor' => 1, // TechSupply Pro
-                'img_url' => 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400'
-            ],
-            [
-                'nombre' => 'Samsung Galaxy Tab S9 Ultra',
-                'descripcion' => 'Tablet Android premium con S Pen y pantalla de 14.6"',
-                'precio_compra' => 699.99,
+                'nombre' => 'iPad Air',
+                'descripcion' => 'Tablet versátil para trabajo y entretenimiento',
                 'precio_venta' => 899.99,
-                'id_categoria' => 2, // Tablets
-                'id_marca' => 2, // Samsung
-                'id_proveedor' => 2, // Mobile World Distributors
-                'img_url' => 'https://images.unsplash.com/photo-1585790050237-1f3b9d6d1b2a?w=400'
+                'id_categoria' => 3,
+                'id_marca' => 1,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'AirPods Pro 2',
-                'descripcion' => 'Auriculares inalámbricos con cancelación de ruido activa',
-                'precio_compra' => 199.99,
-                'precio_venta' => 249.99,
-                'id_categoria' => 4, // Auriculares
-                'id_marca' => 1, // Apple
-                'id_proveedor' => 1, // TechSupply Pro
-                'img_url' => 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400'
-            ],
-            [
-                'nombre' => 'Samsung Galaxy Buds2 Pro',
-                'descripcion' => 'Auriculares inalámbricos con sonido Hi-Fi 24bit',
-                'precio_compra' => 149.99,
-                'precio_venta' => 199.99,
-                'id_categoria' => 4, // Auriculares
-                'id_marca' => 2, // Samsung
-                'id_proveedor' => 2, // Mobile World Distributors
-                'img_url' => 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400'
-            ],
-            [
-                'nombre' => 'Cargador USB-C 65W',
-                'descripcion' => 'Cargador rápido compatible con múltiples dispositivos',
-                'precio_compra' => 19.99,
-                'precio_venta' => 29.99,
-                'id_categoria' => 5, // Cargadores
-                'id_marca' => null,
-                'id_proveedor' => 4, // Smart Gadgets Co
-                'img_url' => 'https://images.unsplash.com/photo-1609592806598-ef155da6d42a?w=400'
-            ],
-            [
-                'nombre' => 'Cable Lightning Premium',
-                'descripcion' => 'Cable de carga rápida para dispositivos Apple',
-                'precio_compra' => 9.99,
-                'precio_venta' => 19.99,
-                'id_categoria' => 5, // Cargadores
-                'id_marca' => 1, // Apple
-                'id_proveedor' => 1, // TechSupply Pro
-                'img_url' => 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400'
-            ],
-            [
-                'nombre' => 'Apple Watch Series 9',
-                'descripcion' => 'Reloj inteligente con monitor cardíaco y GPS',
-                'precio_compra' => 299.99,
+                'nombre' => 'Samsung Galaxy Tab S9',
+                'descripcion' => 'Tablet Android de alto rendimiento',
                 'precio_venta' => 399.99,
-                'id_categoria' => 6, // Smartwatches
-                'id_marca' => 1, // Apple
-                'id_proveedor' => 1, // TechSupply Pro
-                'img_url' => 'https://images.unsplash.com/photo-1544117519-31a4b719223d?w=400'
+                'id_categoria' => 3,
+                'id_marca' => 2,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'Samsung Galaxy Watch 6',
-                'descripcion' => 'Smartwatch Android con Wear OS y monitor de salud',
-                'precio_compra' => 249.99,
-                'precio_venta' => 349.99,
-                'id_categoria' => 6, // Smartwatches
-                'id_marca' => 2, // Samsung
-                'id_proveedor' => 2, // Mobile World Distributors
-                'img_url' => 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400'
+                'nombre' => 'AirPods Pro',
+                'descripcion' => 'Auriculares inalámbricos con cancelación de ruido',
+                'precio_venta' => 299.99,
+                'id_categoria' => 4,
+                'id_marca' => 1,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'Carcasa iPhone 15 Pro',
-                'descripcion' => 'Carcasa protectora de silicona para iPhone 15 Pro',
-                'precio_compra' => 14.99,
+                'nombre' => 'Sony WH-1000XM5',
+                'descripcion' => 'Auriculares over-ear con cancelación de ruido líder',
+                'precio_venta' => 49.99,
+                'id_categoria' => 4,
+                'id_marca' => 4,
+                'img_url' => null,
+                'estado' => 'activo'
+            ],
+            [
+                'nombre' => 'Cable USB-C',
+                'descripcion' => 'Cable de carga y datos USB-C de alta calidad',
                 'precio_venta' => 29.99,
-                'id_categoria' => 3, // Accesorios
-                'id_marca' => 1, // Apple
-                'id_proveedor' => 6, // Phone Accessories Ltd
-                'img_url' => 'https://images.unsplash.com/photo-1603313014512-71c1c8b1e3b9?w=400'
+                'id_categoria' => 5,
+                'id_marca' => 5,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'Protector de Pantalla Galaxy S24',
-                'descripcion' => 'Protector de cristal templado para Samsung Galaxy S24',
-                'precio_compra' => 4.99,
-                'precio_venta' => 12.99,
-                'id_categoria' => 3, // Accesorios
-                'id_marca' => 2, // Samsung
-                'id_proveedor' => 6, // Phone Accessories Ltd
-                'img_url' => 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400'
+                'nombre' => 'Cargador Inalámbrico',
+                'descripcion' => 'Cargador inalámbrico de 15W para smartphones',
+                'precio_venta' => 599.99,
+                'id_categoria' => 5,
+                'id_marca' => 6,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'Batería iPhone 14 Pro',
-                'descripcion' => 'Batería de reemplazo original para iPhone 14 Pro',
-                'precio_compra' => 49.99,
-                'precio_venta' => 79.99,
-                'id_categoria' => 7, // Repuestos
-                'id_marca' => 1, // Apple
-                'id_proveedor' => 7, // Mobile Solutions
-                'img_url' => 'https://images.unsplash.com/photo-1609592806598-ef155da6d42a?w=400'
+                'nombre' => 'Monitor LG 27" 4K',
+                'descripcion' => 'Monitor profesional con resolución 4K',
+                'precio_venta' => 449.99,
+                'id_categoria' => 6,
+                'id_marca' => 7,
+                'img_url' => null,
+                'estado' => 'activo'
             ],
             [
-                'nombre' => 'Pantalla Samsung Galaxy S23',
-                'descripcion' => 'Pantalla de reemplazo para Samsung Galaxy S23',
-                'precio_compra' => 89.99,
-                'precio_venta' => 149.99,
-                'id_categoria' => 7, // Repuestos
-                'id_marca' => 2, // Samsung
-                'id_proveedor' => 7, // Mobile Solutions
-                'img_url' => 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400'
+                'nombre' => 'Teclado Mecánico RGB',
+                'descripcion' => 'Teclado mecánico con switches Cherry MX y RGB',
+                'precio_venta' => 399.99,
+                'id_categoria' => 6,
+                'id_marca' => 8,
+                'img_url' => null,
+                'estado' => 'activo'
+            ],
+            [
+                'nombre' => 'Mouse Gaming',
+                'descripcion' => 'Mouse gaming con sensor de alta precisión',
+                'precio_venta' => 24.99,
+                'id_categoria' => 6,
+                'id_marca' => 9,
+                'img_url' => null,
+                'estado' => 'activo'
+            ],
+            [
+                'nombre' => 'Webcam HD',
+                'descripcion' => 'Webcam de alta definición para videoconferencias',
+                'precio_venta' => 14.99,
+                'id_categoria' => 6,
+                'id_marca' => 10,
+                'img_url' => null,
+                'estado' => 'activo'
+            ],
+            [
+                'nombre' => 'Disco Duro Externo 2TB',
+                'descripcion' => 'Disco duro externo portátil de 2TB',
+                'precio_venta' => 99.99,
+                'id_categoria' => 7,
+                'id_marca' => 11,
+                'img_url' => null,
+                'estado' => 'activo'
+            ],
+            [
+                'nombre' => 'Memoria USB 128GB',
+                'descripcion' => 'Memoria USB de alta velocidad 128GB',
+                'precio_venta' => 189.99,
+                'id_categoria' => 7,
+                'id_marca' => 12,
+                'img_url' => null,
+                'estado' => 'activo'
             ]
         ];
 

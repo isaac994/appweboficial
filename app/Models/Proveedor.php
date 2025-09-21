@@ -2,33 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Proveedor extends Model
 {
+    use HasFactory;
+
     protected $table = 'proveedores';
     protected $primaryKey = 'id_proveedor';
 
     protected $fillable = [
         'nombre',
-        'telefono',
-        'direccion',
-        'correo'
+        'ci_nit',
+        'telefono'
     ];
 
-    /**
-     * Obtiene los productos de este proveedor
-     */
-    public function productos(): HasMany
-    {
-        return $this->hasMany(Producto::class, 'id_proveedor');
-    }
-
-    /**
-     * Obtiene las compras realizadas a este proveedor
-     */
-    public function compras(): HasMany
+    public function compras()
     {
         return $this->hasMany(Compra::class, 'id_proveedor');
     }

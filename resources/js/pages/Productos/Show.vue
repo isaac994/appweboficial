@@ -66,10 +66,7 @@
                     <p class="text-white font-semibold">{{ producto.marca?.nombre || 'Sin marca' }}</p>
                   </div>
 
-                  <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
-                    <h4 class="text-sm font-medium text-gray-400 mb-1">Proveedor</h4>
-                    <p class="text-white font-semibold">{{ producto.proveedor?.nombre || 'Sin proveedor' }}</p>
-                  </div>
+
 
                   <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
                     <h4 class="text-sm font-medium text-gray-400 mb-1">ID del Producto</h4>
@@ -77,78 +74,29 @@
                   </div>
                 </div>
 
-                <!-- Pricing -->
+                <!-- Pricing and Status -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div class="bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-lg p-4 border border-green-500/30">
-                    <h4 class="text-sm font-medium text-gray-400 mb-1">Precio de Compra</h4>
-                    <p class="text-green-400 font-bold text-xl">Bs {{ producto.precio_compra }}</p>
-                  </div>
-
                   <div class="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg p-4 border border-purple-500/30">
                     <h4 class="text-sm font-medium text-gray-400 mb-1">Precio de Venta</h4>
                     <p class="text-purple-400 font-bold text-xl">Bs {{ producto.precio_venta }}</p>
                   </div>
+
+                  <div class="bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-lg p-4 border border-green-500/30">
+                    <h4 class="text-sm font-medium text-gray-400 mb-1">Estado</h4>
+                    <p class="font-bold text-xl" :class="producto.estado_disponible === 'disponible' ? 'text-green-400' : 'text-red-400'">
+                      {{ producto.estado_disponible === 'disponible' ? 'Disponible' : 'Agotado' }}
+                    </p>
+                  </div>
                 </div>
 
-                <!-- Profit Calculation -->
-                <div class="bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-lg p-4 border border-blue-500/30">
-                  <h4 class="text-sm font-medium text-gray-400 mb-1">Margen de Ganancia</h4>
-                  <p class="text-blue-400 font-bold text-xl">Bs {{ (producto.precio_venta - producto.precio_compra).toFixed(2) }}</p>
-                  <p class="text-blue-300 text-sm">
-                    {{ ((producto.precio_venta - producto.precio_compra) / producto.precio_compra * 100).toFixed(1) }}% de ganancia
-                  </p>
-                </div>
+
               </div>
 
-              <!-- Actions -->
-              <div class="flex space-x-4 pt-6">
-                <Link
-                  :href="route('productos.edit', producto.id_producto)"
-                  class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-300 text-center"
-                >
-                  <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                  Editar Producto
-                </Link>
-                <button
-                  @click="deleteProducto"
-                  class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-lg transition-all duration-300"
-                >
-                  <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                  Eliminar Producto
-                </button>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Delete Confirmation Modal -->
-      <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-black/90 border border-purple-500/30 rounded-xl p-6 max-w-md w-full mx-4">
-          <h3 class="text-lg font-semibold text-white mb-4">Confirmar Eliminación</h3>
-          <p class="text-purple-300 mb-6">
-            ¿Estás seguro de que quieres eliminar el producto "{{ producto.nombre }}"? Esta acción no se puede deshacer.
-          </p>
-          <div class="flex space-x-3">
-            <button
-              @click="confirmDelete"
-              class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200"
-            >
-              Eliminar
-            </button>
-            <button
-              @click="showDeleteModal = false"
-              class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-300"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </AppLayout>
 </template>
@@ -162,16 +110,14 @@ interface Producto {
   id_producto: number
   nombre: string
   descripcion?: string
-  precio_compra: number
   precio_venta: number
+  estado: string
+  estado_disponible: string
   img_url?: string
   categoria?: {
     nombre: string
   }
   marca?: {
-    nombre: string
-  }
-  proveedor?: {
     nombre: string
   }
 }
@@ -180,7 +126,6 @@ const props = defineProps<{
   producto: Producto
 }>()
 
-const showDeleteModal = ref(false)
 
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
@@ -188,15 +133,4 @@ const handleImageError = (event: Event) => {
   img.parentElement?.classList.add('bg-gradient-to-br', 'from-purple-500/30', 'to-pink-500/30')
 }
 
-const deleteProducto = () => {
-  showDeleteModal.value = true
-}
-
-const confirmDelete = () => {
-  router.delete(route('productos.destroy', props.producto.id_producto), {
-    onSuccess: () => {
-      showDeleteModal.value = false
-    }
-  })
-}
 </script>

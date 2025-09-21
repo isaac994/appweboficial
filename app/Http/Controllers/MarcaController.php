@@ -16,12 +16,16 @@ class MarcaController extends Controller
     {
         $query = Marca::withCount('productos');
 
-        // Filtros
+        // Filtro multicampo de búsqueda
         if ($request->filled('search')) {
-            $query->where('nombre', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nombre', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('pais_origen', 'like', '%' . $searchTerm . '%');
+            });
         }
 
-        $marcas = $query->orderBy('nombre')->paginate(5);
+        $marcas = $query->orderBy('nombre')->get();
 
         return Inertia::render('Marcas/Index', [
             'marcas' => $marcas,
@@ -43,11 +47,12 @@ class MarcaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:60',
+            'nombre' => 'required|string|max:50|unique:marcas,nombre',
             'pais_origen' => 'nullable|string|max:60'
         ], [
             'nombre.required' => 'El nombre de la marca es obligatorio',
-            'nombre.max' => 'El nombre no puede tener más de 60 caracteres',
+            'nombre.max' => 'El nombre no puede tener más de 50 caracteres',
+            'nombre.unique' => 'Ya existe una marca con este nombre',
             'pais_origen.max' => 'El país de origen no puede tener más de 60 caracteres'
         ]);
 
@@ -99,11 +104,12 @@ class MarcaController extends Controller
         $marca = Marca::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:60',
+            'nombre' => 'required|string|max:50|unique:marcas,nombre,' . $id . ',id_marca',
             'pais_origen' => 'nullable|string|max:60'
         ], [
             'nombre.required' => 'El nombre de la marca es obligatorio',
-            'nombre.max' => 'El nombre no puede tener más de 60 caracteres',
+            'nombre.max' => 'El nombre no puede tener más de 50 caracteres',
+            'nombre.unique' => 'Ya existe una marca con este nombre',
             'pais_origen.max' => 'El país de origen no puede tener más de 60 caracteres'
         ]);
 
@@ -122,6 +128,28 @@ class MarcaController extends Controller
     }
 
     /**
+     * Check if a marca can be deleted
+     */
+    public function canDelete(string $id)
+    {
+        try {
+            $marca = Marca::findOrFail($id);
+            $productosCount = $marca->productos()->count();
+
+            return response()->json([
+                'can_delete' => $productosCount === 0,
+                'productos_count' => $productosCount,
+                'marca_nombre' => $marca->nombre
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'can_delete' => false,
+                'error' => 'Marca no encontrada'
+            ], 404);
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
@@ -130,14 +158,19 @@ class MarcaController extends Controller
             $marca = Marca::findOrFail($id);
 
             // Verificar si tiene productos asociados
-            if ($marca->productos()->count() > 0) {
-                return back()->withErrors(['error' => 'No se puede eliminar la marca porque tiene productos asociados']);
+            $productosCount = $marca->productos()->count();
+            if ($productosCount > 0) {
+                return back()->withErrors([
+                    'error' => "No se puede eliminar la marca '{$marca->nombre}' porque tiene {$productosCount} producto(s) asociado(s). Primero debe eliminar o cambiar la marca de estos productos."
+                ]);
             }
 
             $marca->delete();
 
             return redirect()->route('marcas.index')
-                ->with('success', 'Marca eliminada exitosamente');
+                ->with('success', "Marca '{$marca->nombre}' eliminada exitosamente");
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->withErrors(['error' => 'La marca no existe o ya fue eliminada']);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al eliminar la marca: ' . $e->getMessage()]);
         }

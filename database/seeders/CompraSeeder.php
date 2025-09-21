@@ -36,32 +36,28 @@ class CompraSeeder extends Seeder
             $compra = Compra::create([
                 'id_proveedor' => $proveedor->id_proveedor,
                 'id_usuario' => $usuario->id,
-                'fecha' => $fecha,
-                'total' => 0 // Se calculará después
+                'fecha' => $fecha
             ]);
 
             // Agregar 1-5 productos a la compra
             $numProductos = rand(1, 5);
             $productosCompra = $productos->random($numProductos);
-            $totalCompra = 0;
 
             foreach ($productosCompra as $producto) {
                 $cantidad = rand(1, 10);
-                $precioUnitario = $producto->precio_compra * (1 + (rand(-10, 20) / 100)); // Variación de ±10-20%
-                $totalParcial = $cantidad * $precioUnitario;
-                $totalCompra += $totalParcial;
+                // Usar un precio base basado en el precio de venta (aproximadamente 70% del precio de venta)
+                $precioBase = $producto->precio_venta * 0.7;
+                $precioUnitario = $precioBase * (1 + (rand(-10, 20) / 100)); // Variación de ±10-20%
 
                 DetalleCompra::create([
                     'id_compra' => $compra->id_compra,
                     'id_producto' => $producto->id_producto,
                     'cantidad' => $cantidad,
-                    'precio_unitario' => round($precioUnitario, 2),
-                    'total_parcial' => round($totalParcial, 2)
+                    'precio_unitario' => round($precioUnitario, 2)
                 ]);
             }
 
-            // Actualizar el total de la compra
-            $compra->update(['total' => round($totalCompra, 2)]);
+
         }
 
         $this->command->info('Compras de ejemplo creadas exitosamente.');

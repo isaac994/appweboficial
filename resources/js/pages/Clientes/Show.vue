@@ -47,19 +47,15 @@
                   </div>
                   <div>
                     <p class="text-sm font-medium text-gray-500">Nombre</p>
-                    <p class="text-lg text-gray-900">{{ cliente.nombre }}</p>
+                    <p class="text-lg text-gray-900">{{ cliente.nombre }} {{ cliente.apellidos || '' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">CI/NIT</p>
+                    <p class="text-lg text-gray-900">{{ cliente.ci || 'No especificado' }}</p>
                   </div>
                   <div>
                     <p class="text-sm font-medium text-gray-500">Teléfono</p>
                     <p class="text-lg text-gray-900">{{ cliente.telefono || 'No especificado' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-gray-500">Dirección</p>
-                    <p class="text-lg text-gray-900">{{ cliente.direccion || 'No especificada' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-gray-500">Correo Electrónico</p>
-                    <p class="text-lg text-gray-900">{{ cliente.correo_electronico || 'No especificado' }}</p>
                   </div>
                 </div>
               </div>
@@ -68,45 +64,21 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Estadísticas</h3>
                 <div class="space-y-3">
                   <div>
-                    <span class="font-medium text-gray-700">ID del Cliente:</span>
-                    <span class="ml-2 text-gray-900">{{ cliente.id_cliente }}</span>
-                  </div>
-                  <div>
-                    <span class="font-medium text-gray-700">Cliente desde:</span>
-                    <span class="ml-2 text-gray-900">{{ formatDate(cliente.created_at) }}</span>
-                  </div>
-                  <div>
                     <span class="font-medium text-gray-700">Total de Ventas:</span>
                     <span class="ml-2 text-gray-900">{{ cliente.ventas_count || 0 }}</span>
                   </div>
                   <div>
                     <span class="font-medium text-gray-700">Total Gastado:</span>
-                    <span class="ml-2 text-green-600 font-semibold">${{ formatCurrency(cliente.total_compras || 0) }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-gray-50 p-6 rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Estado de Fidelización</h3>
-                <div class="space-y-3">
-                  <div>
-                    <span class="font-medium text-gray-700">Nivel:</span>
-                    <span class="ml-2">
-                      <span :class="getFidelizacionClass(cliente.estado_fidelizacion)" class="px-2 py-1 rounded-full text-xs font-medium">
-                        {{ cliente.estado_fidelizacion }}
-                      </span>
-                    </span>
+                    <span class="ml-2 text-green-600 font-semibold">{{ formatCurrency(cliente.total_compras || 0) }}</span>
                   </div>
                   <div v-if="cliente.ultima_venta">
                     <span class="font-medium text-gray-700">Última Compra:</span>
                     <span class="ml-2 text-gray-900">{{ formatDate(cliente.ultima_venta.created_at) }}</span>
                   </div>
-                  <div v-if="cliente.ventas_count > 0">
-                    <span class="font-medium text-gray-700">Promedio por Venta:</span>
-                    <span class="ml-2 text-gray-900">${{ formatCurrency((cliente.total_compras || 0) / cliente.ventas_count) }}</span>
-                  </div>
                 </div>
               </div>
+
+
             </div>
 
             <!-- Historial de Ventas -->
@@ -126,14 +98,15 @@
                         {{ getEstadoVentaLabel(venta.estado) }}
                       </span>
                     </div>
-                    <span class="font-semibold text-green-600 text-lg">${{ formatCurrency(venta.total_venta) }}</span>
+                    <span class="font-semibold text-green-600 text-lg">{{ formatCurrency(venta.total) }}</span>
                   </div>
 
                   <div v-if="venta.detalles && venta.detalles.length > 0" class="text-sm text-gray-600">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <div v-for="detalle in venta.detalles" :key="detalle.id_detalle_venta" class="flex justify-between items-center p-2 bg-gray-50 rounded">
                         <span>{{ detalle.producto?.nombre || 'Producto no disponible' }}</span>
-                        <span class="text-gray-500">x{{ detalle.cantidad }} - ${{ formatCurrency(detalle.precio_unitario) }}</span>
+                        <!-- Debug: {{ detalle.producto ? 'Producto cargado' : 'Producto NO cargado' }} -->
+                        <span class="text-gray-500">x{{ detalle.cantidad }} - {{ formatCurrency(detalle.precio_unitario) }}</span>
                       </div>
                     </div>
                   </div>
@@ -170,7 +143,7 @@ interface DetalleVenta {
 interface Venta {
   id_venta: number
   created_at: string
-  total_venta: number
+  total: number
   estado: string
   detalles?: DetalleVenta[]
 }
@@ -178,15 +151,12 @@ interface Venta {
 interface Cliente {
   id_cliente: number
   nombre: string
+  apellidos?: string
+  ci?: string
   telefono?: string
-  direccion?: string
-  correo_electronico?: string
-  fecha_nacimiento?: string
-  genero?: string
   ventas?: Venta[]
   ventas_count?: number
   total_compras?: number
-  estado_fidelizacion?: string
   ultima_venta?: Venta
   created_at: string
 }
@@ -205,10 +175,16 @@ const formatDate = (date: string) => {
 }
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-MX', {
+  // Verificar si el valor es válido
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return 'Bs 0.00';
+  }
+
+  return new Intl.NumberFormat('es-BO', {
     style: 'currency',
-    currency: 'MXN'
-  }).format(amount)
+    currency: 'BOB',
+    currencyDisplay: 'symbol'
+  }).format(amount).replace('BOB', 'Bs')
 }
 
 const getEstadoVentaLabel = (estado: string) => {

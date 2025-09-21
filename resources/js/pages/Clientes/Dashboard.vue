@@ -34,7 +34,7 @@
               </div>
               <div class="ml-4">
                 <p class="text-sm font-medium text-gray-600">Total Ventas</p>
-                <p class="text-3xl font-bold text-gray-900">${{ formatCurrency(stats.total_ventas) }}</p>
+                <p class="text-3xl font-bold text-gray-900">{{ formatCurrency(stats.total_ventas) }}</p>
                 <p class="text-sm text-gray-500">{{ stats.total_transacciones }} transacciones</p>
               </div>
             </div>
@@ -49,43 +49,18 @@
               </div>
               <div class="ml-4">
                 <p class="text-sm font-medium text-gray-600">Promedio por Cliente</p>
-                <p class="text-3xl font-bold text-gray-900">${{ formatCurrency(stats.promedio_ventas) }}</p>
+                <p class="text-3xl font-bold text-gray-900">{{ formatCurrency(stats.promedio_ventas) }}</p>
                 <p class="text-sm text-gray-500">por transacción</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex items-center">
-              <div class="p-3 bg-purple-100 rounded-lg">
-                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">Clientes Premium</p>
-                <p class="text-3xl font-bold text-gray-900">{{ stats.clientes_premium }}</p>
-                <p class="text-sm text-gray-500">{{ Math.round((stats.clientes_premium / stats.total_clientes) * 100) }}% del total</p>
-              </div>
-            </div>
-          </div>
+
         </div>
 
         <!-- Gráficos y Análisis -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <!-- Distribución por Fidelización -->
-          <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Distribución por Fidelización</h3>
-            <div class="space-y-3">
-              <div v-for="nivel in fidelizacionData" :key="nivel.nombre" class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-700">{{ nivel.nombre }}</span>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm text-gray-500">{{ nivel.cantidad }} clientes</span>
-                  <span class="text-sm font-semibold text-gray-900">{{ nivel.porcentaje }}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </div>
 
         <!-- Top Clientes -->
@@ -105,8 +80,8 @@
                   </div>
                 </div>
                 <div class="text-right">
-                  <p class="font-semibold text-green-600">${{ formatCurrency(cliente.total_compras) }}</p>
-                  <p class="text-xs text-gray-500">{{ cliente.estado_fidelizacion }}</p>
+                  <p class="font-semibold text-green-600">{{ formatCurrency(cliente.total_compras) }}</p>
+
                 </div>
               </div>
             </div>
@@ -202,20 +177,7 @@ interface Stats {
   total_ventas: number
   total_transacciones: number
   promedio_ventas: number
-  clientes_premium: number
   nuevos_este_mes: number
-}
-
-interface FidelizacionData {
-  nombre: string
-  cantidad: number
-  porcentaje: number
-}
-
-interface GeneroData {
-  nombre: string
-  cantidad: number
-  porcentaje: number
 }
 
 interface TopCliente {
@@ -223,7 +185,6 @@ interface TopCliente {
   nombre: string
   ventas_count: number
   total_compras: number
-  estado_fidelizacion: string
 }
 
 interface ClienteReciente {
@@ -234,8 +195,6 @@ interface ClienteReciente {
 
 const props = defineProps<{
   stats: Stats
-  fidelizacionData: FidelizacionData[]
-  generoData: GeneroData[]
   topClientes: TopCliente[]
   clientesRecientes: ClienteReciente[]
 }>()
@@ -250,21 +209,14 @@ const formatDate = (date: string) => {
 }
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-MX', {
+  return new Intl.NumberFormat('es-BO', {
     style: 'currency',
-    currency: 'MXN'
-  }).format(amount)
+    currency: 'BOB',
+    currencyDisplay: 'symbol'
+  }).format(amount).replace('BOB', 'Bs')
 }
 
-const getFidelizacionClass = (estado: string) => {
-  const clases: Record<string, string> = {
-    'Premium': 'bg-purple-100 text-purple-800',
-    'Oro': 'bg-yellow-100 text-yellow-800',
-    'Plata': 'bg-gray-100 text-gray-800',
-    'Bronce': 'bg-orange-100 text-orange-800'
-  }
-  return clases[estado] || 'bg-gray-100 text-gray-800'
-}
+
 
 const getInitials = (name: string) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)

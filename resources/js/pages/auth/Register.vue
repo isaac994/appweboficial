@@ -80,6 +80,7 @@ const submitForm = () => {
             <p v-if="form.errors.email" class="mt-1 text-sm text-red-400">{{ form.errors.email }}</p>
           </div>
 
+
           <!-- Contraseña -->
           <div>
             <label for="password" class="block text-sm font-medium text-gray-300 mb-2">

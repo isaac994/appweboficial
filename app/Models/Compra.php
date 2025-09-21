@@ -13,14 +13,17 @@ class Compra extends Model
     protected $fillable = [
         'id_proveedor',
         'id_usuario',
-        'fecha',
-        'total'
+        'fecha'
     ];
 
     protected $casts = [
         'fecha' => 'datetime',
-        'total' => 'decimal:2',
     ];
+
+    /**
+     * Los accessors que se incluyen en la serialización JSON
+     */
+    protected $appends = ['total'];
 
     /**
      * Obtiene el proveedor de la compra
@@ -52,5 +55,22 @@ class Compra extends Model
     public function getTotalProductosAttribute()
     {
         return $this->detalles()->sum('cantidad');
+    }
+
+    /**
+     * Obtiene el total de la compra calculado dinámicamente
+     */
+    public function getTotalAttribute()
+    {
+        // Asegurar que los detalles estén cargados
+        if (!$this->relationLoaded('detalles')) {
+            $this->load('detalles');
+        }
+        
+        $total = $this->detalles->sum(function ($detalle) {
+            return floatval($detalle->cantidad) * floatval($detalle->precio_unitario);
+        });
+        
+        return round($total, 2);
     }
 }

@@ -13,16 +13,13 @@ class Producto extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'precio_compra',
         'precio_venta',
         'id_categoria',
         'id_marca',
-        'id_proveedor',
         'img_url'
     ];
 
     protected $casts = [
-        'precio_compra' => 'decimal:2',
         'precio_venta' => 'decimal:2',
     ];
 
@@ -40,14 +37,6 @@ class Producto extends Model
     public function marca(): BelongsTo
     {
         return $this->belongsTo(Marca::class, 'id_marca');
-    }
-
-    /**
-     * Obtiene el proveedor del producto
-     */
-    public function proveedor(): BelongsTo
-    {
-        return $this->belongsTo(Proveedor::class, 'id_proveedor');
     }
 
     /**
@@ -80,5 +69,32 @@ class Producto extends Model
     public function getTotalIngresosAttribute()
     {
         return $this->detallesVenta()->sum('subtotal');
+    }
+
+    /**
+     * Obtiene el stock disponible del producto (suma de compras - suma de ventas)
+     */
+    public function getStockDisponibleAttribute()
+    {
+        $totalCompras = $this->detallesCompra()->sum('cantidad');
+        $totalVentas = $this->detallesVenta()->sum('cantidad');
+        return $totalCompras - $totalVentas;
+    }
+
+    /**
+     * Obtiene el estado dinámico del producto basado en el stock disponible
+     */
+    public function getEstadoDisponibleAttribute()
+    {
+        $stock = $this->stock_disponible;
+        return $stock > 0 ? 'disponible' : 'agotado';
+    }
+
+    /**
+     * Obtiene el stock disponible del producto (suma de compras)
+     */
+    public function getStockTotalAttribute()
+    {
+        return $this->detallesCompra()->sum('cantidad');
     }
 }

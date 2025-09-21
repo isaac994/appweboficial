@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            $table->date('fecha_nacimiento')->nullable()->after('correo_electronico');
-            $table->enum('genero', ['M', 'F', 'O'])->nullable()->after('fecha_nacimiento');
+            $table->dropColumn('ci_nit');
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            $table->dropColumn(['fecha_nacimiento', 'genero']);
+            $table->string('ci_nit', 20)->unique()->after('nombre');
         });
     }
 };

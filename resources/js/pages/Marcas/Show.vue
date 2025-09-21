@@ -104,6 +104,33 @@
         </div>
       </div>
 
+      <!-- Error Messages -->
+      <div v-if="$page.props.errors && Object.keys($page.props.errors).length > 0" class="mb-6">
+        <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-red-400 font-semibold">Error</h3>
+          </div>
+          <ul class="mt-2 text-red-300 text-sm">
+            <li v-for="(error, key) in $page.props.errors" :key="key">{{ error }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Success Messages -->
+      <div v-if="$page.props.flash && $page.props.flash.success" class="mb-6">
+        <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-green-400 font-semibold">{{ $page.props.flash.success }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Delete Confirmation Modal -->
       <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
         <div class="bg-black/90 border border-purple-500/30 rounded-xl p-6 max-w-md w-full mx-4">
@@ -155,14 +182,56 @@ const props = defineProps<{
 
 const showDeleteModal = ref(false)
 
-const deleteMarca = () => {
-  showDeleteModal.value = true
+const deleteMarca = async () => {
+  try {
+    // Verificar si se puede eliminar la marca
+    const response = await fetch(route('marcas.can-delete', props.marca.id_marca))
+    const data = await response.json()
+
+    if (!data.can_delete) {
+      // Si no se puede eliminar, mostrar error directamente
+      const errorMessage = `No se puede eliminar la marca '${data.marca_nombre}' porque tiene ${data.productos_count} producto(s) asociado(s). Primero debe eliminar o cambiar la marca de estos productos.`
+
+      // Crear un error temporal para mostrar en la interfaz
+      const errorDiv = document.createElement('div')
+      errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-md'
+      errorDiv.innerHTML = `
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="font-semibold">Error</span>
+        </div>
+        <p class="mt-2 text-sm">${errorMessage}</p>
+      `
+      document.body.appendChild(errorDiv)
+
+      // Remover el mensaje después de 5 segundos
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.parentNode.removeChild(errorDiv)
+        }
+      }, 5000)
+      return
+    }
+
+    // Si se puede eliminar, mostrar modal de confirmación
+    showDeleteModal.value = true
+  } catch (error) {
+    console.error('Error al verificar si se puede eliminar la marca:', error)
+    // En caso de error, mostrar modal de confirmación como fallback
+    showDeleteModal.value = true
+  }
 }
 
 const confirmDelete = () => {
   router.delete(route('marcas.destroy', props.marca.id_marca), {
     onSuccess: () => {
       showDeleteModal.value = false
+    },
+    onError: (errors) => {
+      console.error('Error al eliminar marca:', errors)
+      // Los errores se mostrarán automáticamente en la interfaz
     }
   })
 }

@@ -7,7 +7,7 @@
         <div class="flex items-center justify-between mb-8">
           <div>
             <h1 class="text-3xl font-bold text-white mb-2">Gestión de Ventas</h1>
-            <p class="text-purple-300">Administra las ventas y pedidos de tus clientes</p>
+            <p class="text-purple-300">Consulta todas las ventas y utiliza el buscador para filtrar</p>
           </div>
           <button
             @click="router.visit(route('ventas.create'))"
@@ -20,157 +20,238 @@
           </button>
         </div>
 
-        <!-- Filters -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6 mb-8">
-          <div class="flex flex-col sm:flex-row gap-4">
+        <!-- Filtros y Resumen -->
+        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-4 mb-6">
+          <!-- Búsqueda -->
+          <div class="flex flex-col md:flex-row gap-4 mb-4">
+            <!-- Búsqueda Multicampo -->
             <div class="flex-1">
-              <input
-                v-model="search"
-                type="text"
-                placeholder="Buscar por cliente..."
-                class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                @input="debounceSearch"
-              />
+              <label class="block text-xs font-medium text-purple-300 mb-1">
+                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Buscar
+              </label>
+              <div class="relative">
+                <input
+                  v-model="busqueda"
+                  @input="debounceSearch"
+                  type="text"
+                  placeholder="Cliente, producto..."
+                  class="w-full px-3 py-2 pl-10 bg-black/30 border border-purple-500/50 rounded-lg text-white text-sm placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <button
+                  v-if="busqueda"
+                  @click="clearSearch"
+                  class="absolute right-2 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-white transition-colors"
+                  title="Limpiar búsqueda"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div class="flex gap-2">
-              <button
-                @click="clearFilters"
-                class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-300"
-              >
-                Limpiar
-              </button>
+
+          </div>
+
+          <!-- Segunda fila: Resumen y Indicador -->
+          <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Summary Cards -->
+            <div class="flex gap-4">
+              <div class="bg-gradient-to-r from-green-600/20 to-green-800/20 border border-green-500/30 rounded-lg p-3 min-w-[120px]">
+                <div class="text-xs text-green-300 mb-1">Total Ventas</div>
+                <div class="text-lg font-bold text-white">{{ formatCurrency(totalVentas) }}</div>
+              </div>
+              <div class="bg-gradient-to-r from-yellow-600/20 to-yellow-800/20 border border-yellow-500/30 rounded-lg p-3 min-w-[120px]">
+                <div class="text-xs text-yellow-300 mb-1">Ganancia</div>
+                <div class="text-lg font-bold text-white">{{ formatCurrency(totalGanancia) }}</div>
+              </div>
+              <div class="bg-gradient-to-r from-blue-600/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-3 min-w-[120px]">
+                <div class="text-xs text-blue-300 mb-1">Cantidad</div>
+                <div class="text-lg font-bold text-white">{{ cantidadVentas }}</div>
+              </div>
+            </div>
+
+            <!-- Indicador de resultados -->
+            <div v-if="busqueda" class="text-xs text-purple-300 flex items-center">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              Resultados para: "{{ busqueda }}"
             </div>
           </div>
         </div>
 
-        <!-- Table -->
+        <!-- Sales Table -->
         <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead class="bg-purple-900/50">
                 <tr>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Venta</th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Cliente</th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Productos</th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Total</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Fecha</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Ganancia</th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-purple-500/20">
-                <tr v-for="venta in ventas.data" :key="venta.id_venta" class="hover:bg-purple-900/20 transition-colors duration-200">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-white">#{{ venta.id_venta }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-white">{{ venta.cliente?.nombre }}</div>
-                    <div class="text-sm text-purple-300">{{ venta.cliente?.correo_electronico }}</div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-purple-300">
-                      <div v-for="detalle in venta.detalles?.slice(0, 2)" :key="detalle.id_detalle">
-                        {{ detalle.producto?.nombre }} x{{ detalle.cantidad }}
+                <template v-for="venta in ventas" :key="venta.id_venta">
+                  <tr v-for="(detalle, index) in venta.detalles" :key="`${venta.id_venta}-${detalle.id_detalle_venta}`"
+                      class="hover:bg-purple-900/20 transition-colors duration-200">
+                    <!-- Cliente (solo en la primera fila de cada venta) -->
+                    <td v-if="index === 0" class="px-6 py-4 whitespace-nowrap" :rowspan="venta.detalles.length">
+                      <div class="text-sm font-medium text-white">{{ venta.cliente?.nombre }}</div>
+                      <div class="text-xs text-purple-300">Venta #{{ venta.id_venta }}</div>
+                    </td>
+
+                    <!-- Producto -->
+                    <td class="px-6 py-4">
+                      <div class="text-sm text-white">{{ detalle.producto?.nombre }}</div>
+                      <div class="text-xs text-purple-300">Cantidad: {{ detalle.cantidad }}</div>
+                      <div class="text-xs text-gray-400">
+                        Venta: {{ formatCurrency(detalle.precio_unitario) }}
                       </div>
-                      <div v-if="venta.detalles && venta.detalles.length > 2" class="text-xs text-gray-500">
-                        +{{ venta.detalles.length - 2 }} más...
+                    </td>
+
+                    <!-- Total -->
+                    <td v-if="index === 0" class="px-6 py-4 whitespace-nowrap" :rowspan="venta.detalles.length">
+                      <div class="text-sm font-medium text-white">
+                        {{ formatCurrency(venta.total) }}
                       </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-lg font-bold text-white">${{ venta.total }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-purple-300">{{ formatDate(venta.created_at) }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex space-x-2">
-                      <button
-                        @click="router.visit(route('ventas.show', venta.id_venta))"
-                        class="text-purple-400 hover:text-purple-300 transition-colors duration-200"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                      </button>
-                      <button
-                        @click="router.visit(route('ventas.edit', venta.id_venta))"
-                        class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                      </button>
-                      <button
-                        @click="deleteVenta(venta)"
-                        class="text-red-400 hover:text-red-300 transition-colors duration-200"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                      </button>
-                    </div>
+                    </td>
+
+                    <!-- Ganancia -->
+                    <td v-if="index === 0" class="px-6 py-4 whitespace-nowrap" :rowspan="venta.detalles.length">
+                      <div class="text-sm font-medium" :class="venta.ganancia_total >= 0 ? 'text-green-400' : 'text-red-400'">
+                        {{ formatCurrency(venta.ganancia_total) }}
+                      </div>
+                      <div class="text-xs text-gray-400">
+                        Total de la venta
+                      </div>
+                    </td>
+
+                    <!-- Acciones (solo en la primera fila de cada venta) -->
+                    <td v-if="index === 0" class="px-6 py-4 whitespace-nowrap text-sm font-medium" :rowspan="venta.detalles.length">
+                      <div class="flex space-x-2">
+                        <button
+                          @click="imprimirRecibo(venta)"
+                          class="text-green-400 hover:text-green-300 transition-colors duration-200"
+                          title="Imprimir recibo"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                          </svg>
+                        </button>
+                        <button
+                          @click="router.visit(route('ventas.edit', venta.id_venta))"
+                          class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                          title="Editar"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                        <button
+                          @click="viewVenta(venta)"
+                          class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                          title="Ver Venta"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+
+                <!-- No data message -->
+                <tr v-if="ventas.length === 0">
+                  <td colspan="6" class="px-6 py-12 text-center">
+                    <div class="text-purple-300 text-lg">No hay ventas registradas</div>
+                    <div class="text-gray-400 text-sm mt-2">Crea una nueva venta para comenzar</div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          <!-- Pagination -->
-          <div class="bg-purple-900/50 px-6 py-3 border-t border-purple-500/20">
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-purple-300">
-                Mostrando {{ ventas.from }} a {{ ventas.to }} de {{ ventas.total }} resultados
-              </div>
-              <div class="flex space-x-1">
-                <template v-for="link in ventas.links" :key="link.label">
-                  <!-- Enlaces habilitados -->
-                  <Link
-                    v-if="link.url !== null"
-                    :href="link.url"
-                    :class="[
-                      'px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200',
-                      link.active
-                        ? 'bg-purple-600 text-white'
-                        : 'text-purple-300 hover:text-white hover:bg-purple-600/50'
-                    ]"
-                    v-html="link.label"
-                  />
-                  <!-- Enlaces deshabilitados -->
-                  <span
-                    v-else
-                    :class="[
-                      'px-3 py-2 text-sm font-medium rounded-md text-gray-500 cursor-not-allowed'
-                    ]"
-                    v-html="link.label"
-                  />
-                </template>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- Delete Confirmation Modal -->
-        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div class="bg-black/90 border border-purple-500/30 rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 class="text-lg font-semibold text-white mb-4">Confirmar Eliminación</h3>
-            <p class="text-purple-300 mb-6">
-              ¿Estás seguro de que quieres eliminar la venta #{{ ventaToDelete?.id_venta }}? Esta acción no se puede deshacer.
-            </p>
-            <div class="flex space-x-3">
+      </div>
+    </div>
+
+    <!-- Visor de PDF Modal -->
+    <div v-if="mostrarPdf" class="fixed inset-0 z-50 overflow-hidden">
+      <!-- Overlay de fondo -->
+      <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+
+      <!-- Modal del PDF -->
+      <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="relative w-full max-w-5xl h-[95vh] bg-white rounded-xl shadow-2xl overflow-hidden">
+          <!-- Header del modal con controles profesionales -->
+          <div class="bg-white border-b">
+            <!-- Barra superior con botones principales -->
+            <div class="flex items-center justify-between p-3 bg-gray-100">
+              <div class="flex items-center space-x-3">
+                <button
+                  @click="abrirNuevaPestana"
+                  class="flex items-center space-x-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors"
+                  title="Abrir nueva pestaña"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                  <span class="text-sm font-medium">Abrir nueva pestaña</span>
+                </button>
+                <button
+                  @click="descargarPdf"
+                  class="flex items-center space-x-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors"
+                  title="Guardar en PDF"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <span class="text-sm font-medium">Descargar PDF</span>
+                </button>
+                <button
+                  @click="imprimirPdf"
+                  class="flex items-center space-x-2 px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-lg transition-colors"
+                  title="Imprimir"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                  </svg>
+                  <span class="text-sm font-medium">Imprimir</span>
+                </button>
+              </div>
+
+              <!-- Botón de cerrar -->
               <button
-                @click="confirmDelete"
-                class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200"
+                @click="cerrarPdf"
+                class="flex items-center justify-center w-10 h-10 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                title="Cerrar"
               >
-                Eliminar
-              </button>
-              <button
-                @click="showDeleteModal = false"
-                class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200"
-              >
-                Cancelar
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
               </button>
             </div>
+          </div>
+
+          <!-- Contenido del PDF -->
+          <div class="flex-1 h-full">
+            <iframe
+              v-if="pdfUrl"
+              :src="pdfUrl"
+              class="w-full h-full border-0"
+              title="Recibo de Venta"
+            ></iframe>
           </div>
         </div>
       </div>
@@ -179,69 +260,187 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { ref, onMounted, computed, watch } from 'vue'
+import { router } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
 interface Cliente {
   nombre: string
-  correo_electronico?: string
 }
 
 interface Producto {
   nombre: string
+  categoria?: { nombre: string }
+  marca?: { nombre: string }
 }
 
 interface DetalleVenta {
-  id_detalle: number
+  id_detalle_venta: number
   cantidad: number
+  precio_unitario: number
+  descripcion: string
+  precio_compra: number
+  ganancia_por_unidad: number
+  ganancia_total: number
   producto?: Producto
 }
 
 interface Venta {
   id_venta: number
   total: number
-  created_at: string
+  ganancia_total: number
   cliente?: Cliente
   detalles?: DetalleVenta[]
 }
 
-interface PaginatedData {
-  data: Venta[]
-  current_page: number
-  last_page: number
-  per_page: number
-  total: number
-  from: number
-  to: number
-  links: Array<{
-    url: string | null
-    label: string
-    active: boolean
-  }>
-}
-
 const props = defineProps<{
-  ventas: PaginatedData
-  filters: {
-    search?: string
-  }
+  ventas?: Venta[]
+  total_ventas?: number
+  total_ganancia?: number
+  cantidad_ventas?: number
+  search?: string
 }>()
 
-const search = ref(props.filters.search || '')
-const showDeleteModal = ref(false)
-const ventaToDelete = ref<Venta | null>(null)
 
-const debounceSearch = () => {
-  router.get(route('ventas.index'), { search: search.value }, {
-    preserveState: true,
-    preserveScroll: true,
-    replace: true
-  })
+// Variables para búsqueda
+const busqueda = ref('') // Siempre empezar sin búsqueda
+const searchTimeout = ref<NodeJS.Timeout | null>(null)
+
+// Variables para el modal del PDF
+const mostrarPdf = ref(false)
+const pdfUrl = ref('')
+const pdfData = ref(null)
+
+// Valores por defecto para evitar errores
+const totalVentas = computed(() => props.total_ventas || 0)
+const totalGanancia = computed(() => props.total_ganancia || 0)
+const cantidadVentas = computed(() => props.cantidad_ventas || 0)
+const ventas = computed(() => props.ventas || [])
+
+
+const imprimirRecibo = async (venta: Venta) => {
+  try {
+    const response = await fetch(route('ventas.recibo', venta.id_venta), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+      }
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Convertir base64 a blob y crear URL
+      const pdfBlob = new Blob([Uint8Array.from(atob(result.pdf), c => c.charCodeAt(0))], { type: 'application/pdf' });
+      const url = URL.createObjectURL(pdfBlob);
+
+      // Guardar datos del PDF
+      pdfData.value = result;
+      pdfUrl.value = url;
+
+      // Mostrar modal
+      mostrarPdf.value = true;
+    } else {
+      alert('Error al generar el recibo: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error al generar el recibo');
+  }
 }
 
-const clearFilters = () => {
-  search.value = ''
+const formatCurrency = (amount: number) => {
+  if (isNaN(amount) || amount === null || amount === undefined) {
+    return 'Bs 0.00'
+  }
+  return new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount).replace('BOB', 'Bs')
+}
+
+// Métodos para manejar el modal del PDF
+const cerrarPdf = () => {
+  mostrarPdf.value = false;
+  if (pdfUrl.value) {
+    URL.revokeObjectURL(pdfUrl.value);
+    pdfUrl.value = '';
+  }
+  pdfData.value = null;
+}
+
+const descargarPdf = () => {
+  if (pdfData.value) {
+    const link = document.createElement('a');
+    link.href = pdfUrl.value;
+    link.download = pdfData.value.filename || 'recibo_venta.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+
+const abrirNuevaPestana = () => {
+  if (pdfUrl.value) {
+    window.open(pdfUrl.value, '_blank');
+  }
+}
+
+const imprimirPdf = () => {
+  if (pdfUrl.value) {
+    const printWindow = window.open(pdfUrl.value);
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  }
+}
+
+const viewVenta = (venta: Venta) => {
+  router.visit(route('ventas.show', venta.id_venta))
+}
+
+
+// Funciones de búsqueda
+const debounceSearch = () => {
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+
+  searchTimeout.value = setTimeout(() => {
+    performSearch()
+  }, 300) // Debounce de 300ms
+}
+
+const performSearch = () => {
+  if (busqueda.value.trim()) {
+    // Buscar con el término
+    router.get(route('ventas.index'), {
+      search: busqueda.value.trim()
+    }, {
+      preserveState: true,
+      preserveScroll: true,
+      replace: true
+    })
+  } else {
+    // Si no hay búsqueda, mostrar todas las ventas
+    router.get(route('ventas.index'), {}, {
+      preserveState: true,
+      preserveScroll: true,
+      replace: true
+    })
+  }
+}
+
+const clearSearch = () => {
+  busqueda.value = ''
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+
+  // Volver a cargar sin filtro de búsqueda (mostrar todas las ventas)
   router.get(route('ventas.index'), {}, {
     preserveState: true,
     preserveScroll: true,
@@ -249,29 +448,8 @@ const clearFilters = () => {
   })
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 
-const deleteVenta = (venta: Venta) => {
-  ventaToDelete.value = venta
-  showDeleteModal.value = true
-}
-
-const confirmDelete = () => {
-  if (ventaToDelete.value) {
-    router.delete(route('ventas.destroy', ventaToDelete.value.id_venta), {
-      onSuccess: () => {
-        showDeleteModal.value = false
-        ventaToDelete.value = null
-      }
-    })
-  }
-}
+onMounted(() => {
+  // El componente ya recibe las ventas desde el backend
+})
 </script>
