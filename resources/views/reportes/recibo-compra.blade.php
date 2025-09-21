@@ -12,11 +12,11 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-size: 12px;
             line-height: 1.4;
             color: #333;
-            background: #fff;
+            background: #f5f5f5;
             padding: 10px;
         }
 
@@ -24,241 +24,229 @@
             max-width: 300px;
             margin: 0 auto;
             background: white;
-            border: 2px solid #333;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .header {
-            background: #333;
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
             padding: 15px;
             text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            padding: 2px;
         }
 
         .company-name {
             font-size: 14px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .receipt-type {
-            font-size: 11px;
+        .company-address {
+            font-size: 9px;
+            opacity: 0.9;
             margin-bottom: 8px;
         }
 
-        .receipt-number {
-            background: white;
-            color: #333;
-            padding: 5px 12px;
-            font-weight: bold;
+        .receipt-title {
             font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            padding-top: 8px;
         }
 
-        .content {
+        .receipt-info {
             padding: 15px;
-        }
-
-        .section {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+            background: white;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        .label {
-            font-weight: bold;
-            color: #555;
-        }
-
-        .value {
-            color: #333;
-        }
-
-        .products-title {
-            font-weight: bold;
-            font-size: 13px;
-            margin-bottom: 10px;
-            color: #333;
-            text-transform: uppercase;
-        }
-
-        .product {
-            background: #f9f9f9;
-            padding: 10px;
             margin-bottom: 8px;
-            border-left: 3px solid #333;
+            padding: 4px 0;
+            border-bottom: 1px dotted #ddd;
         }
 
-        .product-name {
+        .info-label {
             font-weight: bold;
-            margin-bottom: 5px;
-            color: #333;
+            color: #2c3e50;
+            font-size: 10px;
         }
 
-        .product-details {
-            font-size: 11px;
-            color: #666;
+        .info-value {
+            color: #34495e;
+            font-size: 10px;
         }
 
-        .product-line {
-            display: flex;
-            justify-content: space-between;
+        .items {
+            margin-top: 15px;
+        }
+
+        .items-header {
+            background: #f8f9fa;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            color: #2c3e50;
+            border: 1px solid #dee2e6;
+        }
+
+        .item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 10px;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #2c3e50;
             margin-bottom: 2px;
         }
 
-        .product-price {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .total {
-            background: #333;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 15px 0;
-        }
-
-        .signatures {
+        .item-details {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
-            gap: 20px;
-        }
-
-        .signature {
-            flex: 1;
-            text-align: center;
-        }
-
-        .signature-title {
-            font-size: 10px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #555;
-        }
-
-        .signature-line {
-            border-bottom: 1px solid #333;
-            margin-bottom: 5px;
-            height: 20px;
-        }
-
-        .signature-name {
+            color: #7f8c8d;
             font-size: 9px;
-            color: #666;
+        }
+
+        .totals {
+            background: #f8f9fa;
+            padding: 15px;
+            border-top: 2px solid #3498db;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+
+        .total-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .total-value {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .grand-total {
+            border-top: 2px solid #3498db;
+            padding-top: 8px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #3498db;
         }
 
         .footer {
-            text-align: center;
+            background: #2c3e50;
+            color: white;
             padding: 10px;
-            font-size: 10px;
-            color: #666;
-            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 9px;
         }
 
-        @media print {
-            body {
-                padding: 0;
-            }
-            .receipt {
-                max-width: none;
-            }
+        .footer p {
+            margin-bottom: 3px;
         }
+
+        .thank-you {
+            font-style: italic;
+            margin-top: 5px;
+            color: #ecf0f1;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .currency { font-family: 'Courier New', monospace; }
     </style>
 </head>
 <body>
     <div class="receipt">
         <!-- Header -->
         <div class="header">
-            <div class="company-name">CELULARES Y ACCESORIOS</div>
-            <div class="receipt-type">RECIBO DE COMPRA</div>
-            <div class="receipt-number">Nº {{ str_pad($compra->id_compra, 4, '0', STR_PAD_LEFT) }}</div>
+            <img src="{{ public_path('images/logo.png') }}" alt="Logo" class="logo">
+            <div class="company-name">Tienda de Celulares</div>
+            <div class="company-address">Sistema de Gestión de Compras</div>
+            <div class="receipt-title">Recibo de Compra</div>
         </div>
 
-        <div class="content">
-            <!-- Info -->
-            <div class="section">
-                <div class="info-row">
-                    <span class="label">Proveedor:</span>
-                    <span class="value">{{ $compra->proveedor->nombre }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">CI/NIT:</span>
-                    <span class="value">{{ $compra->proveedor->ci_nit ?? 'N/A' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Teléfono:</span>
-                    <span class="value">{{ $compra->proveedor->telefono ?? 'N/A' }}</span>
-                </div>
+        <!-- Información de la Compra -->
+        <div class="receipt-info">
+            <div class="info-row">
+                <span class="info-label">N° Compra:</span>
+                <span class="info-value">#{{ $compra->id_compra }}</span>
             </div>
-
-            <!-- Products -->
-            <div class="section">
-                <div class="products-title">Productos</div>
-                @foreach($compra->detalles as $detalle)
-                <div class="product">
-                    <div class="product-name">{{ $detalle->producto->nombre }}</div>
-                     <div class="product-details">
-                         <div class="product-line">
-                             <span>Cantidad: {{ $detalle->cantidad }}</span>
-                             <span>Bs {{ number_format($detalle->cantidad * $detalle->precio_unitario, 0) }}</span>
-                         </div>
-                         <div class="product-line">
-                             <span>P.Unit: Bs {{ number_format($detalle->precio_unitario, 0) }}</span>
-                         </div>
-                         @if($detalle->descripcion_dinamica)
-                         <div class="product-line">
-                             <span>{{ $detalle->descripcion_dinamica }}</span>
-                         </div>
-                         @endif
-                     </div>
-                </div>
-                @endforeach
+            <div class="info-row">
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">{{ \Carbon\Carbon::parse($compra->fecha)->format('d/m/Y H:i') }}</span>
             </div>
-
-            <!-- Total -->
-            <div class="total">
-                TOTAL: Bs {{ number_format($totalCompra, 0) }}
+            <div class="info-row">
+                <span class="info-label">Proveedor:</span>
+                <span class="info-value">{{ $compra->proveedor->nombre }}</span>
             </div>
-
+            @if($compra->proveedor->telefono)
+            <div class="info-row">
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{ $compra->proveedor->telefono }}</span>
+            </div>
+            @endif
         </div>
 
-
-        <!-- Footer con información del usuario -->
-        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #6c757d;">
-
-                <!-- Información del comprador -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>{{ $usuario->name }}</span>
-                    <span>•</span>
-                    <span>{{ $usuario->email }}</span>
+        <!-- Items -->
+        <div class="items">
+            <div class="items-header">PRODUCTOS COMPRADOS</div>
+            @foreach($compra->detalles as $detalle)
+                <div class="item">
+                    <div class="item-name">{{ $detalle->producto->nombre }}</div>
+                    <div class="item-details">
+                        <span>{{ $detalle->cantidad }} x Bs {{ number_format($detalle->precio_unitario, 2, ',', '.') }}</span>
+                        <span class="currency">Bs {{ number_format($detalle->total_parcial, 2, ',', '.') }}</span>
+                    </div>
                 </div>
+            @endforeach
+        </div>
 
-                <!-- Información de contacto -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>67473050</span>
-                    <span>•</span>
-                    <span>Independencia - Calle Falsa 123</span>
-                </div>
-
-                <!-- Fecha -->
-                <div>
-                    {{ date('d/m/Y H:i') }}
-                </div>
+        <!-- Totales -->
+        <div class="totals">
+            <div class="total-row">
+                <span class="total-label">Subtotal:</span>
+                <span class="total-value currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
             </div>
+            <div class="total-row grand-total">
+                <span class="total-label">TOTAL:</span>
+                <span class="total-value currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>¡Compra registrada exitosamente!</p>
+            <p>Recibo generado el {{ now()->format('d/m/Y H:i:s') }}</p>
+            <div class="thank-you">Sistema de Gestión de Compras</div>
         </div>
     </div>
 </body>

@@ -24,255 +24,237 @@
             max-width: 300px;
             margin: 0 auto;
             background: white;
-            border: 2px solid #2c3e50;
+            border: 2px solid #e74c3c;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
             padding: 15px;
             text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            padding: 2px;
         }
 
         .company-name {
             font-size: 14px;
             font-weight: bold;
             margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .company-address {
-            font-size: 10px;
+            font-size: 9px;
             opacity: 0.9;
             margin-bottom: 8px;
         }
 
-        .receipt-number {
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 11px;
+        .receipt-title {
+            font-size: 12px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            padding-top: 8px;
         }
 
-        .content {
+        .receipt-info {
             padding: 15px;
+            background: white;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
-            padding-bottom: 5px;
+            padding: 4px 0;
             border-bottom: 1px dotted #ddd;
         }
 
         .info-label {
-            font-weight: 600;
-            color: #555;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 10px;
         }
 
         .info-value {
-            color: #333;
+            color: #34495e;
+            font-size: 10px;
         }
 
-        .products {
-            margin: 15px 0;
-            border-top: 2px solid #eee;
-            padding-top: 10px;
+        .items {
+            margin-top: 15px;
         }
 
-        .product {
-            margin-bottom: 12px;
+        .items-header {
+            background: #f8f9fa;
             padding: 8px;
-            background: #f9f9f9;
-            border-radius: 4px;
-            border-left: 3px solid #3498db;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            color: #2c3e50;
+            border: 1px solid #dee2e6;
         }
 
-        .product-line {
+        .item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 10px;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .item-details {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 3px;
+            color: #7f8c8d;
+            font-size: 9px;
+        }
+
+        .item-imei {
+            color: #e67e22;
+            font-style: italic;
+            font-size: 8px;
+            margin-top: 2px;
+        }
+
+        .totals {
+            background: #f8f9fa;
+            padding: 15px;
+            border-top: 2px solid #e74c3c;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
             font-size: 11px;
         }
 
-        .product-name {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 4px;
-        }
-
-        .product-price {
-            font-weight: bold;
-            color: #27ae60;
-            font-size: 13px;
-        }
-
-        .total {
-            background: #34495e;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 15px 0;
-            border-radius: 4px;
-        }
-
-        .operators {
-            display: flex;
-            justify-content: space-around;
-            margin: 10px 0;
-            padding: 8px;
-            background: #ecf0f1;
-            border-radius: 4px;
-        }
-
-        .operator {
-            font-size: 10px;
+        .total-label {
             font-weight: bold;
             color: #2c3e50;
         }
 
-        .warranty {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 8px;
-            margin: 10px 0;
-            border-radius: 4px;
-            font-size: 10px;
-            text-align: center;
+        .total-value {
+            font-weight: bold;
+            color: #e74c3c;
         }
 
-        .signatures {
-            display: flex !important;
-            justify-content: space-between !important;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-        }
-
-        .signature {
-            text-align: center;
-            width: 45%;
-        }
-
-        .signature-title {
-            font-size: 9px;
-            color: #666;
-            margin-bottom: 15px;
-        }
-
-        .signature-line {
-            border-bottom: 1px solid #333;
-            margin-bottom: 3px;
-        }
-
-        .signature-name {
-            font-size: 8px;
-            color: #888;
+        .grand-total {
+            border-top: 2px solid #e74c3c;
+            padding-top: 8px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #e74c3c;
         }
 
         .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 10px;
             text-align: center;
-            padding: 8px;
-            background: #ecf0f1;
-            font-size: 11px;
-            font-weight: bold;
-            color: #2c3e50;
+            font-size: 9px;
         }
 
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            .receipt {
-                border: 1px solid #000;
-                border-radius: 0;
-                max-width: none;
-            }
+        .footer p {
+            margin-bottom: 3px;
         }
+
+        .thank-you {
+            font-style: italic;
+            margin-top: 5px;
+            color: #ecf0f1;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .currency { font-family: 'Courier New', monospace; }
     </style>
 </head>
 <body>
     <div class="receipt">
         <!-- Header -->
         <div class="header">
-            <div class="receipt-number">Recibo Nº {{ str_pad($venta->id_venta, 4, '0', STR_PAD_LEFT) }}</div>
+            <img src="{{ public_path('images/logo.png') }}" alt="Logo" class="logo">
+            <div class="company-name">Tienda de Celulares</div>
+            <div class="company-address">Sistema de Gestión de Ventas</div>
+            <div class="receipt-title">Recibo de Venta</div>
         </div>
 
-        <div class="content">
-            <!-- Info -->
-            @if($venta->cliente)
+        <!-- Información de la Venta -->
+        <div class="receipt-info">
+            <div class="info-row">
+                <span class="info-label">N° Venta:</span>
+                <span class="info-value">#{{ $venta->id_venta }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">{{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y H:i') }}</span>
+            </div>
             <div class="info-row">
                 <span class="info-label">Cliente:</span>
-                <span class="info-value">{{ $venta->cliente->nombre }}</span>
+                <span class="info-value">{{ $venta->cliente->nombre ?? 'Cliente General' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Teléfono:</span>
-                <span class="info-value">{{ $venta->cliente->telefono ?? 'N/A' }}</span>
+                <span class="info-label">Vendedor:</span>
+                <span class="info-value">{{ $venta->usuario->name ?? 'N/A' }}</span>
             </div>
-            @else
-            <div class="info-row">
-                <span class="info-label">Cliente:</span>
-                <span class="info-value">Venta al Público General</span>
-            </div>
-            @endif
+        </div>
 
-            <!-- Products -->
-            <div class="products">
-                @foreach($venta->detalles as $detalle)
-                <div class="product">
-                    <div class="product-name">{{ $detalle->producto->nombre }}</div>
-                    <div class="product-line">
-                        <span>Cantidad: {{ $detalle->cantidad }}</span>
-                        <span class="product-price">Bs {{ number_format($detalle->cantidad * $detalle->precio_unitario, 0) }}</span>
+        <!-- Items -->
+        <div class="items">
+            <div class="items-header">PRODUCTOS VENDIDOS</div>
+            @foreach($venta->detalles as $detalle)
+                <div class="item">
+                    <div class="item-name">{{ $detalle->producto->nombre ?? 'Producto eliminado' }}</div>
+                    <div class="item-details">
+                        <span>{{ $detalle->cantidad }} x Bs {{ number_format($detalle->precio_unitario, 2, ',', '.') }}</span>
+                        <span class="currency">Bs {{ number_format($detalle->cantidad * $detalle->precio_unitario, 2, ',', '.') }}</span>
                     </div>
-                    @if($detalle->descripcion_dinamica)
-                    <div class="product-line">
-                        <span>{{ $detalle->descripcion_dinamica }}</span>
-                    </div>
+                    @if($detalle->descripcion)
+                        <div class="item-imei">IMEI: {{ $detalle->descripcion }}</div>
                     @endif
                 </div>
-                @endforeach
-            </div>
-
-            <!-- Total -->
-            <div class="total">
-                TOTAL: Bs {{ number_format($venta->total, 0) }}
-            </div>
-
-
-
+            @endforeach
         </div>
 
-
-        <!-- Footer con información del usuario -->
-        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #6c757d;">
-
-                <!-- Información del vendedor -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>{{ $usuario->name }}</span>
-                    <span>•</span>
-                    <span>{{ $usuario->email }}</span>
-                </div>
-
-                <!-- Información de contacto -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>67473050</span>
-                    <span>•</span>
-                    <span>Independencia - Calle Falsa 123</span>
-                </div>
-
-                <!-- Fecha -->
-                <div>
-                    {{ date('d/m/Y H:i') }}
-                </div>
+        <!-- Totales -->
+        <div class="totals">
+            <div class="total-row">
+                <span class="total-label">Subtotal:</span>
+                <span class="total-value currency">Bs {{ number_format($venta->total, 2, ',', '.') }}</span>
             </div>
+            <div class="total-row grand-total">
+                <span class="total-label">TOTAL:</span>
+                <span class="total-value currency">Bs {{ number_format($venta->total, 2, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>¡Gracias por su compra!</p>
+            <p>Recibo generado el {{ now()->format('d/m/Y H:i:s') }}</p>
+            <div class="thank-you">Sistema de Gestión de Ventas</div>
         </div>
     </div>
 </body>
