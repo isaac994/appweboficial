@@ -101,7 +101,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'ventas.create',
             'ventas.edit',
             'ventas.view',
-            'productos.view', // Solo puede ver productos, no gestionarlos
+            // Los operadores NO tienen acceso a productos según los requerimientos
         ];
 
         $operadorRole->givePermissionTo($operadorPermissions);

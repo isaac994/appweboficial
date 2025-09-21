@@ -49,7 +49,7 @@ const mainNavItems: NavItem[] = [
         title: 'Productos',
         href: '/productos',
         icon: Package,
-        permission: 'productos.view',
+        permission: 'productos.manage',
     },
     {
         title: 'Categorías',

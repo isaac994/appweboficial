@@ -166,11 +166,7 @@ Route::middleware(['auth', 'user.status', 'role:Operador|Administrador'])->group
 });
 
 // Rutas adicionales con permisos específicos
-Route::middleware(['auth', 'user.status', 'permission:productos.view'])->group(function () {
-    // Solo para ver productos (Operadores pueden ver, pero no gestionar)
-    Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
-    Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');
-});
+// Nota: Los operadores NO tienen acceso a productos según los requerimientos
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
