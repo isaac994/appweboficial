@@ -2,17 +2,50 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useAuth } from '@/composables/useAuth';
+import PermissionGate from '@/components/PermissionGate.vue';
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 defineProps<{
     items: NavItem[];
 }>();
 
 const page = usePage();
+const { can, hasRole } = useAuth();
 
 // Estado para controlar qué menús están expandidos
 const expandedMenus = ref<string[]>([]);
+
+// Función para verificar si un elemento de menú debe mostrarse
+const shouldShowMenuItem = (item: NavItem) => {
+    // Si no tiene permisos definidos, mostrar siempre
+    if (!item.permission && !item.role && !item.permissions && !item.roles) {
+        return true;
+    }
+
+    // Verificar por permiso individual
+    if (item.permission) {
+        return can(item.permission);
+    }
+
+    // Verificar por permisos múltiples
+    if (item.permissions && item.permissions.length > 0) {
+        return item.permissions.some(permission => can(permission));
+    }
+
+    // Verificar por rol individual
+    if (item.role) {
+        return hasRole(item.role);
+    }
+
+    // Verificar por roles múltiples
+    if (item.roles && item.roles.length > 0) {
+        return item.roles.some(role => hasRole(role));
+    }
+
+    return true;
+};
 
 // Función para alternar la expansión de un menú
 const toggleMenu = (title: string) => {
@@ -36,7 +69,7 @@ const isMenuExpanded = (title: string) => {
             Sistema de Gestión
         </SidebarGroupLabel>
         <SidebarMenu>
-            <SidebarMenuItem v-for="item in items" :key="item.title">
+            <SidebarMenuItem v-for="item in items" :key="item.title" v-show="shouldShowMenuItem(item)">
                 <!-- Elemento con submenús -->
                 <template v-if="item.children && item.children.length > 0">
                     <SidebarMenuButton
@@ -64,7 +97,7 @@ const isMenuExpanded = (title: string) => {
 
                     <!-- Submenús (solo visibles cuando está expandido) -->
                     <div v-if="isMenuExpanded(item.title)" class="ml-6 mt-2 space-y-1">
-                        <SidebarMenuItem v-for="child in item.children" :key="child.title">
+                        <SidebarMenuItem v-for="child in item.children" :key="child.title" v-show="shouldShowMenuItem(child)">
                             <SidebarMenuButton
                                 as-child
                                 :is-active="child.href === page.url"

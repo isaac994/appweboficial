@@ -43,65 +43,79 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+        permission: 'dashboard.view',
     },
     {
         title: 'Productos',
         href: '/productos',
         icon: Package,
+        permission: 'productos.view',
     },
     {
         title: 'Categorías',
         href: '/categorias',
         icon: Tags,
+        permission: 'categorias.manage',
     },
     {
         title: 'Marcas',
         href: '/marcas',
         icon: Building2,
+        permission: 'marcas.manage',
     },
     {
         title: 'Compras',
         href: '/compras',
         icon: Folder,
+        permission: 'compras.manage',
     },
     {
         title: 'Ventas',
         href: '/ventas',
         icon: ShoppingCart,
+        permission: 'ventas.manage',
     },
     {
         title: 'Proveedores',
         href: '/proveedores',
         icon: Building2,
+        permission: 'proveedores.manage',
     },
     {
         title: 'Clientes',
         href: '/clientes',
         icon: Users,
+        permission: 'clientes.manage',
     },
     {
         title: 'Reportes',
         icon: BarChart3,
+        permission: 'reportes.view',
         children: [
             {
                 title: 'Productos',
                 href: '/reportes/productos',
+                permission: 'reportes.view',
             },
             {
                 title: 'Compras',
                 href: '/reportes/compras',
+                permission: 'reportes.view',
             },
             {
                 title: 'Proveedores',
                 href: '/reportes/proveedores',
+                permission: 'reportes.view',
             },
             {
                 title: 'Clientes',
                 href: '/reportes/clientes',
+                permission: 'reportes.view',
             },
             {
                 title: 'Ventas',
                 href: '/reportes/ventas',
+                permission: 'reportes.view',
             },
         ],
     },
@@ -109,6 +123,7 @@ const mainNavItems: NavItem[] = [
         title: 'Configuración',
         href: '/settings',
         icon: Settings,
+        role: 'Administrador',
     },
 ];
 

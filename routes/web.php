@@ -98,39 +98,43 @@ Route::middleware('guest')->group(function () {
 
 // Rutas protegidas
 Route::middleware('auth')->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard - Accesible para todos los usuarios autenticados
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')
+        ->middleware('permission:dashboard.view');
 
-    // Productos
+    // Perfil de usuario - Accesible para todos los usuarios autenticados
+    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update.auth');
+    Route::put('/profile/password', [AuthController::class, 'changePassword'])->name('profile.password');
+
+    // Logout - Accesible para todos los usuarios autenticados
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+// Rutas solo para Administradores
+Route::middleware(['auth', 'role:Administrador'])->group(function () {
+    // Productos - Solo administradores
     Route::resource('productos', ProductoController::class);
     Route::post('/productos/{producto}', [ProductoController::class, 'updatePost'])->name('productos.update.post');
 
-    // Categorías
+    // Categorías - Solo administradores
     Route::resource('categorias', CategoriaController::class);
     Route::get('/categorias/{id}/can-delete', [CategoriaController::class, 'canDelete'])->name('categorias.can-delete');
 
-    // Marcas
+    // Marcas - Solo administradores
     Route::resource('marcas', MarcaController::class);
     Route::get('/marcas/{id}/can-delete', [MarcaController::class, 'canDelete'])->name('marcas.can-delete');
 
-    // Proveedores
+    // Proveedores - Solo administradores
     Route::resource('proveedores', ProveedorController::class)->parameters([
         'proveedores' => 'proveedor'
     ]);
 
-    // Clientes
-    Route::resource('clientes', ClienteController::class);
-    Route::get('/clientes-dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
-
-    // Ventas
-    Route::resource('ventas', VentaController::class);
-    Route::get('/ventas/{id}/recibo', [VentaController::class, 'recibo'])->name('ventas.recibo');
-
-    // Compras
+    // Compras - Solo administradores
     Route::resource('compras', CompraController::class);
     Route::get('/compras/{compra}/recibo', [CompraController::class, 'recibo'])->name('compras.recibo');
 
-    // Reportes
+    // Reportes - Solo administradores
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/productos', [ReporteController::class, 'productos'])->name('reportes.productos');
     Route::post('/reportes/productos/generar', [ReporteController::class, 'generarReporteProductos'])->name('reportes.productos.generar');
@@ -143,14 +147,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas');
     Route::post('/reportes/ventas/generar', [ReporteController::class, 'generarReporteVentas'])->name('reportes.generar-ventas');
     Route::get('/reportes/test', [ReporteController::class, 'testPdf'])->name('reportes.test');
+});
 
-    // Perfil de usuario
-    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
-    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update.auth');
-    Route::put('/profile/password', [AuthController::class, 'changePassword'])->name('profile.password');
+// Rutas para Operadores y Administradores (Gestión de Ventas y Clientes)
+Route::middleware(['auth', 'role:Operador|Administrador'])->group(function () {
+    // Clientes - Operadores y Administradores
+    Route::resource('clientes', ClienteController::class);
+    Route::get('/clientes-dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
 
-    // Logout
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // Ventas - Operadores y Administradores
+    Route::resource('ventas', VentaController::class);
+    Route::get('/ventas/{id}/recibo', [VentaController::class, 'recibo'])->name('ventas.recibo');
+});
+
+// Rutas adicionales con permisos específicos
+Route::middleware(['auth', 'permission:productos.view'])->group(function () {
+    // Solo para ver productos (Operadores pueden ver, pero no gestionar)
+    Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
+    Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');
 });
 
 require __DIR__.'/settings.php';
