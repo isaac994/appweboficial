@@ -555,22 +555,9 @@ class VentaController extends Controller
     public function destroy(string $id)
     {
         try {
-            $venta = Venta::with('detalles.producto')->findOrFail($id);
+            $venta = Venta::findOrFail($id);
 
             DB::beginTransaction();
-
-            // Cargar los detalles de la venta con los productos
-            $venta->load('detalles.producto');
-
-            // Devolver el stock de cada producto antes de eliminar la venta
-            foreach ($venta->detalles as $detalle) {
-                $producto = $detalle->producto;
-                if ($producto) {
-                    // El stock se devuelve automáticamente al eliminar la venta
-                    // ya que el stock se calcula dinámicamente basado en compras - ventas
-                    // Al eliminar la venta, el stock disponible aumentará automáticamente
-                }
-            }
 
             // Eliminar la venta (los detalles se eliminan automáticamente por la cascada)
             // Al eliminar la venta, el stock se devuelve automáticamente ya que
