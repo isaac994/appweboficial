@@ -176,11 +176,11 @@
         <div class="totals">
             <div class="total-row">
                 <span class="total-label">Subtotal:</span>
-                <span class="currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
+                <span class="currency">Bs {{ number_format($totalCompra, 2, ',', '.') }}</span>
             </div>
             <div class="total-row grand-total">
                 <span class="total-label">TOTAL:</span>
-                <span class="currency">Bs {{ number_format($compra->total_calculado, 2, ',', '.') }}</span>
+                <span class="currency">Bs {{ number_format($totalCompra, 2, ',', '.') }}</span>
             </div>
         </div>
 
