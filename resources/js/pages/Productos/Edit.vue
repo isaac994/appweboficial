@@ -170,7 +170,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2">Vista Previa</label>
                 <div class="w-32 h-32 border-2 border-purple-500/50 rounded-lg overflow-hidden">
                   <img
-                    :src="imagePreview || form.img_url"
+                    :src="imagePreview || (form.img_url ? form.img_url + '?v=' + Date.now() : '')"
                     :alt="form.nombre"
                     class="w-full h-full object-cover"
                     @error="handleImageError"
@@ -357,7 +357,9 @@ const submitForm = () => {
 
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
-  img.style.display = 'none'
+  console.error('Error cargando imagen:', img.src)
+  // Mostrar un placeholder en lugar de ocultar la imagen
+  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik02NCA0MEM3Mi44MzY2IDQwIDgwIDQ3LjE2MzQgODAgNTZDNjQgNTYgNDggNTYgNDggNTZDNDggNDcuMTYzNCA1NS4xNjM0IDQwIDY0IDQwWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNNDggODhDNDggNzkuMTYzNCA1NS4xNjM0IDcyIDY0IDcyQzcyLjgzNjYgNzIgODAgNzkuMTYzNCA4MCA4OEg0OFoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+'
 }
 </script>
 

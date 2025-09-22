@@ -36,7 +36,7 @@ class UpdateProductImageUrls extends Command
 
         foreach ($productos as $producto) {
             $oldUrl = $producto->img_url;
-            $producto->img_url = asset($producto->img_url);
+            $producto->img_url = url($producto->img_url);
             $producto->save();
 
             $this->line("Producto {$producto->nombre}: {$oldUrl} -> {$producto->img_url}");

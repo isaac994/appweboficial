@@ -157,7 +157,7 @@ class ProductoController extends Controller
                 $imagen = $request->file('imagen');
                 $nombreArchivo = time() . '_' . $imagen->getClientOriginalName();
                 $ruta = $imagen->storeAs('productos', $nombreArchivo, 'public');
-                $data['img_url'] = asset(Storage::url($ruta));
+                $data['img_url'] = url(Storage::url($ruta));
             }
 
             $producto = Producto::create($data);
@@ -304,7 +304,7 @@ class ProductoController extends Controller
                 $imagen = $request->file('imagen');
                 $nombreArchivo = time() . '_' . $imagen->getClientOriginalName();
                 $ruta = $imagen->storeAs('productos', $nombreArchivo, 'public');
-                $data['img_url'] = asset(Storage::url($ruta));
+                $data['img_url'] = url(Storage::url($ruta));
             }
 
             $producto->update($data);
