@@ -72,11 +72,10 @@
               <div class="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img
                   v-if="producto.img_url"
-                  :src="producto.img_url"
+                  :src="getImageUrl(producto.img_url)"
                   :alt="producto.nombre"
                   class="w-full h-full object-cover rounded-lg"
                   @error="handleImageError"
-                  @load="handleImageLoad"
                 />
                 <div v-else class="w-full h-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center rounded-lg">
                   <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -373,23 +372,46 @@ const confirmDelete = () => {
   }
 }
 
-const handleImageLoad = (event: Event) => {
-  const img = event.target as HTMLImageElement
-  console.log('Imagen cargada exitosamente:', img.src)
+const getImageUrl = (imgUrl: string) => {
+  if (!imgUrl) return ''
+
+  // Si ya es una URL completa, devolverla tal como está
+  if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
+    return imgUrl
+  }
+
+  // Si es una ruta relativa, construir la URL completa
+  if (imgUrl.startsWith('/storage/')) {
+    return `${window.location.origin}${imgUrl}`
+  }
+
+  // Si es solo el nombre del archivo, construir la ruta completa
+  if (!imgUrl.startsWith('/')) {
+    return `${window.location.origin}/storage/productos/${imgUrl}`
+  }
+
+  return imgUrl
 }
 
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
   console.error('Error cargando imagen:', img.src)
 
-  // Intentar cargar con cache busting si falla la primera vez
-  if (!img.src.includes('?v=')) {
-    img.src = img.src + '?v=' + Date.now()
+  // Intentar con la URL base del servidor
+  const originalSrc = img.src
+  if (originalSrc.includes('localhost:8000')) {
+    img.src = originalSrc.replace('localhost:8000', window.location.host)
     return
   }
 
-  // Si ya tiene cache busting y sigue fallando, mostrar placeholder
-  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik00MCAyMEM0OC4yODQzIDIwIDU1IDI2LjcxNTcgNTUgMzVDNTUgNDAgNDAgNDAgNDAgNDBDNDAgNDAgMjUgNDAgMjUgMzVDMjUgMjYuNzE1NyAzMS43MTU3IDIwIDQwIDIwWiIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNMjUgNTBDMjUgNDEuNzE1NyAzMS43MTU3IDM1IDQwIDM1QzQ4LjI4NDMgMzUgNTUgNDEuNzE1NyA1NSA1MEg1MFoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+'
+  // Si sigue fallando, intentar con cache busting
+  if (!originalSrc.includes('?v=')) {
+    img.src = originalSrc + '?v=' + Date.now()
+    return
+  }
+
+  // Como último recurso, mostrar la imagen original sin modificaciones
+  console.log('Mostrando imagen original sin modificaciones')
 }
 </script>
 

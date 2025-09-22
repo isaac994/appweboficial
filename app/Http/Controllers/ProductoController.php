@@ -63,6 +63,14 @@ class ProductoController extends Controller
         $productos->getCollection()->transform(function ($producto) {
             $producto->estado_disponible = $producto->estado_disponible;
             $producto->stock_disponible = $producto->stock_disponible;
+
+            // Asegurar que la URL de la imagen sea completa
+            if ($producto->img_url) {
+                if (!str_starts_with($producto->img_url, 'http')) {
+                    $producto->img_url = url($producto->img_url);
+                }
+            }
+
             return $producto;
         });
 
