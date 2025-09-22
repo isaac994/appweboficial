@@ -59,9 +59,10 @@ class ProductoController extends Controller
 
         $productos = $query->orderBy('nombre')->paginate(6);
 
-        // Calcular estado dinámico para cada producto
+        // Calcular estado dinámico y stock disponible para cada producto
         $productos->getCollection()->transform(function ($producto) {
             $producto->estado_disponible = $producto->estado_disponible;
+            $producto->stock_disponible = $producto->stock_disponible;
             return $producto;
         });
 

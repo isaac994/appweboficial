@@ -297,23 +297,9 @@ class CompraController extends Controller
             // Cargar los detalles de la compra con los productos
             $compra->load('detalles.producto');
 
-            // Reducir el stock de cada producto antes de eliminar la compra
-            foreach ($compra->detalles as $detalle) {
-                $producto = $detalle->producto;
-                if ($producto) {
-                    // Reducir el stock disponible
-                    $producto->stock_disponible -= $detalle->cantidad;
-
-                    // Asegurar que el stock no sea negativo
-                    if ($producto->stock_disponible < 0) {
-                        $producto->stock_disponible = 0;
-                    }
-
-                    $producto->save();
-                }
-            }
-
-            // Eliminar detalles (se eliminan automáticamente por la cascada)
+            // Eliminar la compra (los detalles se eliminan automáticamente por la cascada)
+            // Al eliminar la compra, el stock se reducirá automáticamente ya que
+            // se calcula dinámicamente basado en las compras y ventas
             $compra->delete();
 
             DB::commit();
