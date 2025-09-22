@@ -29,6 +29,7 @@
         .header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
             margin-bottom: 15px;
@@ -36,7 +37,6 @@
 
         .logo {
             height: 35px;
-            margin-right: 15px;
         }
 
         .receipt-title {
@@ -44,6 +44,8 @@
             font-weight: bold;
             text-transform: uppercase;
             color: #333;
+            text-align: center;
+            flex: 1;
         }
 
         .info-section {
