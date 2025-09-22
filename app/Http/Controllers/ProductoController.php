@@ -66,9 +66,10 @@ class ProductoController extends Controller
 
             // Asegurar que la URL de la imagen sea completa
             if ($producto->img_url) {
-                if (!str_starts_with($producto->img_url, 'http')) {
-                    $producto->img_url = url($producto->img_url);
-                }
+                // Extraer el nombre del archivo de la URL
+                $filename = basename($producto->img_url);
+                // Usar la ruta específica para servir imágenes
+                $producto->img_url = route('productos.imagen', ['filename' => $filename]);
             }
 
             return $producto;
@@ -165,7 +166,7 @@ class ProductoController extends Controller
                 $imagen = $request->file('imagen');
                 $nombreArchivo = time() . '_' . $imagen->getClientOriginalName();
                 $ruta = $imagen->storeAs('productos', $nombreArchivo, 'public');
-                $data['img_url'] = url(Storage::url($ruta));
+                $data['img_url'] = route('productos.imagen', ['filename' => $nombreArchivo]);
             }
 
             $producto = Producto::create($data);
@@ -312,7 +313,7 @@ class ProductoController extends Controller
                 $imagen = $request->file('imagen');
                 $nombreArchivo = time() . '_' . $imagen->getClientOriginalName();
                 $ruta = $imagen->storeAs('productos', $nombreArchivo, 'public');
-                $data['img_url'] = url(Storage::url($ruta));
+                $data['img_url'] = route('productos.imagen', ['filename' => $nombreArchivo]);
             }
 
             $producto->update($data);

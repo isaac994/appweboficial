@@ -20,6 +20,17 @@ Route::get('/test-csrf', function () {
     return response()->json(['message' => 'CSRF funcionando', 'token' => csrf_token()]);
 });
 
+// Ruta para servir imágenes de productos
+Route::get('/productos/imagen/{filename}', function ($filename) {
+    $path = storage_path('app/public/productos/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->name('productos.imagen');
+
 
 
 Route::get('/', function () {

@@ -375,21 +375,7 @@ const confirmDelete = () => {
 const getImageUrl = (imgUrl: string) => {
   if (!imgUrl) return ''
 
-  // Si ya es una URL completa, devolverla tal como está
-  if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
-    return imgUrl
-  }
-
-  // Si es una ruta relativa, construir la URL completa
-  if (imgUrl.startsWith('/storage/')) {
-    return `${window.location.origin}${imgUrl}`
-  }
-
-  // Si es solo el nombre del archivo, construir la ruta completa
-  if (!imgUrl.startsWith('/')) {
-    return `${window.location.origin}/storage/productos/${imgUrl}`
-  }
-
+  // El backend ya proporciona URLs completas, devolver tal como está
   return imgUrl
 }
 
