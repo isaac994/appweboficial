@@ -224,11 +224,23 @@
                                                 v-model.number="producto.cantidad"
                                                 type="number"
                                                 :min="isSmartphone(selectedProductos[index]) ? 1 : 1"
-                                                :max="isSmartphone(selectedProductos[index]) ? 1 : undefined"
+                                                :max="isSmartphone(selectedProductos[index]) ? 1 : selectedProductos[index]?.stock_disponible"
                                                 class="mt-1"
+                                                :class="{ 'border-red-500': errors[`productos.${index}.cantidad`] }"
                                                 required
                                                 @input="handleCantidadChange(index, $event.target.value)"
                                             />
+                                            <!-- Mostrar stock disponible -->
+                                            <div v-if="selectedProductos[index]" class="mt-1 text-sm">
+                                                <span class="text-gray-600">Stock disponible: </span>
+                                                <span :class="selectedProductos[index].stock_disponible > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'">
+                                                    {{ selectedProductos[index].stock_disponible }} unidades
+                                                </span>
+                                            </div>
+                                            <!-- Error de cantidad -->
+                                            <div v-if="errors[`productos.${index}.cantidad`]" class="mt-1 text-sm text-red-600">
+                                                {{ errors[`productos.${index}.cantidad`] }}
+                                            </div>
                                         </div>
 
                                         <div>
@@ -571,6 +583,22 @@ const createVenta = () => {
         return;
     }
 
+    // Validar stock antes de crear la venta
+    for (let i = 0; i < form.value.productos.length; i++) {
+        const producto = form.value.productos[i];
+        const productoInfo = selectedProductos.value[i];
+
+        if (productoInfo && producto.cantidad > productoInfo.stock_disponible) {
+            Swal.fire({
+                title: 'Stock insuficiente',
+                text: `El producto "${productoInfo.nombre}" no tiene suficiente stock. Disponible: ${productoInfo.stock_disponible} unidades.`,
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+    }
+
     if (totalVenta.value <= 0) {
         Swal.fire({
             title: 'Error',
@@ -665,12 +693,20 @@ const isSmartphone = (producto: Producto | null) => {
     return producto?.categoria?.nombre?.toLowerCase() === 'smartphones';
 };
 
-// Función para manejar el cambio de cantidad con validación para smartphones
+// Función para manejar el cambio de cantidad con validación para smartphones y stock
 const handleCantidadChange = (index: number, cantidad: number) => {
     const producto = selectedProductos.value[index];
+    const cantidadNum = parseInt(cantidad) || 0;
+
+    // Validar que la cantidad sea un número válido
+    if (isNaN(cantidadNum) || cantidadNum < 1) {
+        form.value.productos[index].cantidad = 1;
+        updateTotal(index);
+        return;
+    }
 
     // Si es un smartphone, limitar la cantidad a 1
-    if (isSmartphone(producto) && cantidad > 1) {
+    if (isSmartphone(producto) && cantidadNum > 1) {
         form.value.productos[index].cantidad = 1;
         Swal.fire({
             title: 'Cantidad limitada',
@@ -678,10 +714,25 @@ const handleCantidadChange = (index: number, cantidad: number) => {
             icon: 'warning',
             confirmButtonText: 'Entendido'
         });
-    } else {
-        form.value.productos[index].cantidad = cantidad;
+        updateTotal(index);
+        return;
     }
 
+    // Validar stock disponible
+    if (producto && cantidadNum > producto.stock_disponible) {
+        form.value.productos[index].cantidad = producto.stock_disponible;
+        Swal.fire({
+            title: 'Stock insuficiente',
+            text: `Solo hay ${producto.stock_disponible} unidades disponibles de este producto.`,
+            icon: 'warning',
+            confirmButtonText: 'Entendido'
+        });
+        updateTotal(index);
+        return;
+    }
+
+    // Si todo está bien, actualizar la cantidad
+    form.value.productos[index].cantidad = cantidadNum;
     updateTotal(index);
 };
 
