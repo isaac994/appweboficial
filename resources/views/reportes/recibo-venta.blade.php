@@ -46,7 +46,7 @@
             color: #333;
             text-align: center;
             flex: 1;
-            margin-top: -10px;
+            margin-top: -20px;
         }
 
         .info-section {
