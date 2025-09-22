@@ -155,7 +155,7 @@
                                         <div class="flex items-end">
                                             <div class="flex-1">
                                                 <Label>Total Parcial</Label>
-                                                <div class="mt-1 text-lg font-semibold text-green-600">
+                                                <div class="mt-1 text-lg font-semibold text-green-600 flex items-center h-10">
                                                     {{ formatCurrency(producto.total_parcial || 0) }}
                                                 </div>
                                             </div>
