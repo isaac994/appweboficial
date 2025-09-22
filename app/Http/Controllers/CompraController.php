@@ -294,13 +294,32 @@ class CompraController extends Controller
         try {
             DB::beginTransaction();
 
+            // Cargar los detalles de la compra con los productos
+            $compra->load('detalles.producto');
+
+            // Reducir el stock de cada producto antes de eliminar la compra
+            foreach ($compra->detalles as $detalle) {
+                $producto = $detalle->producto;
+                if ($producto) {
+                    // Reducir el stock disponible
+                    $producto->stock_disponible -= $detalle->cantidad;
+
+                    // Asegurar que el stock no sea negativo
+                    if ($producto->stock_disponible < 0) {
+                        $producto->stock_disponible = 0;
+                    }
+
+                    $producto->save();
+                }
+            }
+
             // Eliminar detalles (se eliminan automáticamente por la cascada)
             $compra->delete();
 
             DB::commit();
 
             return redirect()->route('compras.index')
-                ->with('success', 'Compra eliminada exitosamente');
+                ->with('success', 'Compra eliminada exitosamente. El stock de los productos ha sido actualizado.');
 
         } catch (\Exception $e) {
             DB::rollBack();

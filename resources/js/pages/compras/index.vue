@@ -117,6 +117,17 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                                 </svg>
                                             </Button>
+                                            <Button
+                                                @click="deleteCompra(compra.id_compra)"
+                                                variant="ghost"
+                                                size="sm"
+                                                class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                title="Eliminar compra"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -245,6 +256,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Swal from 'sweetalert2';
 
 interface Compra {
     id_compra: number;
@@ -338,9 +350,38 @@ const debounceSearch = () => {
 };
 
 const deleteCompra = (id: number) => {
-    if (confirm('¿Estás seguro de que quieres eliminar esta compra?')) {
-        router.delete(route('compras.destroy', id));
-    }
+    Swal.fire({
+        title: '¿Eliminar compra?',
+        text: 'Esta acción eliminará la compra y reducirá el stock de los productos correspondientes. Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('compras.destroy', id), {
+                onSuccess: () => {
+                    Swal.fire({
+                        title: '¡Compra eliminada!',
+                        text: 'La compra ha sido eliminada y el stock de los productos ha sido actualizado.',
+                        icon: 'success',
+                        confirmButtonText: 'Entendido'
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudo eliminar la compra. Inténtalo de nuevo.',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            });
+        }
+    });
 };
 
 const imprimirRecibo = async (compra: any) => {
