@@ -28,7 +28,7 @@
 
         .header {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
             margin-bottom: 15px;
@@ -36,32 +36,14 @@
 
         .logo {
             height: 35px;
-            margin-right: 10px;
-        }
-
-        .company-info {
-            flex: 1;
-        }
-
-        .company-name {
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-
-        .company-subtitle {
-            font-size: 9px;
-            color: #666;
-        }
-
-        .receipt-info {
-            text-align: right;
+            margin-right: 15px;
         }
 
         .receipt-title {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
+            color: #333;
         }
 
         .info-section {
@@ -155,13 +137,7 @@
         <!-- Header -->
         <div class="header">
             <img src="{{ public_path('images/logo.png') }}" alt="Logo" class="logo">
-            <div class="company-info">
-                <div class="company-name">Tienda de Celulares</div>
-                <div class="company-subtitle">Sistema de Gestión de Ventas</div>
-            </div>
-            <div class="receipt-info">
-                <div class="receipt-title">Recibo de Venta</div>
-            </div>
+            <div class="receipt-title">RECIBO DE VENTA</div>
         </div>
 
         <!-- Información de la Venta -->
