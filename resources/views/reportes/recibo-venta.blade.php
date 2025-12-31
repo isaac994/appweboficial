@@ -85,6 +85,13 @@
             font-weight: bold;
         }
 
+        .item-description {
+            font-size: 9px;
+            color: #666;
+            margin: 2px 0;
+            font-style: italic;
+        }
+
         .item-details {
             display: flex;
             justify-content: space-between;
@@ -157,10 +164,24 @@
                 <span class="info-label">Cliente:</span>
                 <span>{{ $venta->cliente->nombre ?? 'Cliente General' }}</span>
             </div>
+            @if($venta->cliente && $venta->cliente->apellidos)
             <div class="info-row">
-                <span class="info-label">Vendedor:</span>
-                <span>{{ $venta->usuario->name ?? 'N/A' }}</span>
+                <span class="info-label">Apellidos:</span>
+                <span>{{ $venta->cliente->apellidos }}</span>
             </div>
+            @endif
+            @if($venta->cliente && $venta->cliente->ci)
+            <div class="info-row">
+                <span class="info-label">CI:</span>
+                <span>{{ $venta->cliente->ci }}</span>
+            </div>
+            @endif
+            @if($venta->cliente && $venta->cliente->telefono)
+            <div class="info-row">
+                <span class="info-label">Teléfono:</span>
+                <span>{{ $venta->cliente->telefono }}</span>
+            </div>
+            @endif
         </div>
 
         <!-- Items -->
@@ -168,7 +189,15 @@
             <div class="items-title">Productos Vendidos</div>
             @foreach($venta->detalles as $detalle)
                 <div class="item">
-                    <div class="item-name">{{ $detalle->producto->nombre ?? 'Producto eliminado' }}</div>
+                    <div class="item-name">
+                        @if($detalle->producto->marca && $detalle->producto->marca->nombre)
+                            {{ $detalle->producto->marca->nombre }}
+                        @endif
+                        {{ $detalle->producto->modelo->nombre ?? 'Sin modelo' }}
+                    </div>
+                    @if($detalle->producto->descripcion)
+                        <div class="item-description">{{ $detalle->producto->descripcion }}</div>
+                    @endif
                     <div class="item-details">
                         <span>{{ $detalle->cantidad }} x Bs {{ number_format($detalle->precio_unitario, 2, ',', '.') }}</span>
                         <span class="currency">Bs {{ number_format($detalle->cantidad * $detalle->precio_unitario, 2, ',', '.') }}</span>
@@ -196,6 +225,9 @@
         <div class="footer">
             <p>¡Gracias por su compra!</p>
             <p>Recibo generado el {{ now()->format('d/m/Y H:i:s') }}</p>
+            @if(isset($usuario) && $usuario)
+            <p style="margin-top: 10px; font-weight: bold;">{{ trim($usuario->name . ' ' . ($usuario->apellidos ?? '')) }}</p>
+            @endif
         </div>
     </div>
 </body>

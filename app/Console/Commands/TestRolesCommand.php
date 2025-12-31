@@ -39,7 +39,7 @@ class TestRolesCommand extends Command
             $this->line("   🔑 Permisos: " . $user->getAllPermissions()->pluck('name')->implode(', '));
 
             // Probar métodos específicos
-            $this->line("   ✅ Es Administrador: " . ($user->hasRole('Administrador') ? 'SÍ' : 'NO'));
+            $this->line("   ✅ Es Propietario: " . ($user->hasRole('Propietario') ? 'SÍ' : 'NO'));
             $this->line("   ✅ Es Operador: " . ($user->hasRole('Operador') ? 'SÍ' : 'NO'));
             $this->line("   ✅ Puede ver dashboard: " . ($user->can('dashboard.view') ? 'SÍ' : 'NO'));
             $this->line("   ✅ Puede gestionar productos: " . ($user->can('productos.manage') ? 'SÍ' : 'NO'));

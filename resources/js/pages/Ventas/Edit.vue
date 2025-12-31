@@ -1,205 +1,240 @@
 <template>
-    <AppLayout :title="`Editar Venta #${venta.id_venta}`">
-        <template #header>
-            <Heading>Editar Venta #{{ venta.id_venta }}</Heading>
-        </template>
+    <AppLayout>
+        <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628] py-6">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Editar Venta #{{ venta.id_venta }}</h1>
+                        <p class="text-blue-300 text-sm">Modifique los datos de la venta según sea necesario</p>
+                    </div>
+                    <button
+                        @click="router.visit(route('ventas.index'))"
+                        class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Volver
+                    </button>
+                </div>
 
-        <div class="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Información de la Venta</CardTitle>
-                    <CardDescription>
-                        Modifique los datos de la venta según sea necesario
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form @submit.prevent="updateVenta" class="space-y-6">
-                        <!-- Cliente -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <Label for="cliente">Cliente *</Label>
-                                <select
-                                    id="cliente"
-                                    v-model="form.id_cliente"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    required
-                                >
-                                    <option value="">Seleccione un cliente</option>
-                                    <option
-                                        v-for="cliente in clientes"
-                                        :key="cliente.id_cliente"
-                                        :value="cliente.id_cliente"
+                <!-- Formulario -->
+                <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 overflow-hidden">
+                    <div class="p-6">
+                        <form @submit.prevent="updateVenta" class="space-y-6">
+                            <!-- Información Básica -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Cliente -->
+                                <div>
+                                    <label class="block text-sm font-medium text-blue-300 mb-2">Cliente *</label>
+                                    <select
+                                        v-model="form.id_cliente"
+                                        class="w-full px-4 py-3 bg-black/30 border border-blue-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
                                     >
-                                        {{ cliente.nombre }} - {{ cliente.correo_electronico }}
-                                    </option>
-                                </select>
-                                <div v-if="errors.id_cliente" class="mt-1 text-sm text-red-600">
-                                    {{ errors.id_cliente }}
+                                        <option value="">Seleccione un cliente</option>
+                                        <option
+                                            v-for="cliente in clientes"
+                                            :key="cliente.id_cliente"
+                                            :value="cliente.id_cliente"
+                                        >
+                                            {{ cliente.nombre }} {{ cliente.apellidos || '' }} - CI: {{ cliente.ci || 'Sin CI' }} - Tel: {{ cliente.telefono || 'Sin teléfono' }}
+                                        </option>
+                                    </select>
+                                    <div v-if="errors.id_cliente" class="mt-1 text-sm text-red-400">
+                                        {{ errors.id_cliente }}
+                                    </div>
+                                </div>
+
+                                <!-- Fecha -->
+                                <div>
+                                    <label class="block text-sm font-medium text-blue-300 mb-2">Fecha *</label>
+                                    <input
+                                        v-model="form.fecha"
+                                        type="date"
+                                        class="w-full px-4 py-3 bg-black/30 border border-blue-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
+                                    />
+                                    <div v-if="errors.fecha" class="mt-1 text-sm text-red-400">
+                                        {{ errors.fecha }}
+                                    </div>
                                 </div>
                             </div>
 
+                            <!-- Productos -->
                             <div>
-                                <Label for="fecha">Fecha *</Label>
-                                <Input
-                                    id="fecha"
-                                    v-model="form.fecha"
-                                    type="date"
-                                    class="mt-1"
-                                    required
-                                />
-                                <div v-if="errors.fecha" class="mt-1 text-sm text-red-600">
-                                    {{ errors.fecha }}
+                                <div class="flex items-center justify-between mb-4">
+                                    <label class="text-lg font-semibold text-white">Productos *</label>
+                                    <button
+                                        type="button"
+                                        @click="addProducto"
+                                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
+                                    >
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        Agregar Producto
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
 
+                                <div v-if="form.productos.length === 0" class="text-center py-8 text-gray-400">
+                                    <p>No hay productos agregados</p>
+                                    <p class="text-sm">Haga clic en "Agregar Producto" para comenzar</p>
+                                </div>
 
+                                <div v-else class="space-y-4">
+                                    <div
+                                        v-for="(producto, index) in form.productos"
+                                        :key="index"
+                                        class="bg-black/30 border border-blue-500/30 rounded-lg p-4"
+                                    >
+                                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                            <!-- Producto -->
+                                            <div class="relative">
+                                                <label class="block text-sm font-medium text-blue-300 mb-2">Producto *</label>
+                                                <div class="relative">
+                                                    <input
+                                                        v-model="productoSearch[index]"
+                                                        type="text"
+                                                        placeholder="Buscar producto..."
+                                                        class="w-full px-4 py-3 bg-black/50 border border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                                                        :class="{ 'border-red-500': errors[`productos.${index}.id_producto`] }"
+                                                        @input="filterProductos(index)"
+                                                        @focus="handleProductoFocus(index)"
+                                                        @blur="handleProductoBlur(index)"
+                                                    />
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                                        <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                        </svg>
+                                                    </div>
+                                                </div>
 
-                        <!-- Productos -->
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <Label>Productos *</Label>
-                                <Button
-                                    type="button"
-                                    @click="addProducto"
-                                    variant="outline"
-                                    size="sm"
-                                >
-                                    + Agregar Producto
-                                </Button>
-                            </div>
-
-                            <div v-if="form.productos.length === 0" class="text-center py-8 text-gray-500">
-                                <p>No hay productos agregados</p>
-                                <p class="text-sm">Haga clic en "Agregar Producto" para comenzar</p>
-                            </div>
-
-                            <div v-else class="space-y-4">
-                                <div
-                                    v-for="(producto, index) in form.productos"
-                                    :key="index"
-                                    class="border border-gray-200 rounded-lg p-4"
-                                >
-                                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                        <div>
-                                            <Label :for="`producto-${index}`">Producto *</Label>
-                                            <select
-                                                :id="`producto-${index}`"
-                                                v-model="producto.id_producto"
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                required
-                                                @change="updateProductoInfo(index)"
-                                            >
-                                                <option value="">Seleccione un producto</option>
-                                                <option
-                                                    v-for="prod in productosDisponibles"
-                                                    :key="prod.id_producto"
-                                                    :value="prod.id_producto"
-                                                >
-                                                    {{ prod.nombre }}
-                                                </option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <Label :for="`cantidad-${index}`">Cantidad *</Label>
-                                            <Input
-                                                :id="`cantidad-${index}`"
-                                                v-model.number="producto.cantidad"
-                                                type="number"
-                                                :min="isSmartphone(selectedProductos[index]) ? 1 : 1"
-                                                :max="isSmartphone(selectedProductos[index]) ? 1 : selectedProductos[index]?.stock_disponible"
-                                                class="mt-1"
-                                                :class="{ 'border-red-500': errors[`productos.${index}.cantidad`] }"
-                                                required
-                                                @input="handleCantidadChange(index, $event.target.value)"
-                                            />
-                                            <!-- Mostrar stock disponible -->
-                                            <div v-if="selectedProductos[index]" class="mt-1 text-sm">
-                                                <span class="text-gray-600">Stock disponible: </span>
-                                                <span :class="selectedProductos[index].stock_disponible > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'">
-                                                    {{ selectedProductos[index].stock_disponible }} unidades
-                                                </span>
-                                            </div>
-                                            <!-- Error de cantidad -->
-                                            <div v-if="errors[`productos.${index}.cantidad`]" class="mt-1 text-sm text-red-600">
-                                                {{ errors[`productos.${index}.cantidad`] }}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <Label :for="`precio-${index}`">Precio Unitario *</Label>
-                                            <Input
-                                                :id="`precio-${index}`"
-                                                v-model.number="producto.precio_unitario"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                class="mt-1"
-                                                required
-                                                @input="updateTotal(index)"
-                                            />
-                                        </div>
-
-                                        <div v-if="isSmartphone(selectedProductos[index])">
-                                            <Label :for="`descripcion-${index}`">Descripción/IMEI</Label>
-                                            <Input
-                                                :id="`descripcion-${index}`"
-                                                v-model="producto.descripcion"
-                                                type="text"
-                                                placeholder="Ingrese el IMEI del celular..."
-                                                class="mt-1"
-                                            />
-                                        </div>
-
-                                        <div class="flex items-end">
-                                            <div class="flex-1">
-                                                <Label>Total Parcial</Label>
-                                                <div class="mt-1 text-lg font-semibold text-green-600 flex items-center h-10">
-                                                    {{ formatCurrency(producto.total_parcial || 0) }}
+                                                <!-- Dropdown de productos -->
+                                                <div v-if="showProductosDropdown[index] && filteredProductos[index] && filteredProductos[index].length > 0"
+                                                     class="absolute z-10 w-full mt-1 bg-black/90 border border-blue-500/50 rounded-lg shadow-lg max-h-60 overflow-auto">
+                                                    <div
+                                                        v-for="prod in filteredProductos[index]"
+                                                        :key="prod.id_producto"
+                                                        @mousedown="selectProducto(index, prod)"
+                                                        class="px-4 py-3 hover:bg-blue-500/20 cursor-pointer border-b border-blue-500/20 last:border-b-0"
+                                                    >
+                                                        <div class="font-medium text-white">{{ prod.modelo?.nombre || 'Sin modelo' }}</div>
+                                                        <div class="text-sm text-blue-300">{{ prod.descripcion }}</div>
+                                                        <div class="text-xs text-gray-400">{{ prod.categoria?.nombre }} - {{ prod.marca?.nombre }}</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <Button
-                                                type="button"
-                                                @click="removeProducto(index)"
-                                                variant="ghost"
-                                                size="sm"
-                                                class="text-red-600 hover:text-red-700 ml-2"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                            </Button>
+
+                                            <!-- Cantidad -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-blue-300 mb-2">Cantidad *</label>
+                                                <input
+                                                    v-model.number="producto.cantidad"
+                                                    type="number"
+                                                    :min="isSmartphone(selectedProductos[index]) ? 1 : 1"
+                                                    :max="isSmartphone(selectedProductos[index]) ? 1 : selectedProductos[index]?.stock_disponible"
+                                                    class="w-full px-4 py-3 bg-black/50 border border-blue-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    :class="{ 'border-red-500': errors[`productos.${index}.cantidad`] }"
+                                                    required
+                                                    @input="handleCantidadChange(index, $event.target.value)"
+                                                />
+                                                <!-- Error de cantidad -->
+                                                <div v-if="errors[`productos.${index}.cantidad`]" class="mt-1 text-sm text-red-400">
+                                                    {{ errors[`productos.${index}.cantidad`] }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Precio Unitario -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-blue-300 mb-2">Precio Unitario *</label>
+                                                <input
+                                                    v-model.number="producto.precio_unitario"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    :readonly="isOperator"
+                                                    class="w-full px-4 py-3 bg-black/50 border border-blue-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    :class="{
+                                                        'bg-gray-600/50 cursor-not-allowed': isOperator
+                                                    }"
+                                                    required
+                                                    @input="updateTotal(index)"
+                                                />
+                                                <!-- Mostrar ganancia -->
+                                                <div class="mt-1 text-sm">
+                                                    <span class="text-blue-300">Su ganancia será: </span>
+                                                    <span class="text-green-400 font-semibold">
+                                                        {{ calculateGanancia(index) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- IMEI (solo para smartphones) -->
+                                            <div v-if="isSmartphone(selectedProductos[index])">
+                                                <label class="block text-sm font-medium text-blue-300 mb-2">Nro IMEI *</label>
+                                                <input
+                                                    v-model="producto.descripcion"
+                                                    type="text"
+                                                    placeholder="Ingrese el IMEI del celular..."
+                                                    class="w-full px-4 py-3 bg-black/50 border border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <!-- Total Parcial y Eliminar -->
+                                            <div class="flex items-end">
+                                                <div class="flex-1">
+                                                    <label class="block text-sm font-medium text-blue-300 mb-2">Total Parcial</label>
+                                                    <div class="text-lg font-semibold text-green-400 flex items-center h-10">
+                                                        {{ formatCurrency(producto.total_parcial || 0) }}
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    @click="removeProducto(index)"
+                                                    class="ml-2 p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors duration-200"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Total -->
-                        <div class="border-t pt-6">
-                            <div class="flex justify-between items-center text-xl font-bold">
-                                <span>Total de la Venta:</span>
-                                <span class="text-green-600">{{ formatCurrency(totalVenta) }}</span>
+                            <!-- Total -->
+                            <div class="border-t border-blue-500/30 pt-6">
+                                <div class="flex justify-between items-center text-xl font-bold">
+                                    <span class="text-white">Total de la Venta:</span>
+                                    <span class="text-green-400">{{ formatCurrency(totalVenta) }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Botones -->
-                        <div class="flex justify-end space-x-3">
-                            <Button
-                                type="button"
-                                @click="cancelar"
-                                variant="outline"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button type="submit" :disabled="form.productos.length === 0">
-                                Actualizar Venta
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                            <!-- Botones -->
+                            <div class="flex justify-end space-x-3">
+                                <button
+                                    type="button"
+                                    @click="cancelar"
+                                    class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="form.productos.length === 0"
+                                    class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
+                                >
+                                    Actualizar Venta
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </AppLayout>
 </template>
@@ -208,16 +243,14 @@
 import { ref, computed, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import Heading from '@/components/Heading.vue';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useAuth } from '@/composables/useAuth';
 
 interface Cliente {
     id_cliente: number;
     nombre: string;
-    correo_electronico: string;
+    apellidos?: string;
+    ci?: string;
+    telefono?: string;
 }
 
 interface Producto {
@@ -226,8 +259,11 @@ interface Producto {
     precio_venta: number;
     stock_disponible: number;
     estado_disponible: string;
+    ultimo_precio_compra?: number;
     categoria?: { nombre: string };
     marca?: { nombre: string };
+    modelo?: { nombre: string };
+    descripcion?: string;
 }
 
 interface ProductoVenta {
@@ -244,6 +280,7 @@ interface DetalleVenta {
     cantidad: number;
     precio_unitario: number;
     total_parcial: number;
+    descripcion?: string;
     producto: Producto;
 }
 
@@ -268,6 +305,9 @@ const props = defineProps<{
     errors?: Record<string, string>;
 }>();
 
+// Obtener información del usuario autenticado
+const { isOperator } = useAuth();
+
 const form = ref<FormData>({
     id_cliente: props.venta.id_cliente.toString(),
     fecha: new Date(props.venta.fecha).toISOString().split('T')[0],
@@ -283,10 +323,23 @@ const form = ref<FormData>({
 // Inicializar selectedProductos con los productos existentes
 const selectedProductos = ref<(Producto | null)[]>([]);
 
+// Variables para filtrado de productos
+const productoSearch = ref<string[]>([]);
+const showProductosDropdown = ref<boolean[]>([]);
+const filteredProductos = ref<Producto[][]>([]);
+
 onMounted(() => {
     // Inicializar selectedProductos con los productos existentes
     selectedProductos.value = form.value.productos.map(producto => {
         return props.productos.find(p => p.id_producto === producto.id_producto) || null;
+    });
+
+    // Inicializar arrays para filtrado de productos
+    form.value.productos.forEach((producto, index) => {
+        const productoInfo = props.productos.find(p => p.id_producto === producto.id_producto);
+        productoSearch.value[index] = productoInfo?.modelo?.nombre || productoInfo?.nombre || 'Sin nombre';
+        showProductosDropdown.value[index] = false;
+        filteredProductos.value[index] = [];
     });
 
     // Recalcular totales para todos los productos al cargar
@@ -306,30 +359,72 @@ const addProducto = () => {
 
     // Agregar null a selectedProductos para el nuevo producto
     selectedProductos.value.push(null);
+
+    // Inicializar arrays para el nuevo producto
+    const index = form.value.productos.length - 1;
+    productoSearch.value[index] = '';
+    showProductosDropdown.value[index] = false;
+    filteredProductos.value[index] = [];
 };
 
 const removeProducto = (index: number) => {
     form.value.productos.splice(index, 1);
     selectedProductos.value.splice(index, 1);
+
+    // Limpiar arrays del producto eliminado
+    productoSearch.value.splice(index, 1);
+    showProductosDropdown.value.splice(index, 1);
+    filteredProductos.value.splice(index, 1);
 };
 
-const updateProductoInfo = (index: number) => {
-    const producto = form.value.productos[index];
-    const productoInfo = props.productos.find(p => p.id_producto === producto.id_producto);
-
-    if (productoInfo) {
-        producto.precio_unitario = productoInfo.precio_venta;
-
-        // Actualizar selectedProductos para el índice actual
-        selectedProductos.value[index] = productoInfo;
-
-        // Si es un smartphone, establecer cantidad en 1
-        if (isSmartphone(productoInfo)) {
-            producto.cantidad = 1;
-        }
-
-        updateTotal(index);
+// Métodos para filtrado de productos
+const filterProductos = (index: number) => {
+    if (!productoSearch.value[index] || !productoSearch.value[index].trim()) {
+        filteredProductos.value[index] = props.productos;
+    } else {
+        const search = productoSearch.value[index].toLowerCase();
+        filteredProductos.value[index] = props.productos.filter(producto =>
+            (producto.modelo?.nombre || '').toLowerCase().includes(search) ||
+            (producto.nombre || '').toLowerCase().includes(search) ||
+            (producto.descripcion || '').toLowerCase().includes(search) ||
+            (producto.categoria?.nombre || '').toLowerCase().includes(search) ||
+            (producto.marca?.nombre || '').toLowerCase().includes(search)
+        );
     }
+};
+
+const selectProducto = (index: number, producto: Producto) => {
+    selectedProductos.value[index] = producto;
+    form.value.productos[index].id_producto = producto.id_producto;
+    form.value.productos[index].precio_unitario = producto.precio_venta;
+    productoSearch.value[index] = producto.modelo?.nombre || producto.nombre || 'Sin nombre';
+    showProductosDropdown.value[index] = false;
+
+    // Si es un smartphone, establecer cantidad en 1
+    if (isSmartphone(producto)) {
+        form.value.productos[index].cantidad = 1;
+    }
+
+    updateTotal(index);
+};
+
+const handleProductoFocus = (index: number) => {
+    showProductosDropdown.value[index] = true;
+    if (selectedProductos.value[index]) {
+        // Si ya hay un producto seleccionado, limpiar la búsqueda para permitir nueva búsqueda
+        productoSearch.value[index] = '';
+        selectedProductos.value[index] = null;
+        form.value.productos[index].id_producto = 0;
+        form.value.productos[index].precio_unitario = 0;
+    }
+    filterProductos(index);
+};
+
+const handleProductoBlur = (index: number) => {
+    // Delay para permitir que se ejecute el click en selectProducto
+    setTimeout(() => {
+        showProductosDropdown.value[index] = false;
+    }, 150);
 };
 
 const updateTotal = (index: number) => {
@@ -337,10 +432,29 @@ const updateTotal = (index: number) => {
     producto.total_parcial = producto.cantidad * producto.precio_unitario;
 };
 
+const calculateGanancia = (index: number) => {
+    const producto = form.value.productos[index];
 
-const productosDisponibles = computed(() => {
-    return props.productos.filter(p => p.stock_disponible > 0);
-});
+    if (!producto.id_producto || !producto.precio_unitario) {
+        return 'Bs 0.00';
+    }
+
+    // Buscar el producto en la lista original para obtener el ultimo_precio_compra
+    const productoCompleto = props.productos.find(p => p.id_producto === producto.id_producto);
+
+    if (!productoCompleto?.ultimo_precio_compra) {
+        return 'Bs 0.00';
+    }
+
+    const cantidad = Number(producto.cantidad) || 0;
+    const precioVenta = Number(producto.precio_unitario) || 0;
+    const precioCompra = Number(productoCompleto.ultimo_precio_compra) || 0;
+
+    const gananciaPorUnidad = precioVenta - precioCompra;
+    const gananciaTotal = gananciaPorUnidad * cantidad;
+
+    return formatCurrency(gananciaTotal);
+};
 
 const totalVenta = computed(() => {
     return form.value.productos.reduce((total, producto) => {
@@ -364,7 +478,7 @@ const updateVenta = () => {
         const productoInfo = selectedProductos.value[i];
 
         if (productoInfo && producto.cantidad > productoInfo.stock_disponible) {
-            alert(`El producto "${productoInfo.nombre}" no tiene suficiente stock. Disponible: ${productoInfo.stock_disponible} unidades.`);
+            alert(`El producto "${productoInfo.nombre || productoInfo.modelo?.nombre}" no tiene suficiente stock. Disponible: ${productoInfo.stock_disponible} unidades.`);
             return;
         }
     }
@@ -381,7 +495,8 @@ const formatCurrency = (amount: number) => {
 
 // Función para verificar si un producto es un smartphone
 const isSmartphone = (producto: Producto | null) => {
-    return producto?.categoria?.nombre?.toLowerCase() === 'smartphones';
+    return producto?.categoria?.nombre?.toLowerCase() === 'celulares' ||
+           producto?.categoria?.nombre?.toLowerCase() === 'smartphones';
 };
 
 // Función para manejar el cambio de cantidad con validación para smartphones y stock

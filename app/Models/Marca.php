@@ -15,10 +15,25 @@ class Marca extends Model
     ];
 
     /**
-     * Obtiene los productos de esta marca
+     * Obtiene los modelos de esta marca
      */
-    public function productos(): HasMany
+    public function modelos(): HasMany
     {
-        return $this->hasMany(Producto::class, 'id_marca');
+        return $this->hasMany(Modelo::class, 'id_marca', 'id_marca');
+    }
+
+    /**
+     * Obtiene los productos de esta marca a través de los modelos
+     */
+    public function productos()
+    {
+        return $this->hasManyThrough(
+            Producto::class,
+            Modelo::class,
+            'id_marca', // Foreign key en modelos
+            'id_modelo', // Foreign key en productos
+            'id_marca', // Local key en marcas
+            'id_modelo' // Local key en modelos
+        );
     }
 }

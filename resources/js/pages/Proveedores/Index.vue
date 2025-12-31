@@ -1,17 +1,17 @@
 <template>
   <AppLayout>
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628]">
       <!-- Content -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header -->
         <div class="flex items-center justify-between mb-8">
           <div>
             <h1 class="text-3xl font-bold text-white mb-2">Gestión de Proveedores</h1>
-            <p class="text-purple-300">Administra los proveedores del sistema</p>
+            <p class="text-blue-300">Administra los proveedores del sistema</p>
           </div>
           <Link
             :href="route('proveedores.create')"
-            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -60,14 +60,14 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6 mb-8">
+        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 p-6 mb-8">
           <div class="flex space-x-4">
             <div class="flex-1">
               <input
                 v-model="search"
                 type="text"
                 placeholder="Buscar proveedores por nombre, CI/NIT o teléfono..."
-                class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                class="w-full px-4 py-3 bg-black/30 border border-blue-500/50 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 @input="debounceSearch"
               />
             </div>
@@ -81,10 +81,10 @@
         </div>
 
         <!-- Providers Table -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 overflow-hidden">
+        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
-              <thead class="bg-purple-600/20">
+              <thead class="bg-black/30">
                 <tr>
                   <th class="px-6 py-4 text-left text-sm font-semibold text-white">Proveedor</th>
                   <th class="px-6 py-4 text-left text-sm font-semibold text-white">CI/NIT</th>
@@ -93,11 +93,11 @@
                   <th class="px-6 py-4 text-center text-sm font-semibold text-white">Acciones</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-purple-500/20">
+              <tbody class="divide-y divide-blue-500/20">
                 <tr
                   v-for="proveedor in proveedores"
                   :key="proveedor.id_proveedor"
-                  class="hover:bg-purple-500/10 transition-colors duration-200"
+                  class="hover:bg-blue-500/10 transition-colors duration-200"
                 >
                   <td class="px-6 py-4">
                     <div class="text-white font-medium">{{ proveedor.nombre }}</div>
@@ -109,7 +109,7 @@
                     <div class="text-gray-300">{{ proveedor.telefono }}</div>
                   </td>
                   <td class="px-6 py-4 text-center">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-300">
                       {{ proveedor.compras_count }}
                     </span>
                   </td>
@@ -117,7 +117,7 @@
                     <div class="flex justify-center space-x-2">
                       <Link
                         :href="route('proveedores.show', proveedor.id_proveedor)"
-                        class="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors duration-200"
+                        class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors duration-200"
                         title="Ver proveedor"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,15 +154,15 @@
 
         <!-- Empty State -->
         <div v-if="!proveedores || proveedores.length === 0" class="text-center py-12">
-          <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-8">
-            <svg class="w-16 h-16 text-purple-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 p-8">
+            <svg class="w-16 h-16 text-blue-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
             </svg>
             <h3 class="text-xl font-semibold text-white mb-2">No hay proveedores</h3>
-            <p class="text-purple-300 mb-4">No se encontraron proveedores que coincidan con tu búsqueda.</p>
+            <p class="text-blue-300 mb-4">No se encontraron proveedores que coincidan con tu búsqueda.</p>
             <Link
               :href="route('proveedores.create')"
-              class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200"
+              class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
             >
               Crear primer proveedor
             </Link>
@@ -172,9 +172,9 @@
 
       <!-- Delete Confirmation Modal -->
       <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-black/90 border border-purple-500/30 rounded-xl p-6 max-w-md w-full mx-4">
+        <div class="bg-black/90 border border-blue-500/30 rounded-xl p-6 max-w-md w-full mx-4">
           <h3 class="text-lg font-semibold text-white mb-4">Confirmar Eliminación</h3>
-          <p class="text-purple-300 mb-6">
+          <p class="text-blue-300 mb-6">
             ¿Estás seguro de que quieres eliminar el proveedor "{{ proveedorToDelete?.nombre }}"? Esta acción no se puede deshacer.
           </p>
           <div class="flex space-x-3">

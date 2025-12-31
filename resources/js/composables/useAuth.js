@@ -10,12 +10,12 @@ export function useAuth() {
 
     const hasRole = (role) => {
         if (!user.value || !user.value.roles) return false
-        return user.value.roles.includes(role)
+        return user.value.roles.some(r => r.name === role)
     }
 
     const hasAnyRole = (roles) => {
         if (!user.value || !user.value.roles) return false
-        return roles.some(role => user.value.roles.includes(role))
+        return roles.some(role => user.value.roles.some(r => r.name === role))
     }
 
     const hasPermission = (permission) => {
@@ -30,7 +30,7 @@ export function useAuth() {
 
     const can = (permission) => hasPermission(permission)
 
-    const isAdmin = computed(() => hasRole('Administrador'))
+    const isAdmin = computed(() => hasRole('Propietario'))
     const isOperator = computed(() => hasRole('Operador'))
 
     return {

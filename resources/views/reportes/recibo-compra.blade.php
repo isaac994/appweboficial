@@ -85,6 +85,13 @@
             font-weight: bold;
         }
 
+        .item-description {
+            font-size: 9px;
+            color: #666;
+            margin: 2px 0;
+            font-style: italic;
+        }
+
         .item-details {
             display: flex;
             justify-content: space-between;
@@ -150,6 +157,12 @@
                 <span class="info-label">Proveedor:</span>
                 <span>{{ $compra->proveedor->nombre }}</span>
             </div>
+            @if($compra->proveedor->ci_nit)
+            <div class="info-row">
+                <span class="info-label">CI/NIT:</span>
+                <span>{{ $compra->proveedor->ci_nit }}</span>
+            </div>
+            @endif
             @if($compra->proveedor->telefono)
             <div class="info-row">
                 <span class="info-label">Teléfono:</span>
@@ -163,7 +176,15 @@
             <div class="items-title">Productos Comprados</div>
             @foreach($compra->detalles as $detalle)
                 <div class="item">
-                    <div class="item-name">{{ $detalle->producto->nombre }}</div>
+                    <div class="item-name">
+                        @if($detalle->producto->marca && $detalle->producto->marca->nombre)
+                            {{ $detalle->producto->marca->nombre }}
+                        @endif
+                        {{ $detalle->producto->modelo->nombre ?? 'Sin modelo' }}
+                    </div>
+                    @if($detalle->producto->descripcion)
+                    <div class="item-description">{{ $detalle->producto->descripcion }}</div>
+                    @endif
                     <div class="item-details">
                         <span>{{ $detalle->cantidad }} x Bs {{ number_format($detalle->precio_unitario, 2, ',', '.') }}</span>
                         <span class="currency">Bs {{ number_format($detalle->total_parcial, 2, ',', '.') }}</span>
@@ -188,6 +209,9 @@
         <div class="footer">
             <p>¡Compra registrada exitosamente!</p>
             <p>Recibo generado el {{ now()->format('d/m/Y H:i:s') }}</p>
+            @if(isset($usuario) && $usuario)
+            <p style="margin-top: 10px; font-weight: bold;">{{ trim($usuario->name . ' ' . ($usuario->apellidos ?? '')) }}</p>
+            @endif
         </div>
     </div>
 </body>

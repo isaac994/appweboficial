@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\StaticRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -16,29 +16,32 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('roles')
-            ->when(request('search'), function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->when(request('estado'), function ($query, $estado) {
-                $query->where('estado', $estado);
-            })
-            ->when(request('rol'), function ($query, $rol) {
-                $query->whereHas('roles', function ($q) use ($rol) {
-                    $q->where('name', $rol);
+        $users = User::when(request('search'), function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('apellidos', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('ci', 'like', "%{$search}%")
+                      ->orWhere('telefono', 'like', "%{$search}%")
+                      ->orWhere('estado', 'like', "%{$search}%")
+                      ->orWhere('rol', 'like', "%{$search}%");
                 });
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        $roles = Role::all();
+        // Asegurar que los roles se incluyan en la respuesta
+        $users->getCollection()->transform(function ($user) {
+            return $user->append(['roles', 'permissions']);
+        });
+
+        $roles = StaticRole::all();
 
         return Inertia::render('Users/Index', [
             'users' => $users,
             'roles' => $roles,
-            'filters' => request()->only(['search', 'estado', 'rol'])
+            'filters' => request()->only(['search'])
         ]);
     }
 
@@ -47,7 +50,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::all();
+        $roles = StaticRole::all();
 
         return Inertia::render('Users/Create', [
             'roles' => $roles
@@ -60,30 +63,39 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'name' => 'required|string|max:30',
+            'apellidos' => 'nullable|string|max:30',
+            'email' => 'required|string|email|max:30|unique:users,email',
+            'telefono' => 'nullable|string|max:30',
+            'ci' => 'required|string|max:30|unique:users,ci',
+            'direccion' => 'nullable|string|max:500',
             'estado' => 'required|in:activo,inactivo',
             'roles' => 'required|array|min:1',
-            'roles.*' => 'exists:roles,name'
+            'roles.*' => 'in:Propietario,Operador'
+        ], [
+            'ci.unique' => 'El número de Cédula de Identidad ya está registrado.',
+            'email.unique' => 'El correo electrónico ya está registrado.'
         ]);
 
-        // Obtener el primer rol seleccionado para asignar a id_rol
-        $firstRole = Role::where('name', $request->roles[0])->first();
+        // Obtener el primer rol seleccionado
+        $firstRole = $request->roles[0];
+
+        // Usar el CI como contraseña automáticamente
+        $password = $request->ci;
 
         $user = User::create([
             'name' => $request->name,
+            'apellidos' => $request->apellidos,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($password),
+            'telefono' => $request->telefono,
+            'ci' => $request->ci,
+            'direccion' => $request->direccion,
             'estado' => $request->estado,
-            'id_rol' => $firstRole->id,
+            'rol' => $firstRole,
         ]);
 
-        // Asignar todos los roles seleccionados usando Spatie
-        $user->assignRole($request->roles);
-
-        return redirect()->route('users.index')
-            ->with('success', 'Usuario creado exitosamente.');
+        return redirect()->route('users.index');
     }
 
     /**
@@ -91,8 +103,6 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $user->load('roles');
-
         return Inertia::render('Users/Show', [
             'user' => $user
         ]);
@@ -103,8 +113,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $user->load('roles');
-        $roles = Role::all();
+        $roles = StaticRole::all();
 
         return Inertia::render('Users/Edit', [
             'user' => $user,
@@ -118,32 +127,44 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'name' => 'required|string|max:30',
+            'apellidos' => 'nullable|string|max:30',
+            'email' => ['required', 'string', 'email', 'max:30', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
+            'telefono' => 'nullable|string|max:30',
+            'ci' => ['nullable', 'string', 'max:30', Rule::unique('users')->ignore($user->id)],
+            'direccion' => 'nullable|string|max:500',
             'estado' => 'required|in:activo,inactivo',
             'roles' => 'required|array|min:1',
-            'roles.*' => 'exists:roles,name'
+            'roles.*' => 'in:Propietario,Operador'
         ]);
 
-        // Obtener el primer rol seleccionado para asignar a id_rol
-        $firstRole = Role::where('name', $request->roles[0])->first();
+        // Prevenir que un usuario se desactive a sí mismo
+        if ($user->id === auth()->id() && $request->estado === 'inactivo') {
+            return redirect()->back()
+                ->withErrors(['estado' => 'No puedes desactivarte a ti mismo.'])
+                ->withInput();
+        }
+
+        // Obtener el primer rol seleccionado
+        $firstRole = $request->roles[0];
 
         $user->update([
             'name' => $request->name,
+            'apellidos' => $request->apellidos,
             'email' => $request->email,
+            'telefono' => $request->telefono,
+            'ci' => $request->ci,
+            'direccion' => $request->direccion,
             'estado' => $request->estado,
-            'id_rol' => $firstRole->id,
+            'rol' => $firstRole,
         ]);
 
         if ($request->filled('password')) {
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        $user->syncRoles($request->roles);
-
-        return redirect()->route('users.index')
-            ->with('success', 'Usuario actualizado exitosamente.');
+        return redirect()->route('users.index');
     }
 
     /**
@@ -151,6 +172,12 @@ class UserController extends Controller
      */
     public function toggleStatus(User $user)
     {
+        // Prevenir que un usuario se desactive a sí mismo
+        if ($user->id === auth()->id() && $user->estado === 'activo') {
+            return redirect()->route('users.index')
+                ->with('error', 'No puedes desactivarte a ti mismo.');
+        }
+
         if ($user->estado === 'activo') {
             $user->desactivar();
             $message = 'Usuario desactivado exitosamente.';
@@ -161,6 +188,36 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', $message);
+    }
+
+    /**
+     * Restablecer contraseña del usuario a su CI
+     */
+    public function resetPassword(Request $request, User $user)
+    {
+        $request->validate([
+            'password' => 'required|string|min:1'
+        ]);
+
+        // Verificar si la contraseña que se intenta establecer ya es la actual
+        if (Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La contraseña ya está establecida con este valor. No es necesario restablecerla.',
+                'already_set' => true
+            ], 200); // 200 porque técnicamente no es un error, solo información
+        }
+
+        // Actualizar la contraseña del usuario
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        // Retornar respuesta JSON en lugar de redirect con sesión
+        return response()->json([
+            'success' => true,
+            'message' => "Contraseña restablecida exitosamente. La nueva contraseña es: {$request->password}"
+        ]);
     }
 
     /**

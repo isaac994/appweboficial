@@ -84,8 +84,7 @@ class ProveedorController extends Controller
 
         Proveedor::create($request->only(['nombre', 'ci_nit', 'telefono']));
 
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor creado exitosamente');
+        return redirect()->route('proveedores.index');
     }
 
     /**
@@ -169,8 +168,7 @@ class ProveedorController extends Controller
 
         $proveedor->update($request->only(['nombre', 'ci_nit', 'telefono']));
 
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor actualizado exitosamente');
+        return redirect()->route('proveedores.index');
     }
 
     /**

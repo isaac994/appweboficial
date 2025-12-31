@@ -14,11 +14,15 @@ class Venta extends Model
     protected $fillable = [
         'fecha',
         'id_cliente',
-        'id_usuario'
+        'id_usuario',
+        'estado',
+        'fecha_eliminacion'
     ];
 
     protected $casts = [
         'fecha' => 'datetime',
+        'estado' => 'boolean',
+        'fecha_eliminacion' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];

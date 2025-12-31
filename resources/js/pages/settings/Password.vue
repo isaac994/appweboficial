@@ -13,7 +13,7 @@ import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
-        title: 'Password settings',
+        title: 'Configuración de Contraseña',
         href: '/settings/password',
     },
 ];
@@ -52,56 +52,66 @@ const updatePassword = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Password settings" />
+        <Head title="Configuración de Contraseña" />
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                <div class="mb-8 space-y-0.5">
+                    <h2 class="text-2xl font-bold text-white tracking-tight">Actualizar Contraseña</h2>
+                    <p class="text-sm text-gray-300">
+                        Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerte seguro
+                    </p>
+                </div>
 
                 <form @submit.prevent="updatePassword" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="current_password">Current password</Label>
+                        <Label for="current_password" class="text-sm font-medium text-blue-200">Contraseña Actual</Label>
                         <Input
                             id="current_password"
                             ref="currentPasswordInput"
                             v-model="form.current_password"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="mt-1 block w-full bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-cyan-400/20"
                             autocomplete="current-password"
-                            placeholder="Current password"
+                            placeholder="Contraseña actual"
                         />
                         <InputError :message="form.errors.current_password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password">New password</Label>
+                        <Label for="password" class="text-sm font-medium text-blue-200">Nueva Contraseña</Label>
                         <Input
                             id="password"
                             ref="passwordInput"
                             v-model="form.password"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="mt-1 block w-full bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-cyan-400/20"
                             autocomplete="new-password"
-                            placeholder="New password"
+                            placeholder="Nueva contraseña"
                         />
                         <InputError :message="form.errors.password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm password</Label>
+                        <Label for="password_confirmation" class="text-sm font-medium text-blue-200">Confirmar Contraseña</Label>
                         <Input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="mt-1 block w-full bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-cyan-400/20"
                             autocomplete="new-password"
-                            placeholder="Confirm password"
+                            placeholder="Confirmar contraseña"
                         />
                         <InputError :message="form.errors.password_confirmation" />
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save password</Button>
+                        <Button
+                            :disabled="form.processing"
+                            class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-6 py-2 rounded-lg shadow-lg"
+                        >
+                            {{ form.processing ? 'Guardando...' : 'Guardar Contraseña' }}
+                        </Button>
 
                         <Transition
                             enter-active-class="transition ease-in-out"
@@ -109,7 +119,7 @@ const updatePassword = () => {
                             leave-active-class="transition ease-in-out"
                             leave-to-class="opacity-0"
                         >
-                            <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">Saved.</p>
+                            <p v-show="form.recentlySuccessful" class="text-sm text-green-400">¡Guardado!</p>
                         </Transition>
                     </div>
                 </form>

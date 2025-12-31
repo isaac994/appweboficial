@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Package, Users, Tags, Building2, ShoppingCart, Settings, BarChart3 } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Package, Users, Tags, Building2, ShoppingCart, Settings, Layers, PackageCheck, BarChart3 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -40,7 +40,7 @@ const loadSidebarState = () => {
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Menu Principal',
         href: '/dashboard',
         icon: LayoutGrid,
         permission: 'dashboard.view',
@@ -49,37 +49,19 @@ const mainNavItems: NavItem[] = [
         title: 'Productos',
         href: '/productos',
         icon: Package,
-        permission: 'productos.manage',
-    },
-    {
-        title: 'Categorías',
-        href: '/categorias',
-        icon: Tags,
-        permission: 'categorias.manage',
-    },
-    {
-        title: 'Marcas',
-        href: '/marcas',
-        icon: Building2,
-        permission: 'marcas.manage',
-    },
-    {
-        title: 'Compras',
-        href: '/compras',
-        icon: Folder,
-        permission: 'compras.manage',
-    },
-    {
-        title: 'Ventas',
-        href: '/ventas',
-        icon: ShoppingCart,
-        permission: 'ventas.manage',
+        role: 'Propietario',
     },
     {
         title: 'Proveedores',
         href: '/proveedores',
         icon: Building2,
-        permission: 'proveedores.manage',
+        role: 'Propietario',
+    },
+    {
+        title: 'Compras',
+        href: '/compras',
+        icon: Folder,
+        role: 'Propietario',
     },
     {
         title: 'Clientes',
@@ -88,34 +70,32 @@ const mainNavItems: NavItem[] = [
         permission: 'clientes.manage',
     },
     {
+        title: 'Ventas',
+        href: '/ventas',
+        icon: ShoppingCart,
+        permission: 'ventas.manage',
+    },
+    {
+        title: 'Inventario',
+        href: '/inventario',
+        icon: PackageCheck,
+        permission: 'inventario.view',
+    },
+    {
         title: 'Reportes',
+        href: '/reportes',
         icon: BarChart3,
-        permission: 'reportes.view',
+        role: 'Propietario',
         children: [
-            {
-                title: 'Productos',
-                href: '/reportes/productos',
-                permission: 'reportes.view',
-            },
             {
                 title: 'Compras',
                 href: '/reportes/compras',
-                permission: 'reportes.view',
-            },
-            {
-                title: 'Proveedores',
-                href: '/reportes/proveedores',
-                permission: 'reportes.view',
-            },
-            {
-                title: 'Clientes',
-                href: '/reportes/clientes',
-                permission: 'reportes.view',
+                icon: Folder,
             },
             {
                 title: 'Ventas',
                 href: '/reportes/ventas',
-                permission: 'reportes.view',
+                icon: ShoppingCart,
             },
         ],
     },
@@ -123,13 +103,13 @@ const mainNavItems: NavItem[] = [
         title: 'Usuarios',
         href: '/users',
         icon: Users,
-        role: 'Administrador',
+        role: 'Propietario',
     },
     {
         title: 'Configuración',
         href: '/settings',
         icon: Settings,
-        role: 'Administrador',
+        role: 'Propietario',
     },
 ];
 
@@ -250,17 +230,17 @@ onMounted(() => {
     <Sidebar
         collapsible="icon"
         variant="inset"
-        class="bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100 border-r border-slate-300 shadow-xl"
+        class="bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628] border-r border-blue-500/10 shadow-xl"
         @mouseenter="handleMouseEnter"
         @mouseleave="handleMouseLeave"
     >
-        <SidebarHeader class="bg-white/90 backdrop-blur-sm border-b border-slate-300 p-4">
+        <SidebarHeader class="bg-[#0a1628] border-b border-blue-500/10 p-4">
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         size="lg"
                         as-child
-                        class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg border-0"
+                        class="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white shadow-lg border-0"
                     >
                         <Link :href="route('dashboard')">
                             <AppLogo />
@@ -270,11 +250,11 @@ onMounted(() => {
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent class="bg-transparent p-4">
+        <SidebarContent class="bg-[#0a1628] p-4">
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter class="bg-white/90 backdrop-blur-sm border-t border-slate-300 p-4">
+        <SidebarFooter class="bg-[#0a1628] border-t border-blue-500/10 p-4">
             <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
@@ -284,53 +264,51 @@ onMounted(() => {
 
 <style scoped>
 :deep(.sidebar) {
-    background: linear-gradient(180deg,
-        rgba(241, 245, 249, 0.98) 0%,
-        rgba(248, 250, 252, 0.95) 50%,
-        rgba(241, 245, 249, 0.98) 100%);
+    background: linear-gradient(135deg,
+        rgba(10, 22, 40, 0.98) 0%,
+        rgba(13, 27, 46, 0.95) 50%,
+        rgba(10, 22, 40, 0.98) 100%);
     backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(203, 213, 225, 0.8);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
     transition: width 0.3s ease;
 }
 
 :deep(.sidebar-header) {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+    background: rgba(10, 22, 40, 1);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 :deep(.sidebar-footer) {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(203, 213, 225, 0.8);
+    background: rgba(10, 22, 40, 1);
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 :deep(.sidebar-menu-button) {
     background: transparent;
-    border: 1px solid rgba(203, 213, 225, 0.3);
+    border: 1px solid rgba(59, 130, 246, 0.1);
     transition: all 0.3s ease;
-    color: rgba(51, 65, 85, 0.95);
+    color: rgba(255, 255, 255, 0.9);
     border-radius: 8px;
 }
 
 :deep(.sidebar-menu-button:hover) {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
-    border-color: rgba(59, 130, 246, 0.5);
-    color: rgba(30, 58, 138, 1);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(34, 211, 238, 0.1) 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: rgba(255, 255, 255, 1);
     transform: translateX(4px);
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
 }
 
 :deep(.sidebar-menu-button[data-active="true"]) {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
-    color: rgba(30, 58, 138, 1);
-    border-color: rgba(59, 130, 246, 0.7);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    background: rgba(10, 22, 40, 0.9);
+    color: rgba(255, 255, 255, 1);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
 }
 
 :deep(.sidebar-group-label) {
-    color: rgba(71, 85, 105, 0.9);
+    color: rgba(255, 255, 255, 0.7);
     font-weight: 700;
     font-size: 0.75rem;
     letter-spacing: 0.1em;

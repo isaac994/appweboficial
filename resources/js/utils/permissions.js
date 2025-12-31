@@ -63,7 +63,7 @@ export function hasAnyRole(user, roles) {
  * @returns {boolean}
  */
 export function isAdmin(user) {
-    return hasRole(user, 'Administrador')
+    return hasRole(user, 'Propietario')
 }
 
 /**
@@ -180,6 +180,28 @@ export const PERMISSIONS = {
  * Constantes de roles para facilitar el uso
  */
 export const ROLES = {
-    ADMINISTRADOR: 'Administrador',
+    ADMINISTRADOR: 'Propietario',
     OPERADOR: 'Operador',
+}
+
+/**
+ * Obtener todos los roles disponibles (estáticos)
+ */
+export function getAvailableRoles() {
+    return [
+        {
+            id: 1,
+            name: ROLES.ADMINISTRADOR,
+            guard_name: 'web',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+        {
+            id: 2,
+            name: ROLES.OPERADOR,
+            guard_name: 'web',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+    ]
 }

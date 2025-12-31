@@ -13,11 +13,15 @@ class Compra extends Model
     protected $fillable = [
         'id_proveedor',
         'id_usuario',
-        'fecha'
+        'fecha',
+        'estado',
+        'fecha_eliminacion'
     ];
 
     protected $casts = [
         'fecha' => 'datetime',
+        'estado' => 'boolean',
+        'fecha_eliminacion' => 'datetime',
     ];
 
     /**
@@ -66,11 +70,11 @@ class Compra extends Model
         if (!$this->relationLoaded('detalles')) {
             $this->load('detalles');
         }
-        
+
         $total = $this->detalles->sum(function ($detalle) {
             return floatval($detalle->cantidad) * floatval($detalle->precio_unitario);
         });
-        
+
         return round($total, 2);
     }
 }

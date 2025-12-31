@@ -63,8 +63,7 @@ class MarcaController extends Controller
         try {
             $marca = Marca::create($request->all());
 
-            return redirect()->route('marcas.index')
-                ->with('success', 'Marca creada exitosamente');
+            return redirect()->route('marcas.index');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al crear la marca: ' . $e->getMessage()])->withInput();
         }
@@ -76,7 +75,7 @@ class MarcaController extends Controller
     public function show(string $id)
     {
         $marca = Marca::findOrFail($id);
-        $productos = $marca->productos()->select('id_producto', 'nombre', 'precio_venta')->orderBy('nombre')->get();
+        $productos = $marca->productos()->with('modelo')->select('id_producto', 'precio_venta', 'id_modelo')->orderBy('id_producto', 'desc')->get();
 
         return Inertia::render('Marcas/Show', [
             'marca' => $marca,
@@ -120,8 +119,7 @@ class MarcaController extends Controller
         try {
             $marca->update($request->all());
 
-            return redirect()->route('marcas.index')
-                ->with('success', 'Marca actualizada exitosamente');
+            return redirect()->route('marcas.index');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al actualizar la marca: ' . $e->getMessage()])->withInput();
         }

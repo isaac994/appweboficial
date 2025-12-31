@@ -1,13 +1,13 @@
 <template>
   <AppLayout>
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628]">
       <!-- Content -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
           <div>
             <h1 class="text-3xl font-bold text-white">
-              <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Detalles de la Categoría
               </span>
             </h1>
@@ -25,29 +25,29 @@
         </div>
 
         <!-- Category Details -->
-        <div class="bg-black/20 backdrop-blur-sm rounded-xl border border-purple-500/30 p-8">
+        <div class="bg-black/20 backdrop-blur-sm rounded-xl border border-blue-500/30 p-8">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Category Information -->
             <div class="space-y-6">
               <div>
                 <h2 class="text-2xl font-bold text-white mb-2">{{ categoria.nombre }}</h2>
-                <p v-if="categoria.descripcion" class="text-purple-300 text-lg">{{ categoria.descripcion }}</p>
+                <p v-if="categoria.descripcion" class="text-blue-300 text-lg">{{ categoria.descripcion }}</p>
               </div>
 
               <!-- Category Details -->
               <div class="space-y-4">
                 <div class="grid grid-cols-1 gap-4">
-                  <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
+                  <div class="bg-black/20 rounded-lg p-4 border border-blue-500/30">
                     <h4 class="text-sm font-medium text-gray-400 mb-1">ID de la Categoría</h4>
                     <p class="text-white font-semibold">#{{ categoria.id_categoria }}</p>
                   </div>
 
-                  <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
+                  <div class="bg-black/20 rounded-lg p-4 border border-blue-500/30">
                     <h4 class="text-sm font-medium text-gray-400 mb-1">Nombre</h4>
                     <p class="text-white font-semibold">{{ categoria.nombre }}</p>
                   </div>
 
-                  <div class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
+                  <div class="bg-black/20 rounded-lg p-4 border border-blue-500/30">
                     <h4 class="text-sm font-medium text-gray-400 mb-1">Descripción</h4>
                     <p class="text-white font-semibold">{{ categoria.descripcion || 'Sin descripción' }}</p>
                   </div>
@@ -81,22 +81,22 @@
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-white mb-4">Productos en esta Categoría</h3>
               <div v-if="productos.length > 0" class="space-y-3">
-                <div v-for="producto in productos" :key="producto.id_producto" class="bg-black/20 rounded-lg p-4 border border-purple-500/30">
+                <div v-for="producto in productos" :key="producto.id_producto" class="bg-black/20 rounded-lg p-4 border border-blue-500/30">
                   <div class="flex justify-between items-center">
                     <div>
-                      <h4 class="text-white font-medium">{{ producto.nombre }}</h4>
-                      <p class="text-purple-300 text-sm">Bs {{ producto.precio_venta }}</p>
+                      <h4 class="text-white font-medium">{{ producto.modelo?.nombre || 'Sin modelo' }}</h4>
+                      <p class="text-blue-300 text-sm">Bs {{ producto.precio_venta }}</p>
                     </div>
                     <Link
                       :href="route('productos.show', producto.id_producto)"
-                      class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+                      class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
                     >
                       Ver
                     </Link>
                   </div>
                 </div>
               </div>
-              <div v-else class="bg-black/20 rounded-lg p-6 border border-purple-500/30 text-center">
+              <div v-else class="bg-black/20 rounded-lg p-6 border border-blue-500/30 text-center">
                 <p class="text-gray-400">No hay productos en esta categoría</p>
               </div>
             </div>
@@ -106,9 +106,9 @@
 
       <!-- Delete Confirmation Modal -->
       <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-black/90 border border-purple-500/30 rounded-xl p-6 max-w-md w-full mx-4">
+        <div class="bg-black/90 border border-blue-500/30 rounded-xl p-6 max-w-md w-full mx-4">
           <h3 class="text-lg font-semibold text-white mb-4">Confirmar Eliminación</h3>
-          <p class="text-purple-300 mb-6">
+          <p class="text-blue-300 mb-6">
             ¿Estás seguro de que quieres eliminar la categoría "{{ categoria.nombre }}"? Esta acción no se puede deshacer.
           </p>
           <div class="flex space-x-3">

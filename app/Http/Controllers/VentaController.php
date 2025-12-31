@@ -6,6 +6,8 @@ use App\Models\Venta;
 use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\DetalleVenta;
+use App\Models\Marca;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -22,18 +24,22 @@ class VentaController extends Controller
         // Solo obtener búsqueda
         $search = $request->get('search');
 
-        $query = Venta::with(['cliente', 'detalles.producto', 'detalles.producto.categoria', 'detalles.producto.marca']);
+        $query = Venta::with(['cliente', 'detalles.producto.modelo', 'detalles.producto.categoria', 'detalles.producto.marca'])
+            ->where('estado', false);
 
         // Si hay búsqueda, filtrar las ventas
         if ($search) {
             $query->where(function($q) use ($search) {
-                // Buscar por nombre de cliente
+                // Buscar por nombre y apellidos de cliente
                 $q->whereHas('cliente', function($clienteQuery) use ($search) {
-                    $clienteQuery->where('nombre', 'like', "%{$search}%");
+                    $clienteQuery->where('nombre', 'like', "%{$search}%")
+                        ->orWhere('apellidos', 'like', "%{$search}%");
                 })
                 // Buscar por nombre de producto en detalles
                 ->orWhereHas('detalles.producto', function($productoQuery) use ($search) {
-                    $productoQuery->where('nombre', 'like', "%{$search}%");
+                    $productoQuery->whereHas('modelo', function ($q) use ($search) {
+                        $q->where('nombre', 'like', "%{$search}%");
+                    });
                 })
                 // Buscar por descripción en detalles
                 ->orWhereHas('detalles', function($detalleQuery) use ($search) {
@@ -48,35 +54,70 @@ class VentaController extends Controller
         // Debug: Log para verificar cuántas ventas se obtuvieron
         \Log::info('Ventas obtenidas: ' . $ventas->count() . ' | Búsqueda: ' . ($search ?: 'ninguna') . ' | Orden: ID descendente');
 
-        // Calcular totales y ganancias para cada venta
+        // Calcular totales y ganancias para cada venta (basado en último precio de compra vigente)
         $ventas->transform(function ($venta) {
-            // Calcular total de la venta
-            $venta->total = $venta->detalles->sum(function ($detalle) {
-                return $detalle->cantidad * $detalle->precio_unitario;
-            });
+            // Usar la marca temporal más precisa disponible: created_at (con hora/min/seg) y como respaldo la fecha de la venta
+            $fechaObj = null;
+            if ($venta->created_at) {
+                $fechaObj = $venta->created_at instanceof \Carbon\Carbon ? $venta->created_at->copy() : \Carbon\Carbon::parse($venta->created_at);
+            } elseif ($venta->fecha) {
+                $fechaObj = $venta->fecha instanceof \Carbon\Carbon ? $venta->fecha->copy() : \Carbon\Carbon::parse($venta->fecha);
+            } else {
+                $fechaObj = \Carbon\Carbon::now();
+            }
+
+            // En caso de que la columna fecha tenga solo día (00:00:00), mantener la precisión de created_at
+            $fechaVenta = $fechaObj->format('Y-m-d H:i:s');
+            $driver = DB::connection()->getDriverName();
+            // El total se calcula dinámicamente mediante el accessor getTotalAttribute()
 
             // Calcular ganancia total de la venta
-            $venta->ganancia_total = $venta->detalles->sum(function ($detalle) {
-                // Obtener el precio de compra promedio del producto
-                $precioCompraPromedio = DB::table('detalle_compras')
-                    ->where('id_producto', $detalle->id_producto)
-                    ->avg('precio_unitario');
+            $venta->ganancia_total = $venta->detalles->sum(function ($detalle) use ($fechaVenta, $driver) {
+                $query = DB::table('detalle_compras')
+                    ->join('compras', 'detalle_compras.id_compra', '=', 'compras.id_compra')
+                    ->where('detalle_compras.id_producto', $detalle->id_producto)
+                    ->where('compras.estado', false);
 
-                $precioCompra = $precioCompraPromedio ?? 0;
-                $precioVenta = $detalle->precio_unitario;
+                if ($driver === 'sqlite') {
+                    $query->whereRaw("datetime(compras.fecha) <= datetime(?)", [$fechaVenta]);
+                } else {
+                    $query->where('compras.fecha', '<=', $fechaVenta);
+                }
+
+                $ultimaCompra = $query
+                    ->orderBy('compras.fecha', 'desc')
+                    ->orderBy('compras.id_compra', 'desc')
+                    ->select('detalle_compras.precio_unitario')
+                    ->first();
+
+                $precioCompra = $ultimaCompra ? floatval($ultimaCompra->precio_unitario) : 0;
+                $precioVenta = floatval($detalle->precio_unitario);
                 $gananciaPorUnidad = $precioVenta - $precioCompra;
 
                 return $detalle->cantidad * $gananciaPorUnidad;
             });
 
             // Calcular ganancia por detalle
-            $venta->detalles->transform(function ($detalle) {
-                $precioCompraPromedio = DB::table('detalle_compras')
-                    ->where('id_producto', $detalle->id_producto)
-                    ->avg('precio_unitario');
+            $venta->detalles->transform(function ($detalle) use ($fechaVenta, $driver) {
+                $query = DB::table('detalle_compras')
+                    ->join('compras', 'detalle_compras.id_compra', '=', 'compras.id_compra')
+                    ->where('detalle_compras.id_producto', $detalle->id_producto)
+                    ->where('compras.estado', false);
 
-                $precioCompra = $precioCompraPromedio ?? 0;
-                $precioVenta = $detalle->precio_unitario;
+                if ($driver === 'sqlite') {
+                    $query->whereRaw("datetime(compras.fecha) <= datetime(?)", [$fechaVenta]);
+                } else {
+                    $query->where('compras.fecha', '<=', $fechaVenta);
+                }
+
+                $ultimaCompra = $query
+                    ->orderBy('compras.fecha', 'desc')
+                    ->orderBy('compras.id_compra', 'desc')
+                    ->select('detalle_compras.precio_unitario')
+                    ->first();
+
+                $precioCompra = $ultimaCompra ? floatval($ultimaCompra->precio_unitario) : 0;
+                $precioVenta = floatval($detalle->precio_unitario);
                 $gananciaPorUnidad = $precioVenta - $precioCompra;
 
                 $detalle->precio_compra = $precioCompra;
@@ -90,7 +131,9 @@ class VentaController extends Controller
         });
 
         // Calcular totales
-        $totalVentas = $ventas->sum('total');
+        $totalVentas = $ventas->sum(function ($venta) {
+            return $venta->total; // Usa el accessor getTotalAttribute()
+        });
         $totalGanancia = $ventas->sum('ganancia_total');
         $cantidadVentas = $ventas->count();
 
@@ -108,61 +151,94 @@ class VentaController extends Controller
     /**
      * Show the form for creating a new resource.
      */
+    public function seleccionarProductos()
+    {
+        // Obtener productos con sus relaciones
+        $productos = Producto::with(['marca', 'modelo', 'categoria'])
+            ->join('modelos', 'productos.id_modelo', '=', 'modelos.id_modelo')
+            ->orderBy('modelos.nombre')
+            ->select('productos.*')
+            ->get();
+
+        // Agregar descripción de prueba si está vacía y calcular stock
+        $productos = $productos->map(function ($producto) {
+            if (empty($producto->descripcion)) {
+                $producto->descripcion = 'Descripción de ' . ($producto->nombre ?? $producto->modelo?->nombre ?? 'producto');
+            }
+
+            // Calcular stock disponible manualmente (excluyendo compras eliminadas)
+            $totalCompras = $producto->detallesCompra()
+                ->whereHas('compra', function ($query) {
+                    $query->where('estado', false); // Solo compras activas
+                })
+                ->sum('cantidad');
+            $totalVentas = $producto->detallesVenta()->sum('cantidad');
+            $producto->stock_disponible = $totalCompras - $totalVentas;
+
+            return $producto;
+        });
+
+        // Filtrar productos con stock disponible
+        $productos = $productos->filter(function ($producto) {
+            return $producto->stock_disponible > 0;
+        })->values();
+
+        return Inertia::render('Ventas/SeleccionarProductos', [
+            'productos' => $productos
+        ]);
+    }
+
     public function create()
     {
         $clientes = Cliente::orderBy('nombre')->get();
 
-                // Obtener solo productos con stock disponible usando la consulta SQL optimizada
-        $productos = DB::table('productos as p')
-            ->select([
-                'p.id_producto',
-                'p.nombre',
-                'p.descripcion',
-                'p.precio_venta',
-                'p.img_url',
-                'p.id_categoria',
-                'p.id_marca',
-                'p.created_at',
-                'p.updated_at'
-            ])
-            ->selectRaw('
-                (COALESCE((SELECT SUM(cantidad) FROM detalle_compras WHERE id_producto = p.id_producto), 0) -
-                 COALESCE((SELECT SUM(cantidad) FROM detalle_ventas WHERE id_producto = p.id_producto), 0)) as stock_disponible
-            ')
-            ->havingRaw('stock_disponible > 0')
-            ->orderBy('p.nombre')
+        // Obtener productos con sus relaciones
+        $productos = Producto::with(['marca', 'modelo', 'categoria'])
+            ->join('modelos', 'productos.id_modelo', '=', 'modelos.id_modelo')
+            ->orderBy('modelos.nombre')
+            ->select('productos.*')
             ->get();
 
-        // Cargar las relaciones de categoría y marca
+        // Filtrar productos con stock disponible usando el accessor
+        $productos = $productos->filter(function ($producto) {
+            return $producto->stock_disponible > 0;
+        })->values();
+
+        // Debug: Log de los productos para verificar datos
+        \Log::info('=== DEBUG PRODUCTOS ===');
+        foreach ($productos->take(3) as $producto) {
+            \Log::info('Producto: ' . ($producto->nombre ?? 'Sin nombre'));
+            \Log::info('Descripción: ' . ($producto->descripcion ?? 'Sin descripción'));
+            \Log::info('Modelo: ' . ($producto->modelo?->nombre ?? 'Sin modelo'));
+            \Log::info('Marca: ' . ($producto->marca?->nombre ?? 'Sin marca'));
+            \Log::info('Categoría: ' . ($producto->categoria?->nombre ?? 'Sin categoría'));
+            \Log::info('---');
+        }
+        \Log::info('Total productos: ' . $productos->count());
+        \Log::info('==================');
+
+        // Agregar descripción de prueba si está vacía y calcular último precio de compra
         $productos = $productos->map(function ($producto) {
-            $productoObj = new Producto();
-            foreach ($producto as $key => $value) {
-                $productoObj->$key = $value;
+            if (empty($producto->descripcion)) {
+                $producto->descripcion = 'Descripción de ' . ($producto->nombre ?? $producto->modelo?->nombre ?? 'producto');
             }
 
-            // Cargar categoría
-            if ($producto->id_categoria) {
-                $productoObj->categoria = DB::table('categorias')
-                    ->where('id_categoria', $producto->id_categoria)
-                    ->first();
-            }
+            // Obtener el último precio de compra usando el accessor del modelo
+            $producto->ultimo_precio_compra = $producto->ultimo_precio_compra;
 
-            // Cargar marca
-            if ($producto->id_marca) {
-                $productoObj->marca = DB::table('marcas')
-                    ->where('id_marca', $producto->id_marca)
-                    ->first();
-            }
+            \Log::info('Producto: ' . $producto->modelo?->nombre . ' - Ultimo precio compra: ' . $producto->ultimo_precio_compra);
 
-            $productoObj->stock_disponible = $producto->stock_disponible;
-            $productoObj->estado_disponible = 'disponible';
-
-            return $productoObj;
+            return $producto;
         });
+
+
+        // Verificar si hay datos de venta temporal en la sesión
+        $ventaTemporal = session('venta_temporal');
 
         return Inertia::render('Ventas/Create', [
             'clientes' => $clientes,
-            'productos' => $productos
+            'productos' => $productos,
+            'venta_edicion' => $ventaTemporal
         ]);
     }
 
@@ -184,10 +260,15 @@ class VentaController extends Controller
         }
 
         // Determinar si es un cliente nuevo o existente
+        \Log::info('Debug - request->nuevo_cliente:', ['data' => $request->nuevo_cliente]);
+        \Log::info('Debug - request->has(nuevo_cliente):', ['has' => $request->has('nuevo_cliente')]);
+
         $esClienteNuevo = $request->has('nuevo_cliente') &&
                          $request->nuevo_cliente &&
                          isset($request->nuevo_cliente['nombre']) &&
                          !empty($request->nuevo_cliente['nombre']);
+
+        \Log::info('Debug - esClienteNuevo:', ['esClienteNuevo' => $esClienteNuevo]);
 
         // El cliente solo es obligatorio si hay smartphones
         $clienteEsObligatorio = $tieneSmartphones;
@@ -293,8 +374,9 @@ class VentaController extends Controller
             $validator = Validator::make($request->all(), $reglas, $mensajes);
         }
 
-        // Validación adicional para verificar stock disponible
+        // Validación adicional para verificar stock disponible e IMEI único
         if ($validator->passes()) {
+            $imeisEnSolicitud = [];
             foreach ($request->productos as $index => $producto) {
                 $stockComprado = DB::table('detalle_compras')
                     ->where('id_producto', $producto['id_producto'])
@@ -307,11 +389,49 @@ class VentaController extends Controller
                 $stockDisponible = $stockComprado - $stockVendido;
 
                 if ($stockDisponible < $producto['cantidad']) {
-                    $productoInfo = Producto::find($producto['id_producto']);
+                    $productoInfo = Producto::with('modelo')->find($producto['id_producto']);
                     $validator->errors()->add(
                         "productos.{$index}.cantidad",
-                        "Stock insuficiente para {$productoInfo->nombre}. Disponible: {$stockDisponible}"
+                        "Stock insuficiente para {$productoInfo->modelo->nombre}. Disponible: {$stockDisponible}"
                     );
+                }
+
+                // Validaciones IMEI para smartphones/celulares
+                $productoObj = Producto::with('categoria')->find($producto['id_producto']);
+                $esSmartphone = $productoObj && $productoObj->categoria && in_array(strtolower($productoObj->categoria->nombre), ['smartphones','celulares']);
+                if ($esSmartphone) {
+                    $imei = isset($producto['descripcion']) ? trim($producto['descripcion']) : '';
+                    // IMEI requerido
+                    if ($imei === '') {
+                        $validator->errors()->add(
+                            "productos.{$index}.descripcion",
+                            'Debe ingresar el IMEI para el celular seleccionado.'
+                        );
+                    } else {
+                        // Duplicado dentro de la misma solicitud
+                        if (in_array($imei, $imeisEnSolicitud, true)) {
+                            $validator->errors()->add(
+                                "productos.{$index}.descripcion",
+                                "El IMEI {$imei} está repetido en esta venta. Cada IMEI debe ser único."
+                            );
+                        } else {
+                            $imeisEnSolicitud[] = $imei;
+                        }
+
+                        // Duplicado en la base de datos (ya vendido)
+                        $existeImei = DetalleVenta::where('descripcion', $imei)
+                            ->whereHas('producto.categoria', function($q) {
+                                $q->whereIn(DB::raw('LOWER(nombre)'), ['smartphones','celulares']);
+                            })
+                            ->exists();
+
+                        if ($existeImei) {
+                            $validator->errors()->add(
+                                "productos.{$index}.descripcion",
+                                "El IMEI {$imei} ya fue vendido y no puede reutilizarse."
+                            );
+                        }
+                    }
                 }
             }
         }
@@ -334,59 +454,107 @@ class VentaController extends Controller
         }
 
         try {
-            DB::beginTransaction();
+            // Debug: Log del request completo
+            \Log::info('=== REQUEST COMPLETO ===');
+            \Log::info('Productos recibidos: ' . json_encode($request->productos));
+            \Log::info('========================');
 
+            // Calcular el total
             $total = 0;
+            foreach ($request->productos as $producto) {
+                $total += $producto['cantidad'] * $producto['precio_unitario'];
+            }
+
             $productos = collect($request->productos);
 
-
-
-            // Crear cliente si es nuevo
-            $idCliente = null;
+            // Obtener cliente (NO crear hasta confirmación)
+            $cliente = null;
             if ($esClienteNuevo) {
-                // Solo crear cliente si hay datos válidos
+                // Preparar datos del cliente temporal
                 if (!empty($request->nuevo_cliente['nombre'])) {
-                    $cliente = Cliente::create([
+                    $cliente = (object) [
+                        'id_cliente' => 'temp_' . time(),
                         'nombre' => $request->nuevo_cliente['nombre'],
                         'apellidos' => $request->nuevo_cliente['apellidos'] ?? null,
                         'ci' => $request->nuevo_cliente['ci'] ?? null,
-                        'telefono' => $request->nuevo_cliente['telefono'] ?? null
-                    ]);
-                    $idCliente = $cliente->id_cliente;
+                        'telefono' => $request->nuevo_cliente['telefono'] ?? null,
+                        'es_temporal' => true
+                    ];
                 }
             } else {
-                $idCliente = $request->id_cliente;
+                $cliente = Cliente::find($request->id_cliente);
             }
 
-            // Crear la venta
-            $venta = Venta::create([
-                'id_cliente' => $idCliente,
+            // Preparar datos de la venta para confirmación (sin guardar en BD)
+            $ventaData = [
+                'id_venta' => 'temp_' . time(), // ID temporal
+                'id_cliente' => $cliente ? $cliente->id_cliente : null,
                 'id_usuario' => Auth::id(),
                 'fecha' => $request->fecha,
-                'total' => 0
-            ]);
+                'total' => $total,
+                'cliente' => $cliente,
+                'nuevo_cliente' => $esClienteNuevo ? $request->nuevo_cliente : null,
+                'detalles' => []
+            ];
 
-            // Crear los detalles de la venta
+            \Log::info('Debug - ventaData construido:', ['ventaData' => $ventaData]);
+
+            // Preparar detalles con información completa de productos
             foreach ($productos as $item) {
-                // Usar el precio modificado por el usuario, no el precio por defecto del producto
-                $precioUnitario = $item['precio_unitario'];
-                $subtotal = $item['cantidad'] * $precioUnitario;
+                $productoInfo = Producto::with(['modelo', 'marca', 'categoria'])->find($item['id_producto']);
 
-                DetalleVenta::create([
-                    'id_venta' => $venta->id_venta,
+                // Debug: Verificar si el producto se carga correctamente
+                if (!$productoInfo) {
+                    \Log::error('Producto no encontrado: ' . $item['id_producto']);
+                    continue;
+                }
+
+                if (!$productoInfo->categoria) {
+                    \Log::error('Categoría no encontrada para producto: ' . $productoInfo->nombre);
+                }
+
+                $esSmartphone = $productoInfo && $productoInfo->categoria &&
+                               (strtolower($productoInfo->categoria->nombre) === 'smartphones' ||
+                                strtolower($productoInfo->categoria->nombre) === 'celulares');
+
+                // Debug: Log para verificar IMEI
+                \Log::info('=== DEBUG IMEI ===');
+                \Log::info('Producto ID: ' . $item['id_producto']);
+                \Log::info('Producto: ' . ($productoInfo ? $productoInfo->nombre : 'No encontrado'));
+                \Log::info('Categoría: ' . ($productoInfo && $productoInfo->categoria ? $productoInfo->categoria->nombre : 'No hay categoría'));
+                \Log::info('Es smartphone: ' . ($esSmartphone ? 'Sí' : 'No'));
+                \Log::info('IMEI del request: "' . ($item['descripcion'] ?? 'No hay descripción') . '"');
+                \Log::info('IMEI final: "' . ($esSmartphone ? ($item['descripcion'] ?? null) : null) . '"');
+                \Log::info('==================');
+
+                // Para smartphones, usar descripcion para IMEI; para otros productos, usar descripcion normal
+                $descripcion = '';
+                if ($esSmartphone && isset($item['descripcion']) && !empty($item['descripcion'])) {
+                    $descripcion = $item['descripcion']; // IMEI para smartphones
+                } elseif (!$esSmartphone && isset($item['descripcion'])) {
+                    $descripcion = $item['descripcion']; // Descripción normal para otros productos
+                }
+
+                $detalle = [
+                    'id_detalle_venta' => 'temp_' . time() . '_' . $item['id_producto'],
+                    'id_venta' => $ventaData['id_venta'],
                     'id_producto' => $item['id_producto'],
                     'cantidad' => $item['cantidad'],
-                    'precio_unitario' => $precioUnitario,
-                    'descripcion' => $item['descripcion'] ?? ''
-                ]);
+                    'precio_unitario' => $item['precio_unitario'],
+                    'total_parcial' => $item['cantidad'] * $item['precio_unitario'],
+                    'descripcion' => $descripcion,
+                    'producto' => $productoInfo
+                ];
 
-                $total += $subtotal;
+                \Log::info('Detalle creado - Descripción: ' . ($descripcion ?? 'null'));
+
+                $ventaData['detalles'][] = $detalle;
             }
 
-            DB::commit();
+            // Guardar datos temporalmente en sesión para confirmación
+            session(['venta_temporal' => $ventaData]);
 
-            return redirect()->route('ventas.index')
-                ->with('success', 'Venta creada exitosamente');
+            return redirect()->route('ventas.confirmar-temp');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -395,11 +563,191 @@ class VentaController extends Controller
     }
 
     /**
+     * Mostrar vista de confirmación temporal (antes de crear la venta).
+     */
+    public function confirmarTemp()
+    {
+        $ventaData = session('venta_temporal');
+
+        if (!$ventaData) {
+            return redirect()->route('ventas.create')
+                ->withErrors(['error' => 'No hay datos de venta para confirmar']);
+        }
+
+        // Debug: Log para verificar los datos que se están enviando
+        \Log::info('Debug - Datos de venta temporal en confirmarTemp:', $ventaData);
+        if (isset($ventaData['detalles'])) {
+            foreach ($ventaData['detalles'] as $index => $detalle) {
+                \Log::info("Debug - Detalle $index:", [
+                    'descripcion' => $detalle['descripcion'] ?? 'No hay descripción',
+                    'producto' => $detalle['producto']->nombre ?? 'No hay producto'
+                ]);
+            }
+        }
+
+        // Limpiar cualquier mensaje de sesión anterior
+        session()->forget(['success', 'error', 'info', 'message']);
+
+        return Inertia::render('Ventas/Confirmar', [
+            'venta' => $ventaData
+        ]);
+    }
+
+    /**
+     * Finalizar la venta después de confirmación.
+     */
+    public function finalizarVenta()
+    {
+        $ventaData = session('venta_temporal');
+
+        if (!$ventaData) {
+            return redirect()->route('ventas.create')
+                ->withErrors(['error' => 'No hay datos de venta para finalizar']);
+        }
+
+        // Validar IMEIs nuevamente justo antes de guardar (evitar condiciones de carrera)
+        $imeisEnSolicitud = [];
+        foreach ($ventaData['detalles'] as $index => $detalleData) {
+            $categoriaNombre = strtolower($detalleData['producto']['categoria']['nombre'] ?? '');
+            $esSmartphone = in_array($categoriaNombre, ['smartphones', 'celulares']);
+            if ($esSmartphone) {
+                $imei = isset($detalleData['descripcion']) ? trim($detalleData['descripcion']) : '';
+                if ($imei === '') {
+                    return redirect()->route('ventas.create')
+                        ->withErrors(["productos.{$index}.descripcion" => 'Debe ingresar el IMEI para el celular seleccionado'])
+                        ->withInput();
+                }
+                if (in_array($imei, $imeisEnSolicitud, true)) {
+                    return redirect()->route('ventas.create')
+                        ->withErrors(["productos.{$index}.descripcion" => "El IMEI {$imei} está repetido en esta venta. Cada IMEI debe ser único."])
+                        ->withInput();
+                }
+                $imeisEnSolicitud[] = $imei;
+
+                $existeImei = DetalleVenta::where('descripcion', $imei)
+                    ->whereHas('producto.categoria', function($q) {
+                        $q->whereIn(DB::raw('LOWER(nombre)'), ['smartphones','celulares']);
+                    })
+                    ->exists();
+                if ($existeImei) {
+                    return redirect()->route('ventas.create')
+                        ->withErrors(["productos.{$index}.descripcion" => "El IMEI {$imei} ya fue vendido y no puede reutilizarse."])
+                        ->withInput();
+                }
+            }
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Crear cliente si es nuevo
+            $idCliente = $ventaData['id_cliente'];
+            if (isset($ventaData['nuevo_cliente']) && $ventaData['nuevo_cliente']) {
+                $cliente = Cliente::create([
+                    'nombre' => $ventaData['nuevo_cliente']['nombre'],
+                    'apellidos' => $ventaData['nuevo_cliente']['apellidos'] ?? null,
+                    'ci' => $ventaData['nuevo_cliente']['ci'] ?? null,
+                    'telefono' => $ventaData['nuevo_cliente']['telefono'] ?? null,
+                    'correo_electronico' => null
+                ]);
+                $idCliente = $cliente->id_cliente;
+            }
+
+            // Crear la venta real en la base de datos
+            $venta = Venta::create([
+                'id_cliente' => $idCliente,
+                'id_usuario' => $ventaData['id_usuario'],
+                'fecha' => $ventaData['fecha']
+            ]);
+
+            // Crear los detalles de la venta
+            foreach ($ventaData['detalles'] as $detalleData) {
+                DetalleVenta::create([
+                    'id_venta' => $venta->id_venta,
+                    'id_producto' => $detalleData['id_producto'],
+                    'cantidad' => $detalleData['cantidad'],
+                    'precio_unitario' => $detalleData['precio_unitario'],
+                    'descripcion' => $detalleData['descripcion']
+                ]);
+            }
+
+            DB::commit();
+
+            // Limpiar datos temporales
+            session()->forget('venta_temporal');
+
+            return redirect()->route('ventas.index')
+                ->with('success', 'Venta creada exitosamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('ventas.create')
+                ->withErrors(['error' => 'Error al finalizar la venta: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Cancelar venta temporal.
+     */
+    public function cancelarVenta()
+    {
+        // Limpiar datos temporales
+        session()->forget('venta_temporal');
+
+        return redirect()->route('ventas.index')
+            ->with('info', 'Venta cancelada');
+    }
+
+    /**
+     * Guardar datos de edición en sesión.
+     */
+    public function guardarEdicion(Request $request)
+    {
+        // Guardar los datos de la venta temporal para edición
+        session(['venta_edicion' => $request->venta_temporal]);
+
+        // Redirigir directamente a la página de creación
+        return redirect()->route('ventas.create');
+    }
+
+    /**
+     * Limpiar datos de edición de la sesión.
+     */
+    public function limpiarEdicion()
+    {
+        session()->forget('venta_edicion');
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Mostrar vista de confirmación de venta.
+     */
+    public function confirmar(string $id)
+    {
+        $venta = Venta::with(['cliente', 'detalles.producto.modelo', 'detalles.producto.categoria', 'detalles.producto.marca'])
+            ->findOrFail($id);
+
+        // Asegurar que el campo imei se cargue
+        $venta->load('detalles');
+
+        // Calcular totales para cada detalle
+        $venta->detalles->transform(function ($detalle) {
+            $detalle->total_parcial = $detalle->cantidad * $detalle->precio_unitario;
+            return $detalle;
+        });
+
+        return Inertia::render('Ventas/Confirmar', [
+            'venta' => $venta
+        ]);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $venta = Venta::with(['cliente', 'detalles.producto.categoria', 'detalles.producto.marca'])
+        $venta = Venta::with(['cliente', 'detalles.producto.modelo', 'detalles.producto.categoria', 'detalles.producto.marca'])
             ->findOrFail($id);
 
         // Calcular totales para cada detalle
@@ -408,8 +756,7 @@ class VentaController extends Controller
             return $detalle;
         });
 
-        // Calcular total de la venta
-        $venta->total = $venta->detalles->sum('total_parcial');
+        // El total se calcula dinámicamente mediante el accessor getTotalAttribute()
 
         return Inertia::render('Ventas/Show', [
             'venta' => $venta
@@ -421,13 +768,13 @@ class VentaController extends Controller
      */
     public function edit(string $id)
     {
-        $venta = Venta::with(['cliente', 'detalles.producto.categoria', 'detalles.producto.marca'])
+        $venta = Venta::with(['cliente', 'detalles.producto.modelo', 'detalles.producto.categoria', 'detalles.producto.marca'])
             ->findOrFail($id);
 
         $clientes = Cliente::orderBy('nombre')->get();
 
         // Obtener productos con stock calculado
-        $productos = Producto::with(['categoria', 'marca'])->get()->map(function ($producto) {
+        $productos = Producto::with(['categoria', 'marca', 'modelo'])->get()->map(function ($producto) {
             $producto->stock_disponible = $producto->stock_disponible;
             $producto->estado_disponible = $producto->estado_disponible;
             return $producto;
@@ -496,13 +843,17 @@ class VentaController extends Controller
             // Eliminar detalles anteriores
             $venta->detalles()->delete();
 
+            // Calcular el total antes de actualizar la venta
+            $total = 0;
+            foreach ($request->productos as $producto) {
+                $total += $producto['cantidad'] * $producto['precio_unitario'];
+            }
+
             // Actualizar información básica de la venta
             $venta->update([
                 'id_cliente' => $request->id_cliente,
                 'fecha' => $request->fecha
             ]);
-
-            $total = 0;
 
             // Verificar stock disponible para nuevos productos
             foreach ($request->productos as $producto) {
@@ -526,9 +877,6 @@ class VentaController extends Controller
 
             // Crear nuevos detalles
             foreach ($request->productos as $producto) {
-                $subtotal = $producto['cantidad'] * $producto['precio_unitario'];
-                $total += $subtotal;
-
                 DetalleVenta::create([
                     'id_venta' => $venta->id_venta,
                     'id_producto' => $producto['id_producto'],
@@ -555,14 +903,18 @@ class VentaController extends Controller
     public function destroy(string $id)
     {
         try {
-            $venta = Venta::findOrFail($id);
+            $venta = Venta::with('detalles.producto')->findOrFail($id);
 
             DB::beginTransaction();
 
-            // Eliminar la venta (los detalles se eliminan automáticamente por la cascada)
-            // Al eliminar la venta, el stock se devuelve automáticamente ya que
-            // se calcula dinámicamente basado en las compras y ventas
-            $venta->delete();
+            // Marcar como eliminada en lugar de eliminar físicamente
+            $venta->update([
+                'estado' => true,
+                'fecha_eliminacion' => now()
+            ]);
+
+            // El stock se maneja dinámicamente a través de compras y ventas
+            // No necesitamos hacer nada aquí ya que el stock se calcula automáticamente
 
             DB::commit();
 
@@ -575,9 +927,55 @@ class VentaController extends Controller
         }
     }
 
+    /**
+     * Mostrar ventas eliminadas
+     */
+    public function eliminadas(Request $request)
+    {
+        $search = $request->get('search');
+
+        $query = Venta::with(['cliente', 'detalles.producto.modelo', 'detalles.producto.categoria', 'detalles.producto.marca'])
+            ->where('estado', true);
+
+        // Si hay búsqueda, filtrar las ventas
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                // Buscar por nombre de cliente
+                $q->whereHas('cliente', function($clienteQuery) use ($search) {
+                    $clienteQuery->where('nombre', 'like', "%{$search}%");
+                })
+                // Buscar por nombre de producto en detalles
+                ->orWhereHas('detalles.producto', function($productoQuery) use ($search) {
+                    $productoQuery->whereHas('modelo', function ($q) use ($search) {
+                        $q->where('nombre', 'like', "%{$search}%");
+                    });
+                })
+                // Buscar por descripción en detalles
+                ->orWhereHas('detalles', function($detalleQuery) use ($search) {
+                    $detalleQuery->where('descripcion', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $ventas = $query->orderBy('fecha_eliminacion', 'desc')->get();
+
+        // Calcular totales y ganancias para cada venta
+        $ventas->transform(function ($venta) {
+            // El total se calcula dinámicamente mediante el accessor getTotalAttribute()
+            return $venta;
+        });
+
+        return Inertia::render('Ventas/Eliminadas', [
+            'ventas' => $ventas,
+            'filters' => [
+                'search' => $search
+            ]
+        ]);
+    }
+
     public function recibo($id)
     {
-        $venta = Venta::with(['cliente', 'detalles.producto.categoria'])
+        $venta = Venta::with(['cliente', 'detalles.producto.modelo', 'detalles.producto.marca', 'detalles.producto.categoria'])
             ->findOrFail($id);
 
         // Generar descripción dinámica según la categoría

@@ -63,8 +63,7 @@ class CategoriaController extends Controller
         try {
             $categoria = Categoria::create($request->all());
 
-            return redirect()->route('categorias.index')
-                ->with('success', 'Categoría creada exitosamente');
+            return redirect()->route('categorias.index');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al crear la categoría: ' . $e->getMessage()])->withInput();
         }
@@ -76,7 +75,7 @@ class CategoriaController extends Controller
     public function show(string $id)
     {
         $categoria = Categoria::findOrFail($id);
-        $productos = $categoria->productos()->select('id_producto', 'nombre', 'precio_venta')->orderBy('nombre')->get();
+        $productos = $categoria->productos()->with('modelo')->select('id_producto', 'precio_venta', 'id_modelo')->orderBy('id_producto', 'desc')->get();
 
         return Inertia::render('Categorias/Show', [
             'categoria' => $categoria,
@@ -120,8 +119,7 @@ class CategoriaController extends Controller
         try {
             $categoria->update($request->all());
 
-            return redirect()->route('categorias.index')
-                ->with('success', 'Categoría actualizada exitosamente');
+            return redirect()->route('categorias.index');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al actualizar la categoría: ' . $e->getMessage()])->withInput();
         }

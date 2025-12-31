@@ -19,14 +19,14 @@ const { isMobile, state } = useSidebar();
                 <DropdownMenuTrigger as-child>
                     <SidebarMenuButton
                         size="lg"
-                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-900 data-[state=open]:bg-gradient-to-r data-[state=open]:from-blue-100 data-[state=open]:to-indigo-100 data-[state=open]:border-blue-300 data-[state=open]:text-blue-900"
+                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-cyan-500/10 border border-transparent hover:border-blue-500/30 text-white hover:text-white data-[state=open]:bg-gradient-to-r data-[state=open]:from-blue-500/20 data-[state=open]:to-cyan-500/20 data-[state=open]:border-blue-500/30 data-[state=open]:text-white"
                     >
                         <UserInfo :user="user" />
-                        <ChevronsUpDown class="ml-auto size-4 transition-all duration-300 group-hover:scale-110 text-slate-500 group-hover:text-blue-600 data-[state=open]:text-blue-600" />
+                        <ChevronsUpDown class="ml-auto size-4 transition-all duration-300 group-hover:scale-110 text-white/70 group-hover:text-white data-[state=open]:text-white" />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                    class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg bg-white/95 backdrop-blur-xl border border-slate-200 shadow-xl"
+                    class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg bg-[#0a1628]/95 backdrop-blur-xl border border-blue-500/10 shadow-xl"
                     :side="isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'"
                     align="end"
                     :side-offset="4"

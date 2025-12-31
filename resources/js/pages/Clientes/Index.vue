@@ -1,17 +1,17 @@
 <template>
   <AppSidebarLayout>
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628]">
       <!-- Content -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header -->
         <div class="flex items-center justify-between mb-8">
           <div>
             <h1 class="text-3xl font-bold text-white mb-2">Gestión de Clientes</h1>
-            <p class="text-purple-300">Administra tu base de datos de clientes</p>
+            <p class="text-blue-300">Administra tu base de datos de clientes</p>
           </div>
           <Link
             :href="route('clientes.create')"
-            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -24,12 +24,12 @@
 
 
         <!-- Filtros -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6 mb-8">
+        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 p-6 mb-8">
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Búsqueda -->
             <div class="md:col-span-2">
-              <label for="search" class="block text-sm font-medium text-purple-300 mb-2">
+              <label for="search" class="block text-sm font-medium text-blue-300 mb-2">
                 <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
@@ -42,17 +42,17 @@
                   @input="debounceSearch"
                   type="text"
                   placeholder="Buscar........."
-                  class="w-full px-4 py-3 pl-12 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  class="w-full px-4 py-3 pl-12 bg-black/30 border border-blue-500/50 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center">
-                  <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
                 </div>
                 <div v-if="filters.search" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
                     @click="clearSearch"
-                    class="text-purple-300 hover:text-white transition-colors duration-200"
+                    class="text-blue-300 hover:text-white transition-colors duration-200"
                     title="Limpiar búsqueda"
                   >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,7 +61,7 @@
                   </button>
                 </div>
               </div>
-              <p class="text-xs text-purple-400 mt-1">
+              <p class="text-xs text-blue-400 mt-1">
                 Busca en: nombre, apellidos, CI/NIT y teléfono simultáneamente
               </p>
             </div>
@@ -73,17 +73,17 @@
 
         <!-- Resultados de búsqueda -->
         <div v-if="filters.search" class="mb-4">
-          <div class="bg-purple-500/20 border border-purple-500/30 rounded-lg p-4">
+          <div class="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center">
-                <svg class="w-5 h-5 text-purple-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-blue-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <span class="text-purple-300">
+                <span class="text-blue-300">
                   Resultados para: <span class="text-white font-medium">"{{ filters.search }}"</span>
                 </span>
               </div>
-              <span class="text-purple-300">
+              <span class="text-blue-300">
                 {{ clientes.total }} cliente{{ clientes.total !== 1 ? 's' : '' }} encontrado{{ clientes.total !== 1 ? 's' : '' }}
               </span>
             </div>
@@ -91,8 +91,8 @@
         </div>
 
         <!-- Tabla de Clientes -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 overflow-hidden">
-          <div class="px-6 py-4 border-b border-purple-500/30">
+        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 overflow-hidden">
+          <div class="px-6 py-4 border-b border-blue-500/30">
             <h3 class="text-xl font-semibold text-white">Lista de Clientes</h3>
           </div>
 
@@ -100,50 +100,50 @@
             <table class="w-full">
               <thead class="bg-black/30">
                 <tr>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
                     Cliente
                   </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
                     CI/NIT
                   </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
                     Teléfono
                   </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
                     Estadísticas
                   </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
                     Acciones
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-purple-500/30">
+              <tbody class="divide-y divide-blue-500/30">
                 <tr v-for="cliente in clientes.data" :key="cliente.id_cliente" class="hover:bg-black/10 transition-colors duration-200">
                   <!-- Cliente -->
                   <td class="px-6 py-4">
                     <div class="flex items-center">
                       <div class="flex-shrink-0">
-                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                           <span class="text-sm font-semibold text-white">{{ getInitials(cliente.nombre) }}</span>
                         </div>
                       </div>
                       <div class="ml-4">
                         <div class="text-sm font-medium text-white">{{ cliente.nombre }} {{ cliente.apellidos || '' }}</div>
-                        <div class="text-sm text-purple-300">ID: #{{ cliente.id_cliente }}</div>
+                        <div class="text-sm text-blue-300">ID: #{{ cliente.id_cliente }}</div>
                       </div>
                     </div>
                   </td>
 
                   <!-- CI/NIT -->
                   <td class="px-6 py-4">
-                    <div class="text-sm text-purple-300">
+                    <div class="text-sm text-blue-300">
                       {{ cliente.ci || 'No especificado' }}
                     </div>
                   </td>
 
                   <!-- Teléfono -->
                   <td class="px-6 py-4">
-                    <div class="text-sm text-purple-300">
+                    <div class="text-sm text-blue-300">
                       {{ cliente.telefono || 'No especificado' }}
                     </div>
                   </td>
@@ -154,10 +154,10 @@
                       <div class="text-sm text-white">
                         <span class="font-medium">{{ cliente.ventas_count || 0 }}</span> ventas
                       </div>
-                      <div class="text-sm text-purple-300">
+                      <div class="text-sm text-blue-300">
                         Total: {{ formatCurrency(cliente.total_compras || 0) }}
                       </div>
-                      <div class="text-sm text-purple-300">
+                      <div class="text-sm text-blue-300">
                         Desde: {{ formatDate(cliente.created_at) }}
                       </div>
                     </div>
@@ -180,7 +180,7 @@
                       </Link>
                       <Link
                         :href="route('clientes.edit', cliente.id_cliente)"
-                        class="inline-flex items-center px-3 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
+                        class="inline-flex items-center px-3 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
                       >
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -195,9 +195,9 @@
           </div>
 
           <!-- Paginación -->
-          <div v-if="clientes.links && clientes.links.length > 3" class="px-6 py-4 border-t border-purple-500/30">
+          <div v-if="clientes.links && clientes.links.length > 3" class="px-6 py-4 border-t border-blue-500/30">
             <div class="flex items-center justify-between">
-              <div class="text-sm text-purple-300">
+                      <div class="text-sm text-blue-300">
                 Mostrando {{ clientes.from }} a {{ clientes.to }} de {{ clientes.total }} resultados
               </div>
               <div class="flex space-x-2">
@@ -211,8 +211,8 @@
                     link.url === null
                       ? 'text-gray-400 cursor-not-allowed'
                       : link.active
-                      ? 'bg-purple-600 text-white'
-                      : 'text-purple-300 hover:bg-black/30'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-blue-300 hover:bg-black/30'
                   ]"
                 />
               </div>

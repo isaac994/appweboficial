@@ -7,15 +7,15 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Perfil',
         href: '/settings/profile',
     },
     {
-        title: 'Password',
+        title: 'Contraseña',
         href: '/settings/password',
     },
     {
-        title: 'Appearance',
+        title: 'Apariencia',
         href: '/settings/appearance',
     },
 ];
@@ -26,27 +26,34 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 </script>
 
 <template>
-    <div class="px-4 py-6">
-        <Heading title="Settings" description="Manage your profile and account settings" />
+    <div class="px-4 py-6 bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628] min-h-screen">
+        <div class="mb-8 space-y-0.5">
+            <h2 class="text-2xl font-bold text-white tracking-tight">Configuración</h2>
+            <p class="text-sm text-gray-300">
+                Gestiona tu perfil y configuración de cuenta
+            </p>
+        </div>
 
         <div class="flex flex-col lg:flex-row lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">
-                <nav class="flex flex-col space-y-1 space-x-0">
-                    <Button
+                <nav class="flex flex-col space-y-2">
+                    <Link
                         v-for="item in sidebarNavItems"
                         :key="item.href"
-                        variant="ghost"
-                        :class="['w-full justify-start', { 'bg-muted': currentPath === item.href }]"
-                        as-child
+                        :href="item.href"
+                        :class="[
+                            'w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200',
+                            currentPath === item.href
+                                ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg'
+                                : 'text-gray-300 hover:text-white hover:bg-blue-500/20 border border-transparent hover:border-blue-500/30'
+                        ]"
                     >
-                        <Link :href="item.href">
-                            {{ item.title }}
-                        </Link>
-                    </Button>
+                        {{ item.title }}
+                    </Link>
                 </nav>
             </aside>
 
-            <Separator class="my-6 lg:hidden" />
+            <Separator class="my-6 lg:hidden bg-gray-600" />
 
             <div class="flex-1 md:max-w-2xl">
                 <section class="max-w-xl space-y-12">

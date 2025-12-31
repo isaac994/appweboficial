@@ -19,6 +19,11 @@ class CheckUserStatus
         if (Auth::check()) {
             $user = Auth::user();
 
+            // El usuario admin por defecto (id = 0) siempre está activo
+            if ($user->id == 0) {
+                return $next($request);
+            }
+
             // Verificar si el usuario está activo
             if (!$user->isActivo()) {
                 Auth::logout();

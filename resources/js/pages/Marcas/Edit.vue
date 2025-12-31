@@ -1,13 +1,13 @@
 <template>
   <AppLayout>
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628]">
       <!-- Content -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
           <div>
             <h1 class="text-3xl font-bold text-white">
-              <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Editar Marca
               </span>
             </h1>
@@ -42,7 +42,7 @@
 
 
         <!-- Formulario -->
-        <div class="bg-black/20 backdrop-blur-sm rounded-xl border border-purple-500/30 p-8">
+        <div class="bg-black/20 backdrop-blur-sm rounded-xl border border-blue-500/30 p-8">
           <form @submit.prevent="submitForm">
             <div class="grid grid-cols-1 gap-6">
               <!-- Nombre de la Marca -->
@@ -55,7 +55,7 @@
                   type="text"
                   required
                   maxlength="50"
-                  class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  class="w-full px-4 py-3 bg-black/30 border border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   :class="{ 'border-red-500': form.errors.nombre }"
                   placeholder="Nombre de la marca (máximo 50 caracteres)"
                 />
@@ -73,7 +73,7 @@
                 <input
                   v-model="form.pais_origen"
                   type="text"
-                  class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  class="w-full px-4 py-3 bg-black/30 border border-blue-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   :class="{ 'border-red-500': form.errors.pais_origen }"
                   placeholder="País de origen de la marca"
                 />
@@ -82,7 +82,7 @@
             </div>
 
             <!-- Botones -->
-            <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-purple-500/30">
+            <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-blue-500/30">
               <Link
                 :href="route('marcas.index')"
                 class="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-lg transition-all duration-300"
@@ -92,7 +92,7 @@
               <button
                 type="submit"
                 :disabled="isSubmitting"
-                class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span v-if="isSubmitting" class="flex items-center">
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

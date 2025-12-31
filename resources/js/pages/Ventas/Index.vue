@@ -1,32 +1,43 @@
 <template>
   <AppLayout>
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628]">
       <!-- Content -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header -->
         <div class="flex items-center justify-between mb-8">
           <div>
             <h1 class="text-3xl font-bold text-white mb-2">Gestión de Ventas</h1>
-            <p class="text-purple-300">Consulta todas las ventas y utiliza el buscador para filtrar</p>
+            <p class="text-blue-300">Consulta todas las ventas y utiliza el buscador para filtrar</p>
           </div>
-          <button
-            @click="router.visit(route('ventas.create'))"
-            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-          >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Nueva Venta
-          </button>
+          <div class="flex gap-3">
+            <Link
+              :href="route('ventas.eliminadas')"
+              class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              Movimientos
+            </Link>
+            <button
+              @click="router.visit(route('ventas.seleccionar-productos'))"
+              class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Nueva Venta
+            </button>
+          </div>
         </div>
 
         <!-- Filtros y Resumen -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-4 mb-6">
+        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 p-4 mb-6">
           <!-- Búsqueda -->
           <div class="flex flex-col md:flex-row gap-4 mb-4">
             <!-- Búsqueda Multicampo -->
             <div class="flex-1">
-              <label class="block text-xs font-medium text-purple-300 mb-1">
+              <label class="block text-xs font-medium text-blue-300 mb-1">
                 <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
@@ -38,15 +49,15 @@
                   @input="debounceSearch"
                   type="text"
                   placeholder="Cliente, producto..."
-                  class="w-full px-3 py-2 pl-10 bg-black/30 border border-purple-500/50 rounded-lg text-white text-sm placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  class="w-full px-3 py-2 pl-10 bg-black/30 border border-blue-500/50 rounded-lg text-white text-sm placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
                 <button
                   v-if="busqueda"
                   @click="clearSearch"
-                  class="absolute right-2 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-white transition-colors"
+                  class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-400 hover:text-white transition-colors"
                   title="Limpiar búsqueda"
                 >
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,61 +69,38 @@
 
           </div>
 
-          <!-- Segunda fila: Resumen y Indicador -->
-          <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <!-- Summary Cards -->
-            <div class="flex gap-4">
-              <div class="bg-gradient-to-r from-green-600/20 to-green-800/20 border border-green-500/30 rounded-lg p-3 min-w-[120px]">
-                <div class="text-xs text-green-300 mb-1">Total Ventas</div>
-                <div class="text-lg font-bold text-white">{{ formatCurrency(totalVentas) }}</div>
-              </div>
-              <div class="bg-gradient-to-r from-yellow-600/20 to-yellow-800/20 border border-yellow-500/30 rounded-lg p-3 min-w-[120px]">
-                <div class="text-xs text-yellow-300 mb-1">Ganancia</div>
-                <div class="text-lg font-bold text-white">{{ formatCurrency(totalGanancia) }}</div>
-              </div>
-              <div class="bg-gradient-to-r from-blue-600/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-3 min-w-[120px]">
-                <div class="text-xs text-blue-300 mb-1">Cantidad</div>
-                <div class="text-lg font-bold text-white">{{ cantidadVentas }}</div>
-              </div>
-            </div>
-
-            <!-- Indicador de resultados -->
-            <div v-if="busqueda" class="text-xs text-purple-300 flex items-center">
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-              </svg>
-              Resultados para: "{{ busqueda }}"
-            </div>
-          </div>
         </div>
 
         <!-- Sales Table -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 overflow-hidden">
+        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
-              <thead class="bg-purple-900/50">
+              <thead class="bg-black/30">
                 <tr>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Cliente</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Productos</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Total</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Ganancia</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">Acciones</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">Cliente</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">Productos</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">Total</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-purple-500/20">
+              <tbody class="divide-y divide-blue-500/20">
                 <template v-for="venta in ventas" :key="venta.id_venta">
                   <tr v-for="(detalle, index) in venta.detalles" :key="`${venta.id_venta}-${detalle.id_detalle_venta}`"
-                      class="hover:bg-purple-900/20 transition-colors duration-200">
+                      class="hover:bg-blue-900/20 transition-colors duration-200">
                     <!-- Cliente (solo en la primera fila de cada venta) -->
                     <td v-if="index === 0" class="px-6 py-4 whitespace-nowrap" :rowspan="venta.detalles.length">
-                      <div class="text-sm font-medium text-white">{{ venta.cliente?.nombre }}</div>
-                      <div class="text-xs text-purple-300">Venta #{{ venta.id_venta }}</div>
+                      <div class="text-sm font-medium text-white">
+                        {{ venta.cliente ? `${venta.cliente.nombre} ${venta.cliente.apellidos || ''}`.trim() : 'Sin cliente' }}
+                      </div>
+                      <div class="text-xs text-blue-300">Venta #{{ venta.id_venta }}</div>
                     </td>
 
                     <!-- Producto -->
                     <td class="px-6 py-4">
-                      <div class="text-sm text-white">{{ detalle.producto?.nombre }}</div>
-                      <div class="text-xs text-purple-300">Cantidad: {{ detalle.cantidad }}</div>
+                      <div class="text-sm text-white">
+                        {{ (detalle.producto?.marca?.nombre ? detalle.producto.marca.nombre + ' ' : '') + (detalle.producto?.modelo?.nombre || 'Sin modelo') }}
+                      </div>
+                      <div class="text-xs text-blue-300">Cantidad: {{ detalle.cantidad }}</div>
                       <div class="text-xs text-gray-400">
                         Venta: {{ formatCurrency(detalle.precio_unitario) }}
                       </div>
@@ -125,15 +113,7 @@
                       </div>
                     </td>
 
-                    <!-- Ganancia -->
-                    <td v-if="index === 0" class="px-6 py-4 whitespace-nowrap" :rowspan="venta.detalles.length">
-                      <div class="text-sm font-medium" :class="venta.ganancia_total >= 0 ? 'text-green-400' : 'text-red-400'">
-                        {{ formatCurrency(venta.ganancia_total) }}
-                      </div>
-                      <div class="text-xs text-gray-400">
-                        Total de la venta
-                      </div>
-                    </td>
+
 
                     <!-- Acciones (solo en la primera fila de cada venta) -->
                     <td v-if="index === 0" class="px-6 py-4 whitespace-nowrap text-sm font-medium" :rowspan="venta.detalles.length">
@@ -169,10 +149,10 @@
                         <button
                           @click="deleteVenta(venta.id_venta)"
                           class="text-red-400 hover:text-red-300 transition-colors duration-200"
-                          title="Eliminar Venta"
+                          title="Anular Venta"
                         >
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
                         </button>
                       </div>
@@ -182,8 +162,8 @@
 
                 <!-- No data message -->
                 <tr v-if="ventas.length === 0">
-                  <td colspan="6" class="px-6 py-12 text-center">
-                    <div class="text-purple-300 text-lg">No hay ventas registradas</div>
+                  <td colspan="5" class="px-6 py-12 text-center">
+                    <div class="text-blue-300 text-lg">No hay ventas registradas</div>
                     <div class="text-gray-400 text-sm mt-2">Crea una nueva venta para comenzar</div>
                   </td>
                 </tr>
@@ -270,7 +250,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, Link } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Swal from 'sweetalert2'
 
@@ -278,8 +258,15 @@ interface Cliente {
   nombre: string
 }
 
-interface Producto {
+interface Modelo {
+  id_modelo: number
   nombre: string
+}
+
+interface Producto {
+  id_producto: number
+  descripcion?: string
+  modelo?: Modelo
   categoria?: { nombre: string }
   marca?: { nombre: string }
 }
@@ -414,13 +401,13 @@ const viewVenta = (venta: Venta) => {
 
 const deleteVenta = (id: number) => {
   Swal.fire({
-    title: '¿Eliminar venta?',
-    text: 'Esta acción eliminará la venta y devolverá el stock de los productos correspondientes. Esta acción no se puede deshacer.',
+    title: '¿Anular venta?',
+    text: 'Esta acción anulará la venta y devolverá el stock de los productos correspondientes. Esta acción no se puede deshacer.',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Sí, eliminar',
+    confirmButtonText: 'Sí, anular',
     cancelButtonText: 'Cancelar',
     reverseButtons: true
   }).then((result) => {
@@ -428,8 +415,8 @@ const deleteVenta = (id: number) => {
       router.delete(route('ventas.destroy', id), {
         onSuccess: () => {
           Swal.fire({
-            title: '¡Venta eliminada!',
-            text: 'La venta ha sido eliminada y el stock de los productos ha sido devuelto.',
+            title: '¡Venta anulada!',
+            text: 'La venta ha sido anulada y el stock de los productos ha sido devuelto.',
             icon: 'success',
             confirmButtonText: 'Entendido'
           });
@@ -437,7 +424,7 @@ const deleteVenta = (id: number) => {
         onError: () => {
           Swal.fire({
             title: 'Error',
-            text: 'No se pudo eliminar la venta. Inténtalo de nuevo.',
+            text: 'No se pudo anular la venta. Inténtalo de nuevo.',
             icon: 'error',
             confirmButtonText: 'Entendido'
           });

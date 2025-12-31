@@ -14,10 +14,9 @@ class DetalleVenta extends Model
         'id_venta',
         'id_producto',
         'cantidad',
-
-
         'precio_unitario',
-        'descripcion'
+        'descripcion',
+        'imei'
     ];
 
     protected $casts = [

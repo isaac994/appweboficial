@@ -32,87 +32,130 @@
         </div>
 
         <div class="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Información de la Compra</CardTitle>
-                    <CardDescription>
-                        Complete los datos para registrar una nueva compra
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
+            <div class="bg-black/20 backdrop-blur-sm rounded-xl border border-blue-500/30 p-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white mb-2">Información de la Compra</h2>
+                    <p class="text-gray-300">Complete los datos para registrar una nueva compra</p>
+                </div>
+                <div>
                     <form @submit.prevent class="space-y-6">
 
                         <!-- Información básica -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Proveedor -->
                             <div class="relative">
-                                <Label for="proveedor">Proveedor *</Label>
-                                <div class="flex gap-2">
-                                    <div class="relative flex-1">
-                                        <Input
-                                            id="proveedor"
-                                            v-model="proveedorSearch"
-                                            type="text"
-                                            placeholder="Buscar proveedor..."
-                                            class="mt-1 pr-10"
-                                            :class="{
-                                                'border-red-500': errors.id_proveedor && !showNuevoProveedor,
-                                                'border-green-500 bg-green-50': selectedProveedor
-                                            }"
-                                            @input="filterProveedores"
-                                            @focus="handleProveedorFocus"
-                                            @blur="handleProveedorBlur"
-                                        />
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <Button
-                                        type="button"
-                                        @click="showNuevoProveedor = true"
-                                        variant="outline"
-                                        size="sm"
-                                        class="mt-1 px-3"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                <Label for="proveedor" class="text-gray-300">Proveedor *</Label>
+                                <div class="relative">
+                                    <Input
+                                        id="proveedor"
+                                        v-model="proveedorSearch"
+                                        type="text"
+                                        placeholder="Buscar proveedor..."
+                                        class="mt-1 pr-10 text-white bg-black/30 border-blue-500/50"
+                                        :class="{
+                                            'border-red-500': errors.id_proveedor && !showNuevoProveedor,
+                                                'border-green-400 bg-black/40': selectedProveedor
+                                        }"
+                                        @input="filterProveedores"
+                                        @focus="showProveedoresDropdown = true"
+                                        @blur="handleProveedorBlur"
+                                    />
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                         </svg>
-                                    </Button>
-                                </div>
+                                    </div>
+                            </div>
 
-                                <!-- Dropdown de proveedores -->
-                                <div v-if="showProveedoresDropdown && filteredProveedores.length > 0"
-                                     class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                            <!-- Dropdown de proveedores -->
+                            <div v-if="showProveedoresDropdown && filteredProveedores.length > 0"
+                                     class="absolute z-10 w-full mt-1 bg-[#0a1628] border border-blue-500/50 rounded-lg shadow-lg max-h-60 overflow-auto">
                                     <div
                                         v-for="proveedor in filteredProveedores"
                                         :key="proveedor.id_proveedor"
                                         @mousedown="selectProveedor(proveedor)"
-                                        class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                        class="px-4 py-2 hover:bg-blue-600/20 cursor-pointer border-b border-blue-500/20 last:border-b-0"
                                     >
-                                        <div class="font-medium">{{ proveedor.nombre }}</div>
-                                        <div class="text-sm text-gray-500">{{ proveedor.ci_nit }}</div>
+                                        <div class="font-medium text-white">{{ proveedor.nombre }}</div>
+                                        <div class="text-sm text-gray-400">{{ proveedor.ci_nit }}</div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div v-if="errors.id_proveedor && !showNuevoProveedor" class="mt-1 text-sm text-red-600">
-                                    {{ errors.id_proveedor }}
-                                </div>
+                            <div v-if="errors.id_proveedor && !showNuevoProveedor" class="mt-1 text-sm text-red-600">
+                                {{ errors.id_proveedor }}
                             </div>
 
                             <!-- Fecha -->
                             <div>
-                                <Label for="fecha">Fecha *</Label>
-                                <Input
-                                    id="fecha"
-                                    v-model="form.fecha"
-                                    type="date"
-                                    required
-                                    class="mt-1"
-                                    :class="{ 'border-red-500': errors.fecha }"
-                                    @keyup.enter.prevent="focusPrimerProducto"
-                                />
+                                <Label for="fecha" class="text-gray-300">Fecha *</Label>
+                                <div class="relative">
+                                    <Input
+                                        id="fecha"
+                                        v-model="form.fecha"
+                                        type="text"
+                                        readonly
+                                        required
+                                        class="mt-1 text-white bg-black/30 border-blue-500/50 cursor-pointer"
+                                        :class="{ 'border-red-500': errors.fecha }"
+                                        @click="showCalendar = !showCalendar"
+                                        @keyup.enter.prevent="focusPrimerProducto"
+                                        :value="formatDateDisplay(form.fecha)"
+                                        placeholder="Seleccionar fecha"
+                                    />
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1 pointer-events-none">
+                                        <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <!-- Calendario personalizado -->
+                                <div v-if="showCalendar" class="absolute z-50 mt-1 bg-gradient-to-br from-blue-900/95 to-cyan-900/95 backdrop-blur-xl border border-blue-500/50 rounded-xl p-4 shadow-2xl">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-white font-semibold">{{ currentMonthYear }}</h3>
+                                        <div class="flex gap-2">
+                                            <button @click="previousMonth" class="p-1 text-blue-400 hover:text-white hover:bg-blue-600/30 rounded">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                                </svg>
+                                            </button>
+                                            <button @click="nextMonth" class="p-1 text-blue-400 hover:text-white hover:bg-blue-600/30 rounded">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-7 gap-1 mb-2">
+                                        <div v-for="day in ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']" :key="day" class="text-center text-blue-300 text-sm font-medium py-2">
+                                            {{ day }}
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-7 gap-1">
+                                        <button
+                                            v-for="day in calendarDays"
+                                            :key="day.date"
+                                            @click="selectDate(day.date)"
+                                            :class="[
+                                                'p-2 text-sm rounded-lg transition-colors',
+                                                day.isCurrentMonth ? 'text-white hover:bg-blue-600/50' : 'text-blue-300/50',
+                                                day.isSelected ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold' : '',
+                                                day.isToday ? 'ring-2 ring-blue-400' : ''
+                                            ]"
+                                        >
+                                            {{ day.day }}
+                                        </button>
+                                    </div>
+
+                                    <div class="flex justify-between mt-4 pt-3 border-t border-blue-500/30">
+                                        <button @click="clearDate" class="text-blue-400 hover:text-white text-sm">Borrar</button>
+                                        <button @click="selectToday" class="text-blue-400 hover:text-white text-sm">Hoy</button>
+                                    </div>
+                                </div>
+
                                 <p v-if="errors.fecha" class="mt-1 text-sm text-red-600">
                                     {{ errors.fecha }}
                                 </p>
@@ -120,33 +163,24 @@
                         </div>
 
                         <!-- Formulario para nuevo proveedor -->
-                        <div v-if="showNuevoProveedor" class="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg w-fit">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-medium text-gray-700">Nuevo Proveedor</span>
-                                <Button
-                                    type="button"
-                                    @click="closeNuevoProveedor"
-                                    variant="ghost"
-                                    size="sm"
-                                    class="text-gray-500 hover:text-gray-700 h-6 w-6 p-0"
-                                >
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </Button>
-                            </div>
-
-                            <div class="flex gap-2">
-                                <Input
-                                    v-model="nuevoProveedor.ci_nit"
-                                    placeholder="CI/NIT"
-                                    class="w-32"
-                                />
-                                <Input
-                                    v-model="nuevoProveedor.telefono"
-                                    placeholder="Teléfono"
-                                    class="w-32"
-                                />
+                        <div class="mt-4 p-4 bg-black/30 border border-blue-500/30 rounded-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label class="text-blue-300">CI/NIT *</Label>
+                                    <Input
+                                        v-model="nuevoProveedor.ci_nit"
+                                        placeholder="CI/NIT"
+                                        class="mt-1 text-white bg-black/30 border-blue-500/50"
+                                    />
+                                </div>
+                                <div>
+                                    <Label class="text-blue-300">Teléfono *</Label>
+                                    <Input
+                                        v-model="nuevoProveedor.telefono"
+                                        placeholder="Teléfono"
+                                        class="mt-1 text-white bg-black/30 border-blue-500/50"
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -167,7 +201,7 @@
                                 </Button>
                             </div>
 
-                            <div v-if="form.productos.length === 0" class="text-center py-8 text-gray-500">
+                            <div v-if="form.productos.length === 0" class="text-center py-8 text-gray-300">
                                 <p>No hay productos agregados</p>
                                 <p class="text-sm">Haga clic en "Agregar Producto" para comenzar</p>
                             </div>
@@ -176,34 +210,34 @@
                                 <div
                                     v-for="(producto, index) in form.productos"
                                     :key="index"
-                                    class="border border-gray-200 rounded-lg p-4"
+                                    class="border border-blue-500/30 bg-black/20 rounded-lg p-4"
                                 >
                                     <div class="flex items-center justify-between mb-3">
-                                        <h4 class="font-medium text-gray-900">Producto {{ index + 1 }}</h4>
+                                        <h4 class="font-medium text-white">Producto {{ index + 1 }}</h4>
                                         <Button
                                             type="button"
                                             @click="removeProduct(index)"
                                             variant="ghost"
                                             size="sm"
-                                            class="text-red-600 hover:text-red-700"
+                                            class="text-red-400 hover:text-red-300 hover:bg-red-600/20"
                                         >
-                                            Eliminar
+                                            Anular
                                         </Button>
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <!-- Producto -->
                                         <div class="relative">
-                                            <Label :for="`producto_${index}`">Producto *</Label>
+                                            <Label :for="`producto_${index}`" class="text-gray-300">Producto *</Label>
                                             <div class="relative">
                                                 <Input
                                                     :id="`producto_${index}`"
                                                     v-model="productoSearch[index]"
                                                     type="text"
                                                     placeholder="Buscar producto..."
-                                                    class="mt-1 pr-10"
+                                                    class="mt-1 pr-10 text-white bg-black/30 border-blue-500/50"
                                                     :class="{
-                                                        'border-blue-500 bg-blue-50': selectedProductos[index]
+                                                        'border-blue-400 bg-black/40': selectedProductos[index]
                                                     }"
                                                     @input="filterProductos(index)"
                                                     @focus="handleProductoFocus(index)"
@@ -218,36 +252,37 @@
 
                                             <!-- Dropdown de productos -->
                                             <div v-if="showProductosDropdown[index] && filteredProductos[index] && filteredProductos[index].length > 0"
-                                                 class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                                                 class="absolute z-10 w-full mt-1 bg-[#0a1628] border border-blue-500/50 rounded-lg shadow-lg max-h-60 overflow-auto">
                                                 <div
                                                     v-for="prod in filteredProductos[index]"
                                                     :key="prod.id_producto"
                                                     @mousedown="selectProducto(index, prod)"
-                                                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                    class="px-4 py-2 hover:bg-blue-600/20 cursor-pointer border-b border-blue-500/20 last:border-b-0"
                                                 >
-                                                    <div class="font-medium">{{ prod.nombre }}</div>
-                                                    <div class="text-sm text-gray-500">{{ prod.categoria?.nombre }} - {{ prod.marca?.nombre }}</div>
+                                                    <div class="font-medium text-white">{{ prod.modelo?.nombre || 'Sin modelo' }}</div>
+                                                    <div class="text-sm text-gray-300">{{ prod.descripcion }}</div>
+                                                    <div class="text-xs text-gray-400">{{ prod.categoria?.nombre }} - {{ prod.marca?.nombre }}</div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <!-- Cantidad -->
                                         <div>
-                                            <Label :for="`cantidad_${index}`">Cantidad *</Label>
+                                            <Label :for="`cantidad_${index}`" class="text-gray-300">Cantidad *</Label>
                                             <Input
                                                 :id="`cantidad_${index}`"
                                                 v-model.number="producto.cantidad"
                                                 type="number"
                                                 min="1"
                                                 required
-                                                class="mt-1"
+                                                class="mt-1 text-white bg-black/30 border-blue-500/50"
                                                 @keyup.enter.prevent="focusPrecio(index)"
                                             />
                                         </div>
 
                                         <!-- Precio Unitario -->
                                         <div>
-                                            <Label :for="`precio_${index}`">Precio Unitario *</Label>
+                                            <Label :for="`precio_${index}`" class="text-gray-300">Precio Unitario *</Label>
                                             <Input
                                                 :id="`precio_${index}`"
                                                 v-model.number="producto.precio_unitario"
@@ -255,7 +290,7 @@
                                                 step="0.01"
                                                 min="0"
                                                 required
-                                                class="mt-1"
+                                                class="mt-1 text-white bg-black/30 border-blue-500/50"
                                                 @keyup.enter.prevent="focusSiguienteProducto(index)"
                                             />
                                         </div>
@@ -307,8 +342,8 @@
                             </Button>
                         </div>
                     </form>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     </AppLayout>
 </template>
@@ -391,11 +426,55 @@ const filteredProductos = ref<Producto[][]>([]);
 // Estados del formulario
 const isSubmitting = ref(false);
 
+// Estados para el calendario personalizado
+const showCalendar = ref(false);
+const currentDate = ref(new Date());
+
 // Computed
 const totalCompra = computed(() => {
     return form.productos.reduce((total, producto) => {
         return total + (producto.cantidad * producto.precio_unitario);
     }, 0);
+});
+
+// Computed para el calendario
+const currentMonthYear = computed(() => {
+    return currentDate.value.toLocaleDateString('es-BO', {
+        month: 'long',
+        year: 'numeric'
+    });
+});
+
+const calendarDays = computed(() => {
+    const year = currentDate.value.getFullYear();
+    const month = currentDate.value.getMonth();
+    const today = new Date();
+    const selectedDate = form.fecha ? new Date(form.fecha) : null;
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay() + 1);
+
+    const days = [];
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+
+        const isCurrentMonth = date.getMonth() === month;
+        const isToday = date.toDateString() === today.toDateString();
+        const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+
+        days.push({
+            day: date.getDate(),
+            date: date.toISOString().split('T')[0],
+            isCurrentMonth,
+            isToday,
+            isSelected
+        });
+    }
+
+    return days;
 });
 
 // Funciones de utilidad
@@ -414,6 +493,36 @@ const getTodayDate = () => {
     return `${year}-${month}-${day}`;
 };
 
+// Funciones del calendario personalizado
+const formatDateDisplay = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-BO');
+};
+
+const selectDate = (dateString: string) => {
+    form.fecha = dateString;
+    showCalendar.value = false;
+};
+
+const clearDate = () => {
+    form.fecha = '';
+    showCalendar.value = false;
+};
+
+const selectToday = () => {
+    form.fecha = getTodayDate();
+    showCalendar.value = false;
+};
+
+const previousMonth = () => {
+    currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1);
+};
+
+const nextMonth = () => {
+    currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1);
+};
+
 // Funciones para proveedores
 const filterProveedores = () => {
     if (!proveedorSearch.value.trim()) {
@@ -425,12 +534,18 @@ const filterProveedores = () => {
             proveedor.ci_nit.toLowerCase().includes(search)
         );
     }
+    showProveedoresDropdown.value = true;
 };
 
 const selectProveedor = (proveedor: Proveedor) => {
     selectedProveedor.value = proveedor;
     form.id_proveedor = proveedor.id_proveedor.toString();
     proveedorSearch.value = proveedor.nombre;
+
+    // Llenar los campos de CI/NIT y Teléfono con los datos del proveedor seleccionado
+    nuevoProveedor.value.ci_nit = proveedor.ci_nit;
+    nuevoProveedor.value.telefono = proveedor.telefono;
+
     showProveedoresDropdown.value = false;
 
     // Después de seleccionar, ir al campo fecha
@@ -494,7 +609,7 @@ const filterProductos = (index: number) => {
     } else {
         const search = productoSearch.value[index].toLowerCase();
         filteredProductos.value[index] = props.productos.filter(producto =>
-            producto.nombre.toLowerCase().includes(search) ||
+            producto.modelo?.nombre.toLowerCase().includes(search) ||
             producto.categoria?.nombre.toLowerCase().includes(search) ||
             producto.marca?.nombre.toLowerCase().includes(search)
         );
@@ -505,7 +620,7 @@ const selectProducto = (index: number, producto: Producto) => {
     selectedProductos.value[index] = producto;
     form.productos[index].id_producto = producto.id_producto;
     // No llenar automáticamente el precio unitario
-    productoSearch.value[index] = producto.nombre;
+    productoSearch.value[index] = producto.modelo?.nombre || 'Sin modelo';
     showProductosDropdown.value[index] = false;
 
     // Después de seleccionar, ir al campo cantidad
@@ -654,8 +769,8 @@ const submitForm = () => {
         productos: form.productos
     };
 
-    // Si se está creando un nuevo proveedor
-    if (showNuevoProveedor.value && proveedorSearch.value && nuevoProveedor.value.ci_nit && nuevoProveedor.value.telefono) {
+    // Si se está creando un nuevo proveedor (hay texto pero no hay proveedor seleccionado)
+    if (!selectedProveedor.value && proveedorSearch.value && nuevoProveedor.value.ci_nit && nuevoProveedor.value.telefono) {
         formData.nuevo_proveedor = {
             nombre: proveedorSearch.value, // Tomar el nombre del campo de búsqueda
             ci_nit: nuevoProveedor.value.ci_nit,
@@ -666,40 +781,10 @@ const submitForm = () => {
 
     console.log('📤 Enviando datos:', formData);
 
-    router.post('/compras', formData, {
-        onStart: () => {
-            console.log('📡 Petición iniciada');
-        },
-        onSuccess: (page) => {
-            console.log('✅ Éxito:', page);
-            isSubmitting.value = false;
-
-            // Mostrar mensaje flotante de éxito
-            Swal.fire({
-                title: '¡Compra Registrada!',
-                text: 'La compra se ha registrado exitosamente',
-                icon: 'success',
-                confirmButtonText: 'Continuar',
-                confirmButtonColor: '#10b981',
-                toast: true,
-                position: 'top',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                allowOutsideClick: false,
-                customClass: {
-                    popup: 'swal-popup-success',
-                    title: 'swal-title-success',
-                    content: 'swal-content-success'
-                }
-            });
-        },
+    // Guardar datos temporalmente y redirigir a confirmación
+    router.post('/compras/confirmar', formData, {
         onError: (errors) => {
             console.log('❌ Errores:', errors);
-            isSubmitting.value = false;
-        },
-        onFinish: () => {
-            console.log('🏁 Petición finalizada');
             isSubmitting.value = false;
         }
     });
@@ -709,7 +794,45 @@ const submitForm = () => {
 onMounted(() => {
     form.fecha = getTodayDate();
     filteredProveedores.value = props.proveedores;
-    addProduct(); // Agregar un producto por defecto
+
+    // Verificar si hay productos seleccionados desde la interfaz de selección
+    const productosSeleccionados = sessionStorage.getItem('productos_compra');
+
+    if (productosSeleccionados) {
+        try {
+            const productos = JSON.parse(productosSeleccionados);
+
+            // Limpiar productos existentes
+            form.productos = [];
+            selectedProductos.value = [];
+            productoSearch.value = [];
+            showProductosDropdown.value = [];
+
+            // Agregar productos seleccionados
+            productos.forEach((producto: any) => {
+                const index = form.productos.length;
+                form.productos.push({
+                    id_producto: producto.id_producto,
+                    cantidad: 1,
+                    precio_unitario: 0,
+                    descripcion: ''
+                });
+
+                selectedProductos.value.push(producto);
+                const nombreProducto = producto.nombre || producto.modelo?.nombre || '';
+                productoSearch.value.push(nombreProducto);
+                showProductosDropdown.value.push(false);
+            });
+
+            // Limpiar sessionStorage
+            sessionStorage.removeItem('productos_compra');
+        } catch (error) {
+            console.error('Error al cargar productos seleccionados:', error);
+            addProduct(); // Agregar un producto por defecto si hay error
+        }
+    } else {
+        addProduct(); // Agregar un producto por defecto
+    }
 
     // Auto-focus en el campo proveedor al cargar la página
     setTimeout(() => {
@@ -740,4 +863,6 @@ onMounted(() => {
     font-size: 1rem;
     line-height: 1.5;
 }
+
+
 </style>

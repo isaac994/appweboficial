@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use App\Http\Middleware\VerifyCsrfToken;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,12 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
-        // Registrar middleware de Spatie Permission
+        // Registrar middleware personalizado
         $middleware->alias([
-            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'user.status' => \App\Http\Middleware\CheckUserStatus::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+            'role_or_permission' => \App\Http\Middleware\CheckRoleOrPermission::class,
         ]);
 
         $middleware->web(append: [
@@ -30,6 +31,11 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             HandleFileUploads::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        // Add CSRF protection to web routes (after session middleware)
+        $middleware->web(append: [
+            VerifyCsrfToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

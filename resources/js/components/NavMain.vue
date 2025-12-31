@@ -65,7 +65,7 @@ const isMenuExpanded = (title: string) => {
 
 <template>
     <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel class="text-slate-600 font-bold text-sm uppercase tracking-wider">
+        <SidebarGroupLabel class="text-white/70 font-bold text-sm uppercase tracking-wider">
             Sistema de Gestión
         </SidebarGroupLabel>
         <SidebarMenu>
@@ -75,12 +75,12 @@ const isMenuExpanded = (title: string) => {
                     <SidebarMenuButton
                         @click="toggleMenu(item.title)"
                         :tooltip="item.title"
-                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-900 cursor-pointer"
+                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-cyan-500/10 border border-transparent hover:border-blue-500/30 text-white hover:text-white cursor-pointer"
                     >
                         <div class="flex items-center space-x-3 w-full">
                             <component
                                 :is="item.icon"
-                                class="w-5 h-5 transition-all duration-300 group-hover:scale-110 text-slate-500 group-hover:text-blue-600"
+                                class="w-5 h-5 transition-all duration-300 group-hover:scale-110 text-white/70 group-hover:text-white"
                             />
                             <span class="font-semibold">{{ item.title }}</span>
                             <svg
@@ -102,10 +102,10 @@ const isMenuExpanded = (title: string) => {
                                 as-child
                                 :is-active="child.href === page.url"
                                 :tooltip="child.title"
-                                class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200"
+                                class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-cyan-500/10 border border-transparent hover:border-blue-500/30"
                                 :class="{
-                                    'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300 text-blue-900 shadow-sm': child.href === page.url,
-                                    'text-slate-700 hover:text-blue-900': child.href !== page.url
+                                    'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-white shadow-sm': child.href === page.url,
+                                    'text-white hover:text-white': child.href !== page.url
                                 }"
                             >
                                 <Link :href="child.href" class="flex items-center space-x-3 w-full">
@@ -122,10 +122,10 @@ const isMenuExpanded = (title: string) => {
                         as-child
                         :is-active="item.href === page.url"
                         :tooltip="item.title"
-                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border border-transparent hover:border-blue-200"
+                        class="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-cyan-500/10 border border-transparent hover:border-blue-500/30"
                         :class="{
-                            'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300 text-blue-900 shadow-sm': item.href === page.url,
-                            'text-slate-700 hover:text-blue-900': item.href !== page.url
+                            'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-white shadow-sm': item.href === page.url,
+                            'text-white hover:text-white': item.href !== page.url
                         }"
                     >
                         <Link :href="item.href" class="flex items-center space-x-3 w-full">
@@ -133,8 +133,8 @@ const isMenuExpanded = (title: string) => {
                                 :is="item.icon"
                                 class="w-5 h-5 transition-all duration-300 group-hover:scale-110"
                                 :class="{
-                                    'text-slate-500 group-hover:text-blue-600': item.href !== page.url,
-                                    'text-blue-600': item.href === page.url
+                                    'text-white/70 group-hover:text-white': item.href !== page.url,
+                                    'text-white': item.href === page.url
                                 }"
                             />
                             <span class="font-semibold">{{ item.title }}</span>
@@ -149,25 +149,31 @@ const isMenuExpanded = (title: string) => {
 <style scoped>
 :deep(.sidebar-menu-button) {
     background: transparent;
+    border: 1px solid rgba(59, 130, 246, 0.1);
     border-radius: 8px;
     margin: 3px 0;
     transition: all 0.3s ease;
     padding: 10px 12px;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 :deep(.sidebar-menu-button:hover) {
-    transform: translateX(6px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(34, 211, 238, 0.1) 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: rgba(255, 255, 255, 1);
+    transform: translateX(4px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
 }
 
 :deep(.sidebar-menu-button[data-active="true"]) {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+    background: rgba(10, 22, 40, 0.9);
+    color: rgba(255, 255, 255, 1);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
 }
 
 :deep(.sidebar-group-label) {
-    color: rgba(71, 85, 105, 0.9);
+    color: rgba(255, 255, 255, 0.7);
     font-weight: 700;
     font-size: 0.75rem;
     letter-spacing: 0.15em;

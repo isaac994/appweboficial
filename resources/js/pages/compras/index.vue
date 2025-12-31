@@ -5,16 +5,21 @@
         </template>
 
         <div class="space-y-6">
+            <!-- Título Principal -->
+            <div class="mb-8 px-6 pt-6">
+                <h1 class="text-4xl font-bold text-white">
+                    <span class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        Gestión de Compras
+                    </span>
+                </h1>
+            </div>
+
             <!-- Filtro de Búsqueda -->
-            <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6 mb-8">
-                <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-white mb-2">Filtros de Búsqueda</h3>
-                    <p class="text-purple-300 text-sm">El buscador permite filtrar por nombre del proveedor o ID de la compra</p>
-                </div>
-                <div class="flex justify-start">
-                    <div class="relative w-full max-w-lg">
+            <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 p-6 mb-8">
+                <div class="flex justify-between items-center gap-4">
+                    <div class="relative flex-1 max-w-lg">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
@@ -22,63 +27,66 @@
                             v-model="filters.search"
                             type="text"
                             placeholder="Buscar por nombre de proveedor o ID de compra..."
-                            class="w-full pl-10 pr-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            class="w-full pl-10 pr-4 py-3 bg-black/30 border border-blue-500/50 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             @input="debounceSearch"
                             title="Busca por nombre del proveedor o ID de la compra"
                         />
+                    </div>
+                    <div class="flex gap-2">
+                        <Link
+                            :href="route('compras.eliminadas')"
+                            class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-lg transition-all duration-300"
+                        >
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Movimientos
+                        </Link>
+                        <Button @click="router.visit(route('compras.seleccionar-productos'))" class="whitespace-nowrap">
+                            Nueva Compra
+                        </Button>
                     </div>
                 </div>
             </div>
 
             <!-- Tabla de Compras -->
-            <Card>
-                <CardHeader class="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>Lista de Compras</CardTitle>
-                        <CardDescription>
-                            Gestiona todas las compras realizadas a proveedores
-                        </CardDescription>
-                    </div>
-                    <Button @click="router.visit(route('compras.create'))">
-                        Nueva Compra
-                    </Button>
-                </CardHeader>
-                <CardContent>
+            <Card class="bg-black/20 border-blue-500/30">
+                <CardContent class="bg-black/10">
                     <div v-if="compras.data && compras.data.length > 0" class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-900">ID</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-900">Proveedor</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-900">Fecha</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-900">Total</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-900">Usuario</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-900">Acciones</th>
+                                <tr class="border-b border-blue-500/20">
+                                    <th class="text-left py-3 px-4 font-medium text-white">ID</th>
+                                    <th class="text-left py-3 px-4 font-medium text-white">Proveedor</th>
+                                    <th class="text-left py-3 px-4 font-medium text-white">Fecha</th>
+                                    <th class="text-left py-3 px-4 font-medium text-white">Total</th>
+                                    <th class="text-left py-3 px-4 font-medium text-white">Usuario</th>
+                                    <th class="text-left py-3 px-4 font-medium text-white">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr
                                     v-for="compra in compras.data"
                                     :key="compra.id_compra"
-                                    class="border-b border-gray-100 hover:bg-gray-50"
+                                    class="border-b border-blue-500/20 hover:bg-blue-500/10"
                                 >
-                                    <td class="py-3 px-4 text-gray-900 font-mono">
+                                    <td class="py-3 px-4 text-white font-mono">
                                         #{{ compra.id_compra }}
                                     </td>
                                     <td class="py-3 px-4">
-                                        <div class="font-medium text-gray-900">
+                                        <div class="font-medium text-white">
                                             {{ compra.proveedor?.nombre }}
                                         </div>
                                     </td>
-                                    <td class="py-3 px-4 text-gray-600">
+                                    <td class="py-3 px-4 text-gray-300">
                                         {{ formatDate(compra.fecha) }}
                                     </td>
                                     <td class="py-3 px-4">
-                                        <span class="font-semibold text-green-600">
+                                        <span class="font-semibold text-green-400">
                                             {{ formatCurrency(compra.total) }}
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-gray-600">
+                                    <td class="py-3 px-4 text-gray-300">
                                         {{ compra.usuario?.name }}
                                     </td>
                                     <td class="py-3 px-4">
@@ -87,7 +95,7 @@
                                                 @click="router.visit(route('compras.show', compra.id_compra))"
                                                 variant="ghost"
                                                 size="sm"
-                                                class="p-2"
+                                                class="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-600/20"
                                                 title="Ver detalles"
                                             >
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +107,7 @@
                                                 @click="router.visit(route('compras.edit', compra.id_compra))"
                                                 variant="ghost"
                                                 size="sm"
-                                                class="p-2"
+                                                class="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-600/20"
                                                 title="Editar compra"
                                             >
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +118,7 @@
                                                 @click="imprimirRecibo(compra)"
                                                 variant="ghost"
                                                 size="sm"
-                                                class="p-2"
+                                                class="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-600/20"
                                                 title="Imprimir recibo"
                                             >
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,11 +129,11 @@
                                                 @click="deleteCompra(compra.id_compra)"
                                                 variant="ghost"
                                                 size="sm"
-                                                class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                title="Eliminar compra"
+                                                class="p-2 text-red-400 hover:text-red-300 hover:bg-red-600/20"
+                                                title="Anular compra"
                                             >
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                                             </Button>
                                         </div>
@@ -351,32 +359,60 @@ const debounceSearch = () => {
 
 const deleteCompra = (id: number) => {
     Swal.fire({
-        title: '¿Eliminar compra?',
-        text: 'Esta acción eliminará la compra y reducirá el stock de los productos correspondientes. Esta acción no se puede deshacer.',
+        title: '¿Anular compra?',
+        html: `
+            <div class="text-left">
+                <p class="mb-3">Esta acción anulará la compra y reducirá el stock de los productos correspondientes.</p>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">Importante</h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <p>Si los productos de esta compra ya fueron vendidos, la anulación será bloqueada para evitar inconsistencias en el inventario.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 text-sm text-gray-600">Esta acción no se puede deshacer.</p>
+            </div>
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Sí, eliminar',
+        confirmButtonText: 'Sí, anular',
         cancelButtonText: 'Cancelar',
-        reverseButtons: true
+        reverseButtons: true,
+        width: '500px'
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('compras.destroy', id), {
                 onSuccess: () => {
                     Swal.fire({
-                        title: '¡Compra eliminada!',
-                        text: 'La compra ha sido eliminada y el stock de los productos ha sido actualizado.',
+                        title: '¡Compra anulada!',
+                        text: 'La compra ha sido anulada y el stock de los productos ha sido actualizado.',
                         icon: 'success',
                         confirmButtonText: 'Entendido'
                     });
                 },
-                onError: () => {
+                onError: (errors) => {
+                    let mensaje = 'No se pudo anular la compra.';
+
+                    if (errors.error) {
+                        mensaje = errors.error;
+                    }
+
                     Swal.fire({
-                        title: 'Error',
-                        text: 'No se pudo eliminar la compra. Inténtalo de nuevo.',
-                        icon: 'error',
-                        confirmButtonText: 'Entendido'
+                        title: 'No se puede anular',
+                        html: `<div class="text-left"><p class="mb-3">${mensaje}</p></div>`,
+                        icon: 'warning',
+                        confirmButtonText: 'Entendido',
+                        width: '600px'
                     });
                 }
             });

@@ -118,37 +118,90 @@
         .currency { font-family: 'Courier New', monospace; }
 
         .summary {
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 10px;
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
+            background: #f2f2f2;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
         .summary-title {
             font-weight: bold;
             margin-bottom: 10px;
-            font-size: 13px;
+            font-size: 12px;
+            color: #333;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
         }
 
         .summary-grid {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
         }
 
         .summary-item {
-            text-align: center;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .summary-icon {
+            font-size: 14px;
+            margin-right: 6px;
+            min-width: 18px;
+        }
+
+        .summary-content {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .summary-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #666;
-            margin-bottom: 2px;
+            font-weight: 500;
         }
 
         .summary-value {
             font-weight: bold;
+            font-size: 11px;
+            color: #333;
+        }
+
+        .analysis-box {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 10px;
+        }
+
+        .analysis-icon {
+            margin-right: 4px;
             font-size: 12px;
+        }
+
+        .analysis-content {
+            font-size: 9px;
+            color: #666;
+            line-height: 1.2;
         }
 
         .footer {

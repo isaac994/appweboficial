@@ -9,6 +9,7 @@ const form = useForm({
 })
 
 const isSubmitting = ref(false)
+const showPassword = ref(false)
 
 const submitForm = () => {
   isSubmitting.value = true
@@ -25,17 +26,17 @@ const submitForm = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <!-- Logo y Título -->
       <div class="text-center">
-        <div class="mx-auto h-16 w-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
+        <div class="mx-auto h-16 w-16 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-full flex items-center justify-center mb-4">
           <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
         </div>
         <h2 class="text-3xl font-bold text-white">
-          <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             Iniciar Sesión
           </span>
         </h2>
@@ -43,8 +44,8 @@ const submitForm = () => {
       </div>
 
       <!-- Formulario -->
-      <div class="bg-black/20 backdrop-blur-sm rounded-xl border border-purple-500/30 p-8">
-        <form @submit.prevent="submitForm" class="space-y-6">
+      <div class="bg-[#0f1f3a]/60 backdrop-blur-xl border border-blue-500/20 rounded-2xl p-8">
+        <form @submit.prevent="submitForm" class="space-y-6" autocomplete="off">
           <!-- Email -->
           <div>
             <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
@@ -55,11 +56,11 @@ const submitForm = () => {
               v-model="form.email"
               type="email"
               required
-              class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              autocomplete="off"
+              class="w-full px-4 py-3 bg-[#0a1628] border border-blue-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
               :class="{ 'border-red-500': form.errors.email }"
               placeholder="tu@email.com"
             />
-            <p v-if="form.errors.email" class="mt-1 text-sm text-red-400">{{ form.errors.email }}</p>
           </div>
 
           <!-- Contraseña -->
@@ -67,16 +68,34 @@ const submitForm = () => {
             <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
               Contraseña
             </label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              :class="{ 'border-red-500': form.errors.password }"
-              placeholder="••••••••"
-            />
-            <p v-if="form.errors.password" class="mt-1 text-sm text-red-400">{{ form.errors.password }}</p>
+            <div class="relative">
+              <input
+                id="password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                autocomplete="new-password"
+                class="w-full px-4 py-3 pr-12 bg-[#0a1628] border border-blue-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                :class="{ 'border-red-500': form.errors.password || form.errors.email }"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
+              >
+                <svg v-if="!showPassword" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                </svg>
+              </button>
+            </div>
+            <p v-if="form.errors.password || form.errors.email" class="mt-1 text-sm text-red-400">
+              {{ form.errors.password || form.errors.email }}
+            </p>
           </div>
 
           <!-- Recordar sesión -->
@@ -86,7 +105,7 @@ const submitForm = () => {
                 id="remember"
                 v-model="form.remember"
                 type="checkbox"
-                class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded bg-black/30"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded bg-[#0a1628]"
               />
               <label for="remember" class="ml-2 block text-sm text-gray-300">
                 Recordar sesión
@@ -99,7 +118,7 @@ const submitForm = () => {
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
             >
               <span v-if="isSubmitting" class="flex items-center">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -112,18 +131,6 @@ const submitForm = () => {
             </button>
           </div>
 
-          <!-- Enlaces -->
-          <div class="text-center">
-            <p class="text-sm text-gray-300">
-              ¿No tienes una cuenta?
-              <Link
-                :href="route('register')"
-                class="font-medium text-purple-400 hover:text-purple-300 transition-colors duration-200"
-              >
-                Regístrate aquí
-              </Link>
-            </p>
-          </div>
         </form>
       </div>
     </div>

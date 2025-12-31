@@ -69,7 +69,7 @@ class TestUserManagementCommand extends Command
         $this->line("   👥 Total usuarios: " . User::count());
         $this->line("   ✅ Usuarios activos: " . User::activos()->count());
         $this->line("   ❌ Usuarios inactivos: " . User::inactivos()->count());
-        $this->line("   👑 Administradores: " . User::role('Administrador')->count());
+        $this->line("   👑 Propietarios: " . User::role('Propietario')->count());
         $this->line("   👷 Operadores: " . User::role('Operador')->count());
     }
 }

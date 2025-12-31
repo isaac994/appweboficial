@@ -21,6 +21,11 @@ defineProps<Props>();
         <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <UserInfo :user="user" :show-email="true" />
         </div>
+        <div class="px-1 py-1">
+            <span class="text-xs text-gray-500">
+                {{ user.roles?.[0]?.name || 'Usuario' }}
+            </span>
+        </div>
     </DropdownMenuLabel>
     <DropdownMenuSeparator class="bg-slate-200" />
     <DropdownMenuGroup>

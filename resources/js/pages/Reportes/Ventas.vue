@@ -1,272 +1,330 @@
 <template>
-  <AppLayout>
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <!-- Content -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Reporte de Ventas</h1>
-            <p class="text-purple-300">Genera reportes detallados de ventas con filtros por fechas</p>
-          </div>
-          <button
-            @click="router.visit(route('reportes.index'))"
-            class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-300"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Volver
-          </button>
+    <AppLayout>
+        <div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d1b2e] to-[#0a1628] py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Reporte de Ventas</h1>
+                        <p class="text-blue-300 text-sm">Análisis detallado de las ventas realizadas</p>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-white mb-4">Filtros de Búsqueda</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                        <!-- Fecha inicial -->
+                        <div>
+                            <label class="block text-sm font-medium text-blue-300 mb-2">Fecha Inicial</label>
+                            <input
+                                type="date"
+                                v-model="filtros.fecha_inicio"
+                                class="w-full px-3 py-2 bg-black/30 border border-blue-500/50 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <!-- Fecha final -->
+                        <div>
+                            <label class="block text-sm font-medium text-blue-300 mb-2">Fecha Final</label>
+                            <input
+                                type="date"
+                                v-model="filtros.fecha_final"
+                                class="w-full px-3 py-2 bg-black/30 border border-blue-500/50 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <!-- Usuario -->
+                        <div>
+                            <label class="block text-sm font-medium text-blue-300 mb-2">Usuario</label>
+                            <select
+                                v-model="filtros.usuario"
+                                class="w-full px-3 py-2 bg-black/30 border border-blue-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="todos">Todos los usuarios</option>
+                                <option v-for="usuario in usuarios" :key="usuario.id" :value="usuario.id">
+                                    {{ usuario.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="flex items-end space-x-2">
+                            <button
+                                @click="generarPDF"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200"
+                            >
+                                Generar PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Categorías -->
+                    <div>
+                        <label class="block text-sm font-medium text-blue-300 mb-3">Categorías:</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            <div class="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="todos"
+                                    value="todos"
+                                    v-model="seleccionados"
+                                    @change="toggleTodos"
+                                    class="w-4 h-4 text-green-600 bg-black/30 border-green-500/50 rounded focus:ring-green-500 focus:ring-2"
+                                />
+                                <label for="todos" class="text-sm text-white font-medium">Todos</label>
+                            </div>
+                            <div v-for="categoria in categorias" :key="categoria.id_categoria" class="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    :id="categoria.id_categoria"
+                                    :value="categoria.id_categoria"
+                                    v-model="seleccionados"
+                                    class="w-4 h-4 text-green-600 bg-black/30 border-green-500/50 rounded focus:ring-green-500 focus:ring-2"
+                                />
+                                <label :for="categoria.id_categoria" class="text-sm text-white">{{ categoria.nombre }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Mensaje cuando no hay ventas -->
+                <div v-if="!ventas.length" class="bg-black/20 backdrop-blur-xl rounded-xl border border-blue-500/30 p-12 text-center">
+                    <div class="text-gray-400 text-lg mb-2">No se encontraron ventas</div>
+                    <div class="text-blue-300 text-sm">Intenta ajustar los filtros de búsqueda</div>
+                </div>
+            </div>
         </div>
 
-        <!-- Filtros y Configuración -->
-        <div class="bg-black/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-6 mb-8">
-          <!-- Primera fila: Ordenamiento y filtros básicos -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <!-- Ordenar por -->
+        <!-- Modal para mostrar PDF -->
+        <div v-if="showPDFModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl w-11/12 h-5/6 flex flex-col">
+                <!-- Header del modal -->
+                <div class="flex items-center justify-between p-4 border-b">
+                    <div class="flex items-center space-x-4">
+                        <button
+                            @click="abrirNuevaPestana"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                        >
+                            Abrir nueva pestaña
+                        </button>
+                        <button
+                            @click="descargarPDF"
+                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                        >
+                            Guardar en PDF
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">{{ pdfFilename }}</span>
+                        <button
+                            @click="cerrarModalPDF"
+                            class="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                        >
+                            ×
+                        </button>
+                    </div>
+                </div>
 
-
-            <!-- Orden -->
-            <div>
-              <label class="block text-sm font-medium text-purple-300 mb-2">Orden</label>
-              <select
-                v-model="filtros.orden"
-                class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="desc">Descendente</option>
-                <option value="asc">Ascendente</option>
-              </select>
+                <!-- Contenido del PDF -->
+                <div class="flex-1 overflow-hidden">
+                    <iframe
+                        v-if="pdfData"
+                        :src="'data:application/pdf;base64,' + pdfData"
+                        class="w-full h-full border-0"
+                        type="application/pdf"
+                    ></iframe>
+                    <div v-else class="flex items-center justify-center h-full">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                            <p class="text-gray-600">Generando PDF...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <!-- Botón Generar -->
-            <div class="flex items-end">
-              <button
-                @click="generarReporte"
-                :disabled="generando"
-                class="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
-              >
-                <span v-if="generando" class="flex items-center justify-center">
-                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Generando...
-                </span>
-                <span v-else class="flex items-center justify-center">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
-                  Generar Reporte
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Segunda fila: Filtros de fecha -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Fecha Inicio -->
-            <div>
-              <label class="block text-sm font-medium text-purple-300 mb-2">Fecha de Inicio</label>
-              <input
-                v-model="filtros.fecha_inicio"
-                type="date"
-                class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Seleccionar fecha de inicio"
-              />
-              <p class="mt-1 text-xs text-purple-400">Dejar vacío para incluir desde el inicio</p>
-            </div>
-
-            <!-- Fecha Fin -->
-            <div>
-              <label class="block text-sm font-medium text-purple-300 mb-2">Fecha de Fin</label>
-              <input
-                v-model="filtros.fecha_fin"
-                type="date"
-                class="w-full px-4 py-3 bg-black/30 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Seleccionar fecha de fin"
-              />
-              <p class="mt-1 text-xs text-purple-400">Dejar vacío para incluir hasta hoy</p>
-            </div>
-          </div>
         </div>
-
-        <!-- Información del Reporte -->
-        
-      </div>
-
-      <!-- Modal de PDF -->
-      <div v-if="mostrarPdf" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full h-full max-h-[90vh] flex flex-col">
-          <!-- Header del Modal -->
-          <div class="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">Vista Previa del Reporte de Ventas</h3>
-            <div class="flex space-x-2">
-              <button
-                @click="abrirNuevaPestana"
-                class="flex items-center space-x-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors"
-                title="Abrir nueva pestaña"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                </svg>
-                <span class="text-sm font-medium">Abrir nueva pestaña</span>
-              </button>
-              <button
-                @click="descargarPdf"
-                class="flex items-center space-x-2 px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-lg transition-colors"
-                title="Descargar PDF"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="text-sm font-medium">Descargar</span>
-              </button>
-              <button
-                @click="imprimirPdf"
-                class="flex items-center space-x-2 px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-lg transition-colors"
-                title="Imprimir PDF"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                </svg>
-                <span class="text-sm font-medium">Imprimir</span>
-              </button>
-              <button
-                @click="cerrarPdf"
-                class="flex items-center space-x-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-                title="Cerrar vista previa"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                <span class="text-sm font-medium">Cerrar</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Contenido del PDF -->
-          <div class="flex-1 h-full">
-            <iframe
-              v-if="pdfUrl"
-              :src="pdfUrl"
-              class="w-full h-full border-0"
-              title="Reporte de Ventas"
-            ></iframe>
-          </div>
-        </div>
-      </div>
-    </div>
-  </AppLayout>
+    </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { router } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
+import { ref, computed } from 'vue';
+import { Link, router } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
 
-// Variables reactivas
-const generando = ref(false)
-const mostrarPdf = ref(false)
-const pdfUrl = ref('')
-const pdfData = ref(null)
-
-// Filtros
-const filtros = ref({
-  fecha_inicio: '',
-  fecha_fin: '',
-  ordenar_por: 'fecha',
-  orden: 'desc'
-})
-
-// Funciones
-const generarReporte = async () => {
-  generando.value = true
-
-  try {
-    const response = await fetch(route('reportes.generar-ventas'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      body: JSON.stringify(filtros.value)
-    })
-
-    const data = await response.json()
-
-    if (data.success) {
-      // Convertir base64 a blob y crear URL
-      const pdfBlob = new Blob([Uint8Array.from(atob(data.pdf), c => c.charCodeAt(0))], { type: 'application/pdf' })
-      const url = URL.createObjectURL(pdfBlob)
-
-      // Guardar datos del PDF
-      pdfData.value = data
-      pdfUrl.value = url
-
-      // Mostrar modal
-      mostrarPdf.value = true
-    } else {
-      alert('Error al generar el reporte: ' + data.message)
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    alert('Error al generar el reporte')
-  } finally {
-    generando.value = false
-  }
+interface Cliente {
+    id_cliente: number;
+    nombre: string;
+    telefono?: string;
 }
+
+interface Categoria {
+    id_categoria: number;
+    nombre: string;
+}
+
+interface DetalleVenta {
+    id_detalle_venta: number;
+    cantidad: number;
+    precio_unitario: number;
+    subtotal: number;
+    producto?: {
+        categoria?: Categoria;
+    };
+}
+
+interface Venta {
+    id_venta: number;
+    fecha: string;
+    total: number;
+    cliente: Cliente;
+    detalles: DetalleVenta[];
+}
+
+interface User {
+    id: number;
+    name: string;
+}
+
+const props = defineProps<{
+    ventas: Venta[];
+    usuarios: User[];
+    categorias: Categoria[];
+    filtros: {
+        fecha_inicio: string;
+        fecha_final: string;
+        usuario: string;
+        categorias: number[];
+    };
+}>();
+
+// Función para obtener el primer día del mes actual
+const getPrimerDiaMes = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}-01`;
+};
+
+// Función para obtener el último día del mes actual
+const getUltimoDiaMes = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const lastDay = new Date(year, month, 0).getDate();
+    return `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+};
+
+// Inicializar filtros con fechas por defecto si no vienen en props
+const filtros = ref({
+    fecha_inicio: props.filtros?.fecha_inicio || getPrimerDiaMes(),
+    fecha_final: props.filtros?.fecha_final || getUltimoDiaMes(),
+    usuario: props.filtros?.usuario || 'todos',
+    categorias: props.filtros?.categorias || []
+});
+
+// Inicializar con todas las categorías marcadas por defecto
+const todasLasCategorias = props.categorias.map(cat => cat.id_categoria);
+const categoriasPorDefecto = props.filtros.categorias.length ? props.filtros.categorias : ['todos', ...todasLasCategorias];
+const seleccionados = ref(categoriasPorDefecto);
+
+// Variables para el modal de PDF
+const showPDFModal = ref(false);
+const pdfData = ref('');
+const pdfFilename = ref('');
+
+
+const generarPDF = async () => {
+    try {
+        console.log('Generando PDF...');
+        showPDFModal.value = true;
+        pdfData.value = '';
+
+        // Construir URL con parámetros
+        const params = new URLSearchParams({
+            fecha_inicio: filtros.value.fecha_inicio,
+            fecha_final: filtros.value.fecha_final,
+            usuario: filtros.value.usuario,
+            categorias: JSON.stringify(seleccionados.value)
+        });
+
+        const response = await fetch(`${route('reportes.ventas.pdf.direct')}?${params}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            pdfData.value = data.pdf;
+            pdfFilename.value = data.filename;
+            console.log('PDF generado exitosamente');
+        } else {
+            throw new Error(data.message || 'Error al generar el PDF');
+        }
+
+    } catch (error) {
+        console.error('Error generando PDF:', error);
+        alert('Error al generar el PDF: ' + error.message);
+        showPDFModal.value = false;
+    }
+};
+
+const cerrarModalPDF = () => {
+    showPDFModal.value = false;
+    pdfData.value = '';
+    pdfFilename.value = '';
+};
 
 const abrirNuevaPestana = () => {
-  if (pdfUrl.value) {
-    window.open(pdfUrl.value, '_blank')
-  }
-}
-
-const descargarPdf = () => {
-  if (pdfData.value) {
-    const link = document.createElement('a')
-    link.href = 'data:application/pdf;base64,' + pdfData.value.pdf
-    link.download = pdfData.value.filename
-    link.click()
-  }
-}
-
-const imprimirPdf = () => {
-  if (pdfUrl.value) {
-    const printWindow = window.open(pdfUrl.value)
-    printWindow.onload = () => {
-      printWindow.print()
+    if (pdfData.value) {
+        const blob = new Blob([Uint8Array.from(atob(pdfData.value), c => c.charCodeAt(0))], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
     }
-  }
-}
+};
 
-const cerrarPdf = () => {
-  mostrarPdf.value = false
-  if (pdfUrl.value) {
-    URL.revokeObjectURL(pdfUrl.value)
-    pdfUrl.value = ''
-  }
-  pdfData.value = null
-}
+const descargarPDF = () => {
+    if (pdfData.value) {
+        const blob = new Blob([Uint8Array.from(atob(pdfData.value), c => c.charCodeAt(0))], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = pdfFilename.value;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+};
 
-const getOrdenarPorLabel = () => {
-  const labels = {
-    'fecha': 'Fecha',
-    'total': 'Total de Venta',
-    'cliente': 'Cliente',
-    'usuario': 'Vendedor'
-  }
-  return labels[filtros.value.ordenar_por] || 'Fecha'
-}
+
+const toggleTodos = () => {
+    if (seleccionados.value.includes('todos')) {
+        seleccionados.value = ['todos'];
+    } else {
+        seleccionados.value = [];
+    }
+};
 
 const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+    if (!dateString) return 'Sin fecha';
+
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+};
+
+const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('es-BO', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+};
 </script>

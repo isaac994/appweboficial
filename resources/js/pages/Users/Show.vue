@@ -63,12 +63,28 @@
                                         <h4 class="text-lg font-medium text-gray-900 mb-4">Información Personal</h4>
                                         <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                             <div>
-                                                <dt class="text-sm font-medium text-gray-500">Nombre Completo</dt>
+                                                <dt class="text-sm font-medium text-gray-500">Nombre</dt>
                                                 <dd class="mt-1 text-sm text-gray-900">{{ user.name }}</dd>
+                                            </div>
+                                            <div v-if="user.apellidos">
+                                                <dt class="text-sm font-medium text-gray-500">Apellidos</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ user.apellidos }}</dd>
                                             </div>
                                             <div>
                                                 <dt class="text-sm font-medium text-gray-500">Email</dt>
                                                 <dd class="mt-1 text-sm text-gray-900">{{ user.email }}</dd>
+                                            </div>
+                                            <div v-if="user.telefono">
+                                                <dt class="text-sm font-medium text-gray-500">Teléfono</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ user.telefono }}</dd>
+                                            </div>
+                                            <div v-if="user.ci">
+                                                <dt class="text-sm font-medium text-gray-500">Cédula de Identidad</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ user.ci }}</dd>
+                                            </div>
+                                            <div v-if="user.direccion" class="sm:col-span-2">
+                                                <dt class="text-sm font-medium text-gray-500">Dirección</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ user.direccion }}</dd>
                                             </div>
                                             <div>
                                                 <dt class="text-sm font-medium text-gray-500">Estado</dt>
@@ -96,7 +112,7 @@
                                                 v-for="role in user.roles"
                                                 :key="role.id"
                                                 class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                                :class="role.name === 'Administrador' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
+                                                :class="role.name === 'Propietario' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
                                             >
                                                 {{ role.name }}
                                             </span>
@@ -132,7 +148,7 @@
                             <button
                                 @click="toggleStatus"
                                 class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
-                                :disabled="user.id === $page.props.auth.user.id"
+                                :class="{ 'opacity-50 cursor-not-allowed': user.id === page.props.auth.user.id }"
                             >
                                 {{ user.estado === 'activo' ? 'Desactivar Usuario' : 'Activar Usuario' }}
                             </button>
@@ -143,7 +159,7 @@
                                 Editar Usuario
                             </Link>
                         </div>
-                        <p v-if="user.id === $page.props.auth.user.id" class="text-sm text-gray-500 mt-2">
+                        <p v-if="user.id === page.props.auth.user.id" class="text-sm text-gray-500 mt-2">
                             No puedes desactivar tu propia cuenta
                         </p>
                     </div>
@@ -154,17 +170,43 @@
 </template>
 
 <script setup>
-import { Link, router } from '@inertiajs/vue3'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
     user: Object
 })
 
+const page = usePage()
+
 const toggleStatus = () => {
+    // Prevenir que un usuario se desactive a sí mismo
+    if (props.user.id === page.props.auth.user.id && props.user.estado === 'activo') {
+        Swal.fire({
+            title: 'Error',
+            text: 'No puedes desactivarte a ti mismo.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Entendido'
+        })
+        return
+    }
+
     if (confirm(`¿Estás seguro de que quieres ${props.user.estado === 'activo' ? 'desactivar' : 'activar'} este usuario?`)) {
         router.post(route('users.toggle-status', props.user.id), {}, {
-            preserveState: true
+            preserveState: true,
+            onError: (errors) => {
+                if (errors.error) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: errors.error,
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'Entendido'
+                    })
+                }
+            }
         })
     }
 }

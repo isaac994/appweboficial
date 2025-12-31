@@ -20,6 +20,41 @@ class AuthController extends Controller
     }
 
     /**
+     * Credenciales del usuario admin por defecto (hardcoded)
+     */
+    private function getDefaultAdminCredentials()
+    {
+        return [
+            'email' => 'admin@admin.com',
+            'password' => 'password',
+            'name' => 'Administrador',
+            'rol' => 'Propietario',
+            'estado' => 'activo'
+        ];
+    }
+
+    /**
+     * Verificar si las credenciales corresponden al usuario admin por defecto
+     */
+    private function isDefaultAdmin($email, $password)
+    {
+        $admin = $this->getDefaultAdminCredentials();
+        // Comparar con trim para evitar problemas con espacios y case-insensitive para email
+        $emailMatch = strtolower(trim($email)) === strtolower(trim($admin['email']));
+        $passwordMatch = trim($password) === trim($admin['password']);
+        
+        return $emailMatch && $passwordMatch;
+    }
+
+    /**
+     * Crear un objeto usuario virtual para el admin por defecto
+     */
+    private function createDefaultAdminUser()
+    {
+        return User::getDefaultAdmin();
+    }
+
+    /**
      * Procesar login
      */
     public function login(Request $request)
@@ -38,9 +73,32 @@ class AuthController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $credentials = $request->only('email', 'password');
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+        $remember = $request->boolean('remember');
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Verificar PRIMERO si es el usuario admin por defecto (antes de cualquier consulta a BD)
+        $admin = $this->getDefaultAdminCredentials();
+        $isAdmin = (strtolower($email) === strtolower($admin['email']) && $password === $admin['password']);
+
+        if ($isAdmin) {
+            $adminUser = $this->createDefaultAdminUser();
+            
+            // Autenticar manualmente al usuario admin
+            Auth::guard('web')->login($adminUser, $remember);
+            $request->session()->regenerate();
+
+            return redirect()->intended(route('dashboard'))
+                ->with('success', '¡Bienvenido de vuelta!');
+        }
+
+        // Si no es el admin por defecto, intentar autenticación normal con BD
+        $credentials = [
+            'email' => $email,
+            'password' => $password
+        ];
+
+        if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'))
@@ -83,10 +141,15 @@ class AuthController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        // Verificar si es el primer usuario (no hay usuarios en la BD)
+        $isFirstUser = User::count() === 0;
+        
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'rol' => $isFirstUser ? 'Propietario' : 'Operador', // Primer usuario es Propietario, los demás Operador
+            'estado' => 'activo',
         ]);
 
         Auth::login($user);
